@@ -91,13 +91,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     } on MissingPluginException {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(l10n.t('restart_picker'))));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            behavior: SnackBarBehavior.fixed,
+            content: Text(l10n.t('restart_picker')),
+          ),
+        );
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(l10n.t('restart_picker'))));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            behavior: SnackBarBehavior.fixed,
+            content: Text(l10n.t('restart_picker')),
+          ),
+        );
       }
     }
   }
@@ -120,7 +128,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(AppLocalizations.of(context).t('profile_saved'))),
+      SnackBar(
+        behavior: SnackBarBehavior.fixed,
+        content: Text(AppLocalizations.of(context).t('profile_saved')),
+      ),
     );
   }
 
