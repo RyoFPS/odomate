@@ -10,6 +10,7 @@ import 'screens/home_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/services_screen.dart';
 import 'screens/setup_screen.dart';
+import 'screens/statistics_screen.dart';
 import 'tracking/ride_tracker.dart';
 
 class OdoMateApp extends StatefulWidget {
@@ -90,6 +91,7 @@ class _OdoMateAppState extends State<OdoMateApp> {
                 onThemeChanged: (v) => setState(() => themeMode = v),
                 onLanguageChanged: (v) => setState(() => language = v),
               ),
+              StatisticsScreen(repository: widget.repository),
             ],
           )
         : SetupScreen(

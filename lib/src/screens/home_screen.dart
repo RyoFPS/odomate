@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../data/odomate_repository.dart';
 import '../domain/models.dart';
+import '../domain/ride_statistics.dart';
 import '../domain/service_schedule.dart';
 import '../i18n/app_localizations.dart';
 import '../tracking/ride_tracker.dart';
@@ -26,6 +27,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Vehicle? vehicle;
   List<ServiceItem> services = [];
   double todayDistance = 0;
+  double sevenDayDistance = 0;
+  int sevenDayRideCount = 0;
 
   @override
   void initState() {
@@ -46,11 +49,18 @@ class _HomeScreenState extends State<HomeScreen> {
               r.startedAt.toLocal().day == now.day,
         )
         .fold<double>(0, (sum, r) => sum + r.distanceKm);
+    final sevenDay = calculateRideStatistics(
+      rides,
+      now,
+      StatisticsPeriod.lastSevenDays,
+    );
     if (!mounted) return;
     setState(() {
       vehicle = value;
       services = serviceItems;
       todayDistance = distance;
+      sevenDayDistance = sevenDay.totalDistanceKm;
+      sevenDayRideCount = sevenDay.rideCount;
     });
   }
 
@@ -162,6 +172,18 @@ class _HomeScreenState extends State<HomeScreen> {
         builder: (context, state, child) => ListView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
           children: [
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.insights_outlined),
+                title: Text(l10n.t('statistics')),
+                subtitle: Text(
+                  '${sevenDayDistance.toStringAsFixed(1)} km · '
+                  '$sevenDayRideCount ${l10n.t('ride_count').toLowerCase()}',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => widget.onNavigate?.call(4),
+              ),
+            ),
             Card(
               child: InkWell(
                 onTap: _correctOdometer,
