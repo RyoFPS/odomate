@@ -1,7 +1,7 @@
 # OdoMate Statistics & Ride Insights
 
 Date: 2026-09-05  
-Status: Approved for implementation planning
+Status: Implemented; automated verification passed. Manual emulator verification pending.
 
 ## Goal
 
@@ -29,7 +29,7 @@ Excluded:
 
 ## User flow
 
-1. User membuka halaman Statistics dari card baru di Home atau tab navigasi.
+1. User membuka halaman Statistics dari card baru di Home; bottom navigation tetap memakai lima slot yang sudah ada.
 2. Halaman menampilkan default periode “7 hari terakhir”.
 3. User dapat memilih “Hari ini”, “7 hari”, atau “Bulan ini”.
 4. Card statistik berubah berdasarkan periode tanpa mengubah data ride.

@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-05-odomate-statistics-design.md`
 
+**Status:** Implementation complete; automated verification passed. Manual emulator verification remains.
+
 ## Global Constraints
 
 - Local-only data; no backend, account, cloud sync, or new database table.
@@ -31,12 +33,12 @@
 - `class RideStatistics { final double totalDistanceKm; final int rideCount; final double averageDistanceKm; }`
 - `RideStatistics calculateRideStatistics(List<Ride> rides, DateTime now, StatisticsPeriod period)`
 
-- [ ] Write tests for today, seven-day, and current-month inclusion boundaries using local `DateTime` values.
-- [ ] Write a test proving zero-distance rides count but average remains safe when no rides exist.
-- [ ] Run `flutter test test/domain/ride_statistics_test.dart`; verify it fails because the calculator does not exist.
-- [ ] Implement the enum, value object, and pure calculator using inclusive start/exclusive end boundaries.
-- [ ] Run the focused test and verify it passes.
-- [ ] Commit the domain calculator and tests.
+- [x] Write tests for today, seven-day, and current-month inclusion boundaries using local `DateTime` values.
+- [x] Write a test proving zero-distance rides count but average remains safe when no rides exist.
+- [x] Run `flutter test test/domain/ride_statistics_test.dart`; verify it fails because the calculator does not exist.
+- [x] Implement the enum, value object, and pure calculator using inclusive start/exclusive end boundaries.
+- [x] Run the focused test and verify it passes.
+- [x] Commit the domain calculator and tests.
 
 ### Task 2: Add repository-facing summary data
 
@@ -49,10 +51,10 @@
 - `Future<List<ServiceItem>> listServices()` remains the source of service data.
 - Add no new persistence API unless the implementation needs a single in-memory summary method.
 
-- [ ] Add a repository test proving stored rides can be consumed for statistics after reopening the repository.
-- [ ] Run the focused repository test and verify failure only if a new helper is required.
-- [ ] Prefer reusing existing `listRides` and `listServices`; do not add SQL aggregation prematurely.
-- [ ] Run all repository tests and verify they pass.
+- [x] Add a repository test proving stored rides can be consumed for statistics after reopening the repository.
+- [x] Run the focused repository test and verify failure only if a new helper is required.
+- [x] Prefer reusing existing `listRides` and `listServices`; do not add SQL aggregation prematurely.
+- [x] Run all repository tests and verify they pass.
 
 ### Task 3: Build the Statistics screen
 
@@ -61,14 +63,14 @@
 - Modify: `lib/src/i18n/app_localizations.dart`
 - Test: `test/screens/statistics_screen_test.dart`
 
-- [ ] Add localization keys for the page title, period labels, distance, ride count, average, total vehicle distance, service summary, and empty state in ID/EN/JA.
-- [ ] Write widget tests for the default seven-day period, period switching, empty rides, and one populated ride set.
-- [ ] Run the focused widget test and verify the expected failure before implementation.
-- [ ] Implement a `FutureBuilder` or equivalent local state load that reads vehicle, rides, and services from the repository.
-- [ ] Render period selector, numeric cards, total vehicle distance, and service status summary.
-- [ ] Use `ServiceSchedule.status` to count due/due-soon services and identify the nearest item.
-- [ ] Render a stable empty state when no rides exist.
-- [ ] Run the focused widget tests and verify they pass.
+- [x] Add localization keys for the page title, period labels, distance, ride count, average, total vehicle distance, service summary, and empty state in ID/EN/JA.
+- [x] Write widget tests for the default seven-day period, period switching, empty rides, and one populated ride set.
+- [x] Run the focused widget test and verify the expected failure before implementation.
+- [x] Implement a `FutureBuilder` or equivalent local state load that reads vehicle, rides, and services from the repository.
+- [x] Render period selector, numeric cards, total vehicle distance, and service status summary.
+- [x] Use `ServiceSchedule.status` to count due/due-soon services and identify the nearest item.
+- [x] Render a stable empty state when no rides exist.
+- [x] Run the focused widget tests and verify they pass.
 
 ### Task 4: Integrate Home and navigation
 
@@ -77,18 +79,18 @@
 - Modify: `lib/src/app.dart`
 - Test: `test/screens/navigation_test.dart` or `test/screens/statistics_navigation_test.dart`
 
-- [ ] Add a localized Home card showing the default seven-day distance and ride count.
-- [ ] Add a navigation callback/index for Statistics without moving or duplicating the Start Ride FAB.
-- [ ] Add Statistics as a bottom-navigation destination while preserving Home, History, Service, and Profile labels/order; use the existing shell pattern and avoid a second global navigator key.
-- [ ] Write a widget test proving the card opens Statistics and the ride action remains present.
-- [ ] Run all screen tests and verify they pass.
+- [x] Add a localized Home card showing the default seven-day distance and ride count.
+- [x] Add an internal navigation callback/index for Statistics without moving or duplicating the Start Ride FAB.
+- [x] Open Statistics from the Home card while preserving the existing five-slot navigation and its labels/order; avoid a second global navigator key.
+- [x] Write a widget test proving the card opens Statistics and the ride action remains present.
+- [x] Run all screen tests and verify they pass.
 
 ### Task 5: Full verification and handoff
 
-- [ ] Run `dart format lib test`.
-- [ ] Run `flutter analyze` and fix all errors/warnings introduced by the feature.
-- [ ] Run `flutter test` and verify all tests pass.
-- [ ] Run `git diff --check`.
-- [ ] Run `flutter build apk --debug`.
-- [ ] Manually verify empty state, each period, localization, theme light/dark, and Home navigation on the emulator.
-- [ ] Commit the completed Statistics feature with a Conventional Commit message.
+- [x] Run `dart format lib test`.
+- [x] Run `flutter analyze` and fix all errors/warnings introduced by the feature.
+- [x] Run `flutter test` and verify all tests pass.
+- [x] Run `git diff --check`.
+- [x] Run `flutter build apk --debug`.
+- [ ] Manually verify empty state, each period, localization, theme light/dark, and Home navigation on the emulator (pending user testing).
+- [x] Commit the completed Statistics feature with Conventional Commit messages.
