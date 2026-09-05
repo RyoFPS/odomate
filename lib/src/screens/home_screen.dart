@@ -106,6 +106,38 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<void> _correctOdometer() async {
+    final controller = TextEditingController(
+      text: (vehicle?.odometerKm ?? 0).toStringAsFixed(1),
+    );
+    final value = await showDialog<double>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Koreksi odometer'),
+        content: TextField(
+          controller: controller,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: const InputDecoration(labelText: 'Odometer baru (km)'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () =>
+                Navigator.pop(context, double.tryParse(controller.text)),
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (value == null || value < 0) return;
+    await widget.repository.updateOdometer(value);
+    await _refresh();
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -152,21 +184,27 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
           children: [
             Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.t('odometer'),
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '${(vehicle?.odometerKm ?? 0).toStringAsFixed(1)} km',
-                      style: Theme.of(context).textTheme.displaySmall,
-                    ),
-                  ],
+              child: InkWell(
+                onTap: _correctOdometer,
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.t('odometer'),
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '${(vehicle?.odometerKm ?? 0).toStringAsFixed(1)} km',
+                        style: Theme.of(context).textTheme.displaySmall,
+                      ),
+                      const SizedBox(height: 4),
+                      const Text('Ketuk untuk koreksi'),
+                    ],
+                  ),
                 ),
               ),
             ),

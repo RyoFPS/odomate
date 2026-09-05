@@ -25,4 +25,14 @@ void main() {
       ServiceReminder.due,
     );
   });
+
+  test('keeps service description for the detail view', () {
+    const described = ServiceItem(
+      name: 'Oli mesin',
+      description: 'Ganti oli dan periksa kebocoran.',
+      intervalKm: 1000,
+      lastServicedOdometerKm: 0,
+    );
+    expect(described.description, contains('kebocoran'));
+  });
 }

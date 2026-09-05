@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import '../data/odomate_repository.dart';
 import '../domain/models.dart';
 import '../domain/odometer.dart';
+import '../notifications/notification_service.dart';
 
 class RideTrackingState {
   final bool active;
@@ -16,6 +17,7 @@ class RideTrackingState {
 
 class RideTracker {
   final OdomateRepository repository;
+  final NotificationService? notifications;
   final Stream<Position>? positionStream;
   final ValueNotifier<RideTrackingState> _state = ValueNotifier(
     const RideTrackingState(),
@@ -23,7 +25,7 @@ class RideTracker {
   StreamSubscription<Position>? _subscription;
   GeoPoint? _lastPoint;
   Ride? _ride;
-  RideTracker(this.repository, {this.positionStream});
+  RideTracker(this.repository, {this.positionStream, this.notifications});
   ValueListenable<RideTrackingState> get state => _state;
   Future<void> start() async {
     if (!await Geolocator.isLocationServiceEnabled()) {
@@ -52,6 +54,7 @@ class RideTracker {
       _ride = _ride!.copyWith(id: await repository.createRide(_ride!));
     }
     _state.value = RideTrackingState(active: true, ride: _ride);
+    await notifications?.showTrackingActive(_ride!.distanceKm);
     final stream =
         positionStream ??
         Geolocator.getPositionStream(
@@ -84,6 +87,13 @@ class RideTracker {
     );
     _state.value = RideTrackingState(active: true, ride: _ride);
     await repository.saveActiveRideCheckpoint(_ride!);
+    await notifications?.showTrackingActive(_ride!.distanceKm);
+    for (final service in await repository.listServices()) {
+      await notifications?.maybeNotifyService(
+        service,
+        (await repository.loadVehicle())?.odometerKm ?? 0,
+      );
+    }
   }
 
   Future<Ride> stop() async {
@@ -95,6 +105,7 @@ class RideTracker {
     _ride = null;
     _lastPoint = null;
     _state.value = const RideTrackingState();
+    await notifications?.clearTrackingActive();
     return done;
   }
 }

@@ -15,6 +15,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
   List<ServiceItem> items = [];
   double odo = 0;
   final nameController = TextEditingController();
+  final descriptionController = TextEditingController();
   final intervalController = TextEditingController();
   @override
   void initState() {
@@ -40,6 +41,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
   @override
   void dispose() {
     nameController.dispose();
+    descriptionController.dispose();
     intervalController.dispose();
     super.dispose();
   }
@@ -74,6 +76,14 @@ class _ServicesScreenState extends State<ServicesScreen> {
                 ),
                 trailing: Text(
                   '${(s.lastServicedOdometerKm + s.intervalKm - odo).toStringAsFixed(0)} km',
+                ),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => ServiceDetailScreen(
+                      repository: widget.repository,
+                      service: s,
+                    ),
+                  ),
                 ),
                 onLongPress: () => _serviceActions(s),
               );
@@ -124,6 +134,10 @@ class _ServicesScreenState extends State<ServicesScreen> {
               decoration: const InputDecoration(labelText: 'Nama servis'),
             ),
             TextField(
+              controller: descriptionController,
+              decoration: const InputDecoration(labelText: 'Deskripsi'),
+            ),
+            TextField(
               controller: intervalController,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(labelText: 'Interval (km)'),
@@ -142,6 +156,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                     if (nameController.text.trim().isNotEmpty && km > 0) {
                       Navigator.pop(context, [
                         nameController.text.trim(),
+                        descriptionController.text.trim(),
                         intervalController.text,
                       ]);
                     }
@@ -159,7 +174,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
     await widget.repository.saveService(
       ServiceItem(
         name: result[0],
-        intervalKm: double.parse(result[1]),
+        description: result[1],
+        intervalKm: double.parse(result[2]),
         lastServicedOdometerKm: vehicle?.odometerKm ?? 0,
       ),
     );
@@ -193,6 +209,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   Future<void> _editService(ServiceItem service) async {
     nameController.text = service.name;
+    descriptionController.text = service.description;
     intervalController.text = service.intervalKm.toStringAsFixed(0);
     final result = await showModalBottomSheet<List<String>>(
       context: context,
@@ -213,6 +230,10 @@ class _ServicesScreenState extends State<ServicesScreen> {
               decoration: const InputDecoration(labelText: 'Nama servis'),
             ),
             TextField(
+              controller: descriptionController,
+              decoration: const InputDecoration(labelText: 'Deskripsi'),
+            ),
+            TextField(
               controller: intervalController,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(labelText: 'Interval (km)'),
@@ -230,6 +251,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                     if (nameController.text.trim().isNotEmpty && km > 0) {
                       Navigator.pop(context, [
                         nameController.text.trim(),
+                        descriptionController.text.trim(),
                         intervalController.text,
                       ]);
                     }
@@ -247,7 +269,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
       ServiceItem(
         id: service.id,
         name: result[0],
-        intervalKm: double.parse(result[1]),
+        description: result[1],
+        intervalKm: double.parse(result[2]),
         lastServicedOdometerKm: service.lastServicedOdometerKm,
       ),
     );
@@ -277,4 +300,133 @@ class _ServicesScreenState extends State<ServicesScreen> {
       await _load();
     }
   }
+}
+
+class ServiceDetailScreen extends StatefulWidget {
+  final OdomateRepository repository;
+  final ServiceItem service;
+  const ServiceDetailScreen({
+    super.key,
+    required this.repository,
+    required this.service,
+  });
+  @override
+  State<ServiceDetailScreen> createState() => _ServiceDetailScreenState();
+}
+
+class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
+  late ServiceItem service = widget.service;
+  List<ServiceLog> logs = [];
+  double odometer = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final vehicle = await widget.repository.loadVehicle();
+    final allLogs = await widget.repository.listServiceLogs();
+    if (!mounted) return;
+    setState(() {
+      odometer = vehicle?.odometerKm ?? 0;
+      logs = allLogs.where((log) => log.serviceItemId == service.id).toList();
+    });
+  }
+
+  Future<void> _markServiced() async {
+    if (service.id == null) return;
+    final date = await showDatePicker(
+      context: context,
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now(),
+      initialDate: DateTime.now(),
+    );
+    if (date == null) return;
+    await widget.repository.recordService(
+      ServiceLog(
+        serviceItemId: service.id!,
+        servicedAt: date,
+        odometerKm: odometer,
+      ),
+    );
+    await widget.repository.clearNotificationState(service.id!);
+    final updated = service.copyWith(lastServicedOdometerKm: odometer);
+    if (!mounted) return;
+    setState(() => service = updated);
+    await _load();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final remaining =
+        service.lastServicedOdometerKm + service.intervalKm - odometer;
+    final status = ServiceSchedule.status(odometer, service);
+    final statusText = status == ServiceStatus.due
+        ? 'Jatuh tempo'
+        : status == ServiceStatus.dueSoon
+        ? 'Mendekat'
+        : 'Aman';
+    return Scaffold(
+      appBar: AppBar(title: const Text('Detail servis')),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          Text(service.name, style: Theme.of(context).textTheme.headlineSmall),
+          if (service.description.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(service.description),
+          ],
+          const SizedBox(height: 20),
+          Card(
+            child: ListTile(
+              title: const Text('Status'),
+              subtitle: Text(statusText),
+              trailing: Text('${remaining.toStringAsFixed(0)} km'),
+            ),
+          ),
+          Card(
+            child: ListTile(
+              title: const Text('Interval'),
+              subtitle: Text('${service.intervalKm.toStringAsFixed(0)} km'),
+            ),
+          ),
+          Card(
+            child: ListTile(
+              title: const Text('Terakhir diservis'),
+              subtitle: Text(
+                logs.isEmpty
+                    ? 'Belum ada catatan'
+                    : _date(logs.first.servicedAt),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          FilledButton.icon(
+            onPressed: _markServiced,
+            icon: const Icon(Icons.check),
+            label: const Text('Tandai selesai'),
+          ),
+          const SizedBox(height: 24),
+          Text('Riwayat servis', style: Theme.of(context).textTheme.titleLarge),
+          if (logs.isEmpty)
+            const Padding(
+              padding: EdgeInsets.only(top: 12),
+              child: Text('Belum ada riwayat servis.'),
+            ),
+          ...logs.map(
+            (log) => ListTile(
+              leading: const Icon(Icons.event_available),
+              title: Text(_date(log.servicedAt)),
+              subtitle: Text('${log.odometerKm.toStringAsFixed(1)} km'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _date(DateTime value) =>
+      '${value.day.toString().padLeft(2, '0')}/${value.month.toString().padLeft(2, '0')}/${value.year}';
 }

@@ -72,22 +72,25 @@ class Ride {
 
 class ServiceItem {
   final int? id;
-  final String name;
+  final String name, description;
   final double intervalKm, lastServicedOdometerKm;
   const ServiceItem({
     this.id,
     required this.name,
+    this.description = '',
     required this.intervalKm,
     required this.lastServicedOdometerKm,
   });
   ServiceItem copyWith({
     int? id,
     String? name,
+    String? description,
     double? intervalKm,
     double? lastServicedOdometerKm,
   }) => ServiceItem(
     id: id ?? this.id,
     name: name ?? this.name,
+    description: description ?? this.description,
     intervalKm: intervalKm ?? this.intervalKm,
     lastServicedOdometerKm:
         lastServicedOdometerKm ?? this.lastServicedOdometerKm,

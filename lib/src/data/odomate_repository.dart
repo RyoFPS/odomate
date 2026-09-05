@@ -23,6 +23,10 @@ class OdomateRepository {
     'plate_number': v.plateNumber,
     'photo_path': v.photoPath,
   }, conflictAlgorithm: ConflictAlgorithm.replace);
+  Future<void> updateOdometer(double odometerKm) async {
+    await (await db).update('vehicle', {'odometer_km': odometerKm});
+  }
+
   Future<int> createRide(Ride r) async => (await db).insert('rides', {
     'started_at': r.startedAt.toIso8601String(),
     'distance_km': r.distanceKm,
@@ -70,6 +74,7 @@ class OdomateRepository {
       (await db).insert('service_items', {
         'id': s.id,
         'name': s.name,
+        'description': s.description,
         'interval_km': s.intervalKm,
         'last_serviced_km': s.lastServicedOdometerKm,
       }, conflictAlgorithm: ConflictAlgorithm.replace);
@@ -116,6 +121,42 @@ class OdomateRepository {
             ),
           )
           .toList();
+  Future<NotificationState> loadNotificationState(int serviceItemId) async {
+    final rows = await (await db).query(
+      'notification_state',
+      where: 'service_item_id = ?',
+      whereArgs: [serviceItemId],
+      limit: 1,
+    );
+    if (rows.isEmpty) return const NotificationState();
+    final reminder = rows.first['last_reminder'] as String?;
+    return NotificationState(
+      cycle: rows.first['cycle'] as int?,
+      lastReminder: reminder == null
+          ? null
+          : ServiceReminder.values.byName(reminder),
+    );
+  }
+
+  Future<void> saveNotificationState(
+    int serviceItemId,
+    NotificationState state,
+  ) async {
+    await (await db).insert('notification_state', {
+      'service_item_id': serviceItemId,
+      'cycle': state.cycle ?? 0,
+      'last_reminder': state.lastReminder?.name,
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<void> clearNotificationState(int serviceItemId) async {
+    await (await db).delete(
+      'notification_state',
+      where: 'service_item_id = ?',
+      whereArgs: [serviceItemId],
+    );
+  }
+
   Vehicle _vehicle(Map<String, Object?> r) => Vehicle(
     id: r['id'] as int,
     name: r['name'] as String,
@@ -135,6 +176,7 @@ class OdomateRepository {
   ServiceItem _service(Map<String, Object?> r) => ServiceItem(
     id: r['id'] as int,
     name: r['name'] as String,
+    description: r['description'] as String? ?? '',
     intervalKm: (r['interval_km'] as num).toDouble(),
     lastServicedOdometerKm: (r['last_serviced_km'] as num).toDouble(),
   );
