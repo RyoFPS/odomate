@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   final ThemeMode themeMode;
   final String language;
   final ValueChanged<ThemeMode> onThemeChanged;
@@ -12,6 +12,13 @@ class SettingsScreen extends StatelessWidget {
     required this.onThemeChanged,
     required this.onLanguageChanged,
   });
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  late ThemeMode themeMode = widget.themeMode;
+  late String language = widget.language;
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('Settings')),
@@ -33,7 +40,10 @@ class SettingsScreen extends StatelessWidget {
             ),
           ],
           selected: {themeMode},
-          onSelectionChanged: (value) => onThemeChanged(value.first),
+          onSelectionChanged: (value) {
+            setState(() => themeMode = value.first);
+            widget.onThemeChanged(value.first);
+          },
         ),
         const Divider(),
         DropdownButtonFormField<String>(
@@ -42,9 +52,13 @@ class SettingsScreen extends StatelessWidget {
           items: const [
             DropdownMenuItem(value: 'id', child: Text('Bahasa Indonesia')),
             DropdownMenuItem(value: 'en', child: Text('English')),
+            DropdownMenuItem(value: 'ja', child: Text('日本語')),
           ],
           onChanged: (v) {
-            if (v != null) onLanguageChanged(v);
+            if (v != null) {
+              setState(() => language = v);
+              widget.onLanguageChanged(v);
+            }
           },
         ),
       ],

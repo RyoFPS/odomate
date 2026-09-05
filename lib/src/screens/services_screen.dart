@@ -75,6 +75,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                 trailing: Text(
                   '${(s.lastServicedOdometerKm + s.intervalKm - odo).toStringAsFixed(0)} km',
                 ),
+                onLongPress: () => _serviceActions(s),
               );
             }).toList(),
           ),
@@ -163,5 +164,117 @@ class _ServicesScreenState extends State<ServicesScreen> {
       ),
     );
     await _load();
+  }
+
+  Future<void> _serviceActions(ServiceItem service) async {
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: const Text('Edit servis'),
+              onTap: () => Navigator.pop(context, 'edit'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete_outline),
+              title: const Text('Hapus servis'),
+              onTap: () => Navigator.pop(context, 'delete'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (action == 'edit') await _editService(service);
+    if (action == 'delete') await _confirmDelete(service);
+  }
+
+  Future<void> _editService(ServiceItem service) async {
+    nameController.text = service.name;
+    intervalController.text = service.intervalKm.toStringAsFixed(0);
+    final result = await showModalBottomSheet<List<String>>(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => Padding(
+        padding: EdgeInsets.fromLTRB(
+          24,
+          16,
+          24,
+          MediaQuery.viewInsetsOf(context).bottom + 24,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Edit servis', style: Theme.of(context).textTheme.titleLarge),
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(labelText: 'Nama servis'),
+            ),
+            TextField(
+              controller: intervalController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'Interval (km)'),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Batal'),
+                ),
+                FilledButton(
+                  onPressed: () {
+                    final km = double.tryParse(intervalController.text) ?? 0;
+                    if (nameController.text.trim().isNotEmpty && km > 0) {
+                      Navigator.pop(context, [
+                        nameController.text.trim(),
+                        intervalController.text,
+                      ]);
+                    }
+                  },
+                  child: const Text('Simpan'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+    if (result == null || service.id == null) return;
+    await widget.repository.saveService(
+      ServiceItem(
+        id: service.id,
+        name: result[0],
+        intervalKm: double.parse(result[1]),
+        lastServicedOdometerKm: service.lastServicedOdometerKm,
+      ),
+    );
+    await _load();
+  }
+
+  Future<void> _confirmDelete(ServiceItem service) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hapus kategori servis?'),
+        content: Text('Apakah Anda yakin ingin menghapus ${service.name}?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && service.id != null) {
+      await widget.repository.deleteService(service.id!);
+      await _load();
+    }
   }
 }

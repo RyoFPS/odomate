@@ -46,6 +46,8 @@ class _OdoMateAppState extends State<OdoMateApp> {
     title: 'OdoMate',
     navigatorKey: navigatorKey,
     themeMode: themeMode,
+    locale: Locale(language),
+    themeAnimationDuration: const Duration(milliseconds: 300),
     theme: ThemeData(colorSchemeSeed: Colors.teal, useMaterial3: true),
     darkTheme: ThemeData.dark(useMaterial3: true),
     debugShowCheckedModeBanner: false,

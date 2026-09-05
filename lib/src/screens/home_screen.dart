@@ -33,7 +33,9 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!mounted) return;
     setState(() {
       odo = vehicle?.odometerKm ?? 0;
-      vehicleName = vehicle?.name ?? '';
+      vehicleName = vehicle == null
+          ? ''
+          : (vehicle.userName.isEmpty ? vehicle.name : vehicle.userName);
       serviceCount = services.length;
     });
   }

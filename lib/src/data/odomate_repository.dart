@@ -73,6 +73,8 @@ class OdomateRepository {
         'interval_km': s.intervalKm,
         'last_serviced_km': s.lastServicedOdometerKm,
       }, conflictAlgorithm: ConflictAlgorithm.replace);
+  Future<void> deleteService(int id) async =>
+      (await db).delete('service_items', where: 'id = ?', whereArgs: [id]);
   Future<void> recordService(ServiceLog l) async {
     final d = await db;
     await d.transaction((tx) async {
