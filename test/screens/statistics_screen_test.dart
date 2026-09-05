@@ -77,6 +77,14 @@ void main() {
     expect(find.byIcon(Icons.check), findsNothing);
   });
 
+  testWidgets('seven-day period label is centered', (tester) async {
+    await tester.pumpWidget(_app(_FakeRepository()));
+    await tester.pumpAndSettle();
+
+    final label = tester.widget<Text>(find.text('7 hari terakhir'));
+    expect(label.textAlign, TextAlign.center);
+  });
+
   testWidgets('switching to today updates the selected period metrics', (
     tester,
   ) async {

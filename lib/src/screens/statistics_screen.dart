@@ -59,15 +59,24 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 segments: [
                   ButtonSegment(
                     value: StatisticsPeriod.today,
-                    label: Text(l10n.t('today_period')),
+                    label: Text(
+                      l10n.t('today_period'),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                   ButtonSegment(
                     value: StatisticsPeriod.lastSevenDays,
-                    label: Text(l10n.t('last_seven_days')),
+                    label: Text(
+                      l10n.t('last_seven_days'),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                   ButtonSegment(
                     value: StatisticsPeriod.currentMonth,
-                    label: Text(l10n.t('current_month')),
+                    label: Text(
+                      l10n.t('current_month'),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ],
                 selected: {period},
