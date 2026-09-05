@@ -109,7 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: ListTile(
               leading: const Icon(Icons.build_outlined),
               title: const Text('Jadwal servis'),
-              subtitle: Text('\$serviceCount item servis tersimpan'),
+              subtitle: Text('$serviceCount item servis tersimpan'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => widget.onNavigate?.call(2),
             ),

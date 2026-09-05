@@ -128,18 +128,6 @@ class _MainNavigationState extends State<MainNavigation> {
         onNavigate: _select,
       );
     }
-    if (page is HistoryScreen) {
-      return HistoryScreen(
-        repository: page.repository,
-        onBack: () => _select(0),
-      );
-    }
-    if (page is ServicesScreen) {
-      return ServicesScreen(
-        repository: page.repository,
-        onBack: () => _select(0),
-      );
-    }
     return page;
   }
 

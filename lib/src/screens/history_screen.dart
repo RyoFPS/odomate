@@ -4,14 +4,10 @@ import '../data/odomate_repository.dart';
 
 class HistoryScreen extends StatelessWidget {
   final OdomateRepository repository;
-  final VoidCallback? onBack;
-  const HistoryScreen({super.key, required this.repository, this.onBack});
+  const HistoryScreen({super.key, required this.repository});
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const Text('Riwayat'),
-      leading: onBack == null ? null : BackButton(onPressed: onBack),
-    ),
+    appBar: AppBar(title: const Text('Riwayat')),
     body: FutureBuilder(
       future: repository.listRides(),
       builder: (_, snapshot) => snapshot.hasData
