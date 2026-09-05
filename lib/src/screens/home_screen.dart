@@ -107,32 +107,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _correctOdometer() async {
-    final controller = TextEditingController(
-      text: (vehicle?.odometerKm ?? 0).toStringAsFixed(1),
-    );
     final value = await showDialog<double>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Koreksi odometer'),
-        content: TextField(
-          controller: controller,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: const InputDecoration(labelText: 'Odometer baru (km)'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
-          ),
-          FilledButton(
-            onPressed: () =>
-                Navigator.pop(context, double.tryParse(controller.text)),
-            child: const Text('Simpan'),
-          ),
-        ],
-      ),
+      builder: (_) =>
+          _OdometerCorrectionDialog(initialValue: vehicle?.odometerKm ?? 0),
     );
-    controller.dispose();
     if (value == null || value < 0) return;
     await widget.repository.updateOdometer(value);
     await _refresh();
@@ -251,4 +230,52 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+}
+
+class _OdometerCorrectionDialog extends StatefulWidget {
+  final double initialValue;
+  const _OdometerCorrectionDialog({required this.initialValue});
+
+  @override
+  State<_OdometerCorrectionDialog> createState() =>
+      _OdometerCorrectionDialogState();
+}
+
+class _OdometerCorrectionDialogState extends State<_OdometerCorrectionDialog> {
+  late final TextEditingController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = TextEditingController(
+      text: widget.initialValue.toStringAsFixed(1),
+    );
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+    title: const Text('Koreksi odometer'),
+    content: TextField(
+      controller: controller,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      decoration: const InputDecoration(labelText: 'Odometer baru (km)'),
+    ),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: const Text('Batal'),
+      ),
+      FilledButton(
+        onPressed: () =>
+            Navigator.pop(context, double.tryParse(controller.text)),
+        child: const Text('Simpan'),
+      ),
+    ],
+  );
 }
