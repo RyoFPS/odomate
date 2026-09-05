@@ -93,13 +93,24 @@ class _ServicesScreenState extends State<ServicesScreen> {
   Future<void> _addService() async {
     final name = TextEditingController();
     final interval = TextEditingController();
-    final result = await showDialog<List<String>>(
+    final result = await showModalBottomSheet<List<String>>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Tambah servis'),
-        content: Column(
+      isScrollControlled: true,
+      builder: (context) => Padding(
+        padding: EdgeInsets.fromLTRB(
+          24,
+          16,
+          24,
+          MediaQuery.viewInsetsOf(context).bottom + 24,
+        ),
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Text(
+              'Tambah servis',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 16),
             TextField(
               controller: name,
               decoration: const InputDecoration(labelText: 'Nama servis'),
@@ -109,23 +120,27 @@ class _ServicesScreenState extends State<ServicesScreen> {
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(labelText: 'Interval (km)'),
             ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Batal'),
+                ),
+                FilledButton(
+                  onPressed: () {
+                    final km = double.tryParse(interval.text) ?? 0;
+                    if (name.text.trim().isNotEmpty && km > 0) {
+                      Navigator.pop(context, [name.text.trim(), interval.text]);
+                    }
+                  },
+                  child: const Text('Simpan'),
+                ),
+              ],
+            ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
-          ),
-          FilledButton(
-            onPressed: () {
-              final km = double.tryParse(interval.text) ?? 0;
-              if (name.text.trim().isNotEmpty && km > 0) {
-                Navigator.pop(context, [name.text.trim(), interval.text]);
-              }
-            },
-            child: const Text('Simpan'),
-          ),
-        ],
       ),
     );
     name.dispose();

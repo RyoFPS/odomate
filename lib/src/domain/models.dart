@@ -19,11 +19,30 @@ class Vehicle {
   final int? id;
   final String name;
   final double odometerKm;
-  const Vehicle({this.id, required this.name, required this.odometerKm});
-  Vehicle copyWith({int? id, String? name, double? odometerKm}) => Vehicle(
+  final String userName, plateNumber;
+  final String? photoPath;
+  const Vehicle({
+    this.id,
+    required this.name,
+    required this.odometerKm,
+    this.userName = '',
+    this.plateNumber = '',
+    this.photoPath,
+  });
+  Vehicle copyWith({
+    int? id,
+    String? name,
+    double? odometerKm,
+    String? userName,
+    String? plateNumber,
+    String? photoPath,
+  }) => Vehicle(
     id: id ?? this.id,
     name: name ?? this.name,
     odometerKm: odometerKm ?? this.odometerKm,
+    userName: userName ?? this.userName,
+    plateNumber: plateNumber ?? this.plateNumber,
+    photoPath: photoPath ?? this.photoPath,
   );
 }
 

@@ -19,6 +19,9 @@ class OdomateRepository {
     'id': v.id ?? 1,
     'name': v.name,
     'odometer_km': v.odometerKm,
+    'user_name': v.userName,
+    'plate_number': v.plateNumber,
+    'photo_path': v.photoPath,
   }, conflictAlgorithm: ConflictAlgorithm.replace);
   Future<int> createRide(Ride r) async => (await db).insert('rides', {
     'started_at': r.startedAt.toIso8601String(),
@@ -115,6 +118,9 @@ class OdomateRepository {
     id: r['id'] as int,
     name: r['name'] as String,
     odometerKm: (r['odometer_km'] as num).toDouble(),
+    userName: r['user_name'] as String? ?? '',
+    plateNumber: r['plate_number'] as String? ?? '',
+    photoPath: r['photo_path'] as String?,
   );
   Ride _ride(Map<String, Object?> r) => Ride(
     id: r['id'] as int,

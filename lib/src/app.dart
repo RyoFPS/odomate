@@ -7,6 +7,8 @@ import 'screens/setup_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/services_screen.dart';
 import 'screens/history_screen.dart';
+import 'screens/profile_screen.dart';
+import 'screens/settings_screen.dart';
 
 class OdoMateApp extends StatefulWidget {
   final OdomateRepository repository;
@@ -24,6 +26,8 @@ class OdoMateApp extends StatefulWidget {
 
 class _OdoMateAppState extends State<OdoMateApp> {
   bool loading = true, hasVehicle = false;
+  ThemeMode themeMode = ThemeMode.light;
+  String language = 'id';
   @override
   void initState() {
     super.initState();
@@ -39,6 +43,9 @@ class _OdoMateAppState extends State<OdoMateApp> {
   @override
   Widget build(BuildContext context) => MaterialApp(
     title: 'OdoMate',
+    themeMode: themeMode,
+    theme: ThemeData(colorSchemeSeed: Colors.teal, useMaterial3: true),
+    darkTheme: ThemeData.dark(useMaterial3: true),
     debugShowCheckedModeBanner: false,
     home: loading
         ? const Scaffold(body: Center(child: CircularProgressIndicator()))
@@ -52,7 +59,20 @@ class _OdoMateAppState extends State<OdoMateApp> {
               ),
               HistoryScreen(repository: widget.repository),
               ServicesScreen(repository: widget.repository),
-              const _ProfilePage(),
+              ProfileScreen(
+                repository: widget.repository,
+                onSettings: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => SettingsScreen(
+                      themeMode: themeMode,
+                      language: language,
+                      onThemeChanged: (v) => setState(() => themeMode = v),
+                      onLanguageChanged: (v) => setState(() => language = v),
+                    ),
+                  ),
+                ),
+              ),
             ],
           )
         : SetupScreen(
@@ -144,10 +164,4 @@ class _MainNavigationState extends State<MainNavigation> {
       ],
     ),
   );
-}
-
-class _ProfilePage extends StatelessWidget {
-  const _ProfilePage();
-  @override
-  Widget build(BuildContext context) => const Center(child: Text('Profile'));
 }
