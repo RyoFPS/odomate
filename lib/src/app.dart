@@ -84,7 +84,7 @@ class _MainNavigationState extends State<MainNavigation> {
   Widget build(BuildContext context) {
     final active = widget.tracker?.state.value.active ?? widget.rideActive;
     return Scaffold(
-      body: widget.pages[index],
+      body: _page(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
         shape: const CircleBorder(),
@@ -118,6 +118,32 @@ class _MainNavigationState extends State<MainNavigation> {
       ),
     );
   }
+
+  Widget _page() {
+    final page = widget.pages[index];
+    if (page is HomeScreen) {
+      return HomeScreen(
+        repository: page.repository,
+        tracker: page.tracker,
+        onNavigate: _select,
+      );
+    }
+    if (page is HistoryScreen) {
+      return HistoryScreen(
+        repository: page.repository,
+        onBack: () => _select(0),
+      );
+    }
+    if (page is ServicesScreen) {
+      return ServicesScreen(
+        repository: page.repository,
+        onBack: () => _select(0),
+      );
+    }
+    return page;
+  }
+
+  void _select(int value) => setState(() => index = value);
 
   Widget _tab(int value, IconData icon, String label) => IconButton(
     onPressed: () => setState(() => index = value),

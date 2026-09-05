@@ -6,7 +6,8 @@ import '../domain/service_schedule.dart';
 
 class ServicesScreen extends StatefulWidget {
   final OdomateRepository repository;
-  const ServicesScreen({super.key, required this.repository});
+  final VoidCallback? onBack;
+  const ServicesScreen({super.key, required this.repository, this.onBack});
   @override
   State<ServicesScreen> createState() => _ServicesScreenState();
 }
@@ -28,7 +29,12 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Servis')),
+    appBar: AppBar(
+      title: const Text('Servis'),
+      leading: widget.onBack == null
+          ? null
+          : BackButton(onPressed: widget.onBack),
+    ),
     body: ListView(
       children: items.map((s) {
         final status = ServiceSchedule.status(odo, s);

@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 
 import '../data/odomate_repository.dart';
 import '../tracking/ride_tracker.dart';
-import 'services_screen.dart';
-import 'history_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final OdomateRepository repository;
   final RideTracker tracker;
+  final ValueChanged<int>? onNavigate;
   const HomeScreen({
     super.key,
     required this.repository,
     required this.tracker,
+    this.onNavigate,
   });
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -111,12 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
               title: const Text('Jadwal servis'),
               subtitle: Text('\$serviceCount item servis tersimpan'),
               trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ServicesScreen(repository: widget.repository),
-                ),
-              ),
+              onTap: () => widget.onNavigate?.call(2),
             ),
           ),
           Card(
@@ -125,12 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
               title: const Text('Riwayat perjalanan'),
               subtitle: const Text('Lihat perjalanan yang sudah tersimpan'),
               trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => HistoryScreen(repository: widget.repository),
-                ),
-              ),
+              onTap: () => widget.onNavigate?.call(1),
             ),
           ),
         ],
