@@ -128,7 +128,9 @@ void main() {
   testWidgets('shows a localized error when loading statistics fails', (
     tester,
   ) async {
-    await tester.pumpWidget(_app(_FakeRepository(error: StateError('offline'))));
+    await tester.pumpWidget(
+      _app(_FakeRepository(error: StateError('offline'))),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('Gagal memuat statistik.'), findsOneWidget);
