@@ -33,6 +33,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final plate = TextEditingController();
   String? photoPath;
 
+  void _showMessage(String message) {
+    final overlay = Overlay.of(context);
+    late final OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (_) => Positioned(
+        left: 0,
+        right: 0,
+        bottom: 80,
+        child: Material(
+          color: Colors.transparent,
+          child: SafeArea(
+            top: false,
+            child: Container(
+              color: Theme.of(context).colorScheme.inverseSurface,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+              child: Text(
+                message,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onInverseSurface,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    overlay.insert(entry);
+    Future<void>.delayed(const Duration(seconds: 2), entry.remove);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -91,21 +121,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     } on MissingPluginException {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            behavior: SnackBarBehavior.fixed,
-            content: Text(l10n.t('restart_picker')),
-          ),
-        );
+        _showMessage(l10n.t('restart_picker'));
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            behavior: SnackBarBehavior.fixed,
-            content: Text(l10n.t('restart_picker')),
-          ),
-        );
+        _showMessage(l10n.t('restart_picker'));
       }
     }
   }
@@ -127,12 +147,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         photoPath: photoPath,
       ),
     );
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.fixed,
-        content: Text(AppLocalizations.of(context).t('profile_saved')),
-      ),
-    );
+    _showMessage(AppLocalizations.of(context).t('profile_saved'));
   }
 
   @override
