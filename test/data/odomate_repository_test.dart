@@ -75,4 +75,18 @@ void main() {
     expect((await repository.loadVehicle())!.odometerKm, 1234.5);
     expect(await repository.listRides(), isEmpty);
   });
+
+  test('lists stored rides after reopening the repository', () async {
+    final startedAt = DateTime(2026, 9, 5, 8, 30);
+    await repository.createRide(Ride(startedAt: startedAt, distanceKm: 12.5));
+
+    final reopenedRepository = OdomateRepository(
+      databaseFactory: () async => database,
+    );
+
+    final rides = await reopenedRepository.listRides();
+    expect(rides, hasLength(1));
+    expect(rides.single.startedAt, startedAt);
+    expect(rides.single.distanceKm, 12.5);
+  });
 }
