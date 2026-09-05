@@ -45,19 +45,6 @@ class _HomeScreenState extends State<HomeScreen> {
           const Text('Odometer saat ini'),
           if (s.error != null)
             Text(s.error!, style: const TextStyle(color: Colors.red)),
-          const SizedBox(height: 24),
-          FilledButton(
-            onPressed: () async {
-              if (s.active) {
-                await widget.tracker.stop();
-                await _refresh();
-              } else {
-                await widget.tracker.start();
-              }
-              setState(() {});
-            },
-            child: Text(s.active ? 'Stop Ride' : 'Start Ride'),
-          ),
           if (s.active)
             Text('Jarak ride: ${s.ride!.distanceKm.toStringAsFixed(1)} km'),
           ListTile(
