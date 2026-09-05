@@ -1,4 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter/foundation.dart';
 
 import '../data/odomate_repository.dart';
 import '../domain/models.dart';
@@ -12,25 +13,31 @@ class NotificationService {
     FlutterLocalNotificationsPlugin? plugin,
     this.repository,
   }) : plugin = plugin ?? FlutterLocalNotificationsPlugin();
-  Future<void> initialize() async => plugin.initialize(
-    settings: const InitializationSettings(
-      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
-      iOS: DarwinInitializationSettings(),
-    ),
-  );
-  Future<void> showTrackingActive(double distanceKm) async => plugin.show(
-    id: 1,
-    title: 'OdoMate sedang merekam perjalanan',
-    body: '${distanceKm.toStringAsFixed(1)} km',
-    notificationDetails: const NotificationDetails(
-      android: AndroidNotificationDetails(
-        'tracking',
-        'Tracking',
-        channelDescription: 'Ride aktif',
-        ongoing: true,
+  Future<void> initialize() async {
+    await plugin.initialize(
+      settings: const InitializationSettings(
+        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        iOS: DarwinInitializationSettings(),
       ),
-    ),
-  );
+    );
+    // Remove notifications created by older app versions before restoring state.
+    await plugin.cancel(id: 1);
+  }
+
+  Future<void> showTrackingActive(double distanceKm) async {
+    // Android uses Geolocator's foreground-service notification so it is owned
+    // by the location service and is removed when that service stops.
+    if (defaultTargetPlatform == TargetPlatform.android) return;
+    await plugin.show(
+      id: 1,
+      title: 'OdoMate sedang merekam perjalanan',
+      body: '${distanceKm.toStringAsFixed(1)} km',
+      notificationDetails: const NotificationDetails(
+        iOS: DarwinNotificationDetails(),
+      ),
+    );
+  }
+
   Future<void> clearTrackingActive() async => plugin.cancel(id: 1);
   Future<void> maybeNotifyService(ServiceItem item, double odometerKm) async {
     if (item.id == null) return;

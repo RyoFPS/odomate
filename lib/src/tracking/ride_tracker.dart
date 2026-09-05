@@ -27,7 +27,18 @@ class RideTracker {
   Ride? _ride;
   RideTracker(this.repository, {this.positionStream, this.notifications});
   ValueListenable<RideTrackingState> get state => _state;
+
+  Future<void> restore() async {
+    final activeRide = await repository.loadActiveRide();
+    if (activeRide == null) {
+      await notifications?.clearTrackingActive();
+      return;
+    }
+    await start();
+  }
+
   Future<void> start() async {
+    if (_state.value.active) return;
     if (!await Geolocator.isLocationServiceEnabled()) {
       _state.value = const RideTrackingState(
         error: 'Aktifkan lokasi terlebih dahulu.',
@@ -62,6 +73,11 @@ class RideTracker {
             accuracy: LocationAccuracy.high,
             distanceFilter: 10,
             intervalDuration: Duration(seconds: 10),
+            foregroundNotificationConfig: const ForegroundNotificationConfig(
+              notificationTitle: 'OdoMate sedang merekam perjalanan',
+              notificationText: 'Perjalanan tetap direkam di latar belakang',
+              enableWakeLock: true,
+            ),
           ),
         );
     _subscription = stream.listen(onPosition);
