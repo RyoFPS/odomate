@@ -1,17 +1,24 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:odomate/src/data/odomate_repository.dart';
 import 'package:odomate/src/domain/models.dart';
+import 'package:path/path.dart' as p;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
   late Database database;
+  late String databasePath;
+  var databaseClosed = false;
   late OdomateRepository repository;
 
   setUp(() async {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
+    final directory = await Directory.systemTemp.createTemp('odomate-test-');
+    databasePath = p.join(directory.path, 'odomate.db');
     database = await databaseFactory.openDatabase(
-      inMemoryDatabasePath,
+      databasePath,
       options: OpenDatabaseOptions(
         version: 4,
         onCreate: (db, version) async {
@@ -33,10 +40,14 @@ void main() {
         },
       ),
     );
+    databaseClosed = false;
     repository = OdomateRepository(databaseFactory: () async => database);
   });
 
-  tearDown(() => database.close());
+  tearDown(() async {
+    if (!databaseClosed) await database.close();
+    await databaseFactory.deleteDatabase(databasePath);
+  });
 
   test('persists service description, logs, and notification state', () async {
     await repository.saveVehicle(const Vehicle(name: 'Beat', odometerKm: 1000));
@@ -79,11 +90,15 @@ void main() {
   test('lists stored rides after reopening the repository', () async {
     final startedAt = DateTime(2026, 9, 5, 8, 30);
     await repository.createRide(Ride(startedAt: startedAt, distanceKm: 12.5));
+    await database.close();
+    databaseClosed = true;
 
     final reopenedRepository = OdomateRepository(
-      databaseFactory: () async => database,
+      databaseFactory: () => databaseFactory.openDatabase(databasePath),
     );
 
+    database = await reopenedRepository.db;
+    databaseClosed = false;
     final rides = await reopenedRepository.listRides();
     expect(rides, hasLength(1));
     expect(rides.single.startedAt, startedAt);
