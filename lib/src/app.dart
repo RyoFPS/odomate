@@ -28,6 +28,7 @@ class _OdoMateAppState extends State<OdoMateApp> {
   bool loading = true, hasVehicle = false;
   ThemeMode themeMode = ThemeMode.light;
   String language = 'id';
+  final navigatorKey = GlobalKey<NavigatorState>();
   @override
   void initState() {
     super.initState();
@@ -43,6 +44,7 @@ class _OdoMateAppState extends State<OdoMateApp> {
   @override
   Widget build(BuildContext context) => MaterialApp(
     title: 'OdoMate',
+    navigatorKey: navigatorKey,
     themeMode: themeMode,
     theme: ThemeData(colorSchemeSeed: Colors.teal, useMaterial3: true),
     darkTheme: ThemeData.dark(useMaterial3: true),
@@ -61,8 +63,7 @@ class _OdoMateAppState extends State<OdoMateApp> {
               ServicesScreen(repository: widget.repository),
               ProfileScreen(
                 repository: widget.repository,
-                onSettings: () => Navigator.push(
-                  context,
+                onSettings: () => navigatorKey.currentState!.push(
                   MaterialPageRoute(
                     builder: (_) => SettingsScreen(
                       themeMode: themeMode,

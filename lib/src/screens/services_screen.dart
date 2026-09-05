@@ -14,6 +14,8 @@ class ServicesScreen extends StatefulWidget {
 class _ServicesScreenState extends State<ServicesScreen> {
   List<ServiceItem> items = [];
   double odo = 0;
+  final nameController = TextEditingController();
+  final intervalController = TextEditingController();
   @override
   void initState() {
     super.initState();
@@ -33,6 +35,13 @@ class _ServicesScreenState extends State<ServicesScreen> {
     }
     odo = (await widget.repository.loadVehicle())?.odometerKm ?? 0;
     if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    intervalController.dispose();
+    super.dispose();
   }
 
   @override
@@ -91,8 +100,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
   ];
 
   Future<void> _addService() async {
-    final name = TextEditingController();
-    final interval = TextEditingController();
     final result = await showModalBottomSheet<List<String>>(
       context: context,
       isScrollControlled: true,
@@ -112,11 +119,11 @@ class _ServicesScreenState extends State<ServicesScreen> {
             ),
             const SizedBox(height: 16),
             TextField(
-              controller: name,
+              controller: nameController,
               decoration: const InputDecoration(labelText: 'Nama servis'),
             ),
             TextField(
-              controller: interval,
+              controller: intervalController,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(labelText: 'Interval (km)'),
             ),
@@ -130,9 +137,12 @@ class _ServicesScreenState extends State<ServicesScreen> {
                 ),
                 FilledButton(
                   onPressed: () {
-                    final km = double.tryParse(interval.text) ?? 0;
-                    if (name.text.trim().isNotEmpty && km > 0) {
-                      Navigator.pop(context, [name.text.trim(), interval.text]);
+                    final km = double.tryParse(intervalController.text) ?? 0;
+                    if (nameController.text.trim().isNotEmpty && km > 0) {
+                      Navigator.pop(context, [
+                        nameController.text.trim(),
+                        intervalController.text,
+                      ]);
                     }
                   },
                   child: const Text('Simpan'),
@@ -143,8 +153,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
         ),
       ),
     );
-    name.dispose();
-    interval.dispose();
     if (result == null) return;
     final vehicle = await widget.repository.loadVehicle();
     await widget.repository.saveService(
