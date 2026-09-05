@@ -22,7 +22,7 @@ void main() {
     );
     expect(find.text('Home'), findsOneWidget);
     expect(find.text('Riwayat'), findsOneWidget);
-    expect(find.text('Start Ride'), findsOneWidget);
+    expect(find.byTooltip('Start Ride'), findsOneWidget);
     expect(find.text('Service'), findsOneWidget);
     expect(find.text('Profile'), findsOneWidget);
   });

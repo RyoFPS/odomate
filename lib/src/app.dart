@@ -85,7 +85,7 @@ class _MainNavigationState extends State<MainNavigation> {
     return Scaffold(
       body: widget.pages[index],
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed:
             widget.onRide ??
             () async {
@@ -97,8 +97,7 @@ class _MainNavigationState extends State<MainNavigation> {
               setState(() {});
             },
         tooltip: active ? 'Stop Ride' : 'Start Ride',
-        icon: Icon(active ? Icons.stop : Icons.play_arrow),
-        label: Text(active ? 'Stop Ride' : 'Start Ride'),
+        child: Icon(active ? Icons.stop : Icons.play_arrow),
       ),
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
