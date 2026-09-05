@@ -1,6 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import '../data/odomate_repository.dart';
+import '../domain/models.dart';
+import '../domain/service_schedule.dart';
+import '../i18n/app_localizations.dart';
 import '../tracking/ride_tracker.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -18,9 +23,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  double odo = 0;
-  String vehicleName = '';
-  int serviceCount = 0;
+  Vehicle? vehicle;
+  List<ServiceItem> services = [];
+  double todayDistance = 0;
+
   @override
   void initState() {
     super.initState();
@@ -28,105 +34,183 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _refresh() async {
-    final vehicle = await widget.repository.loadVehicle();
-    final services = await widget.repository.listServices();
+    final value = await widget.repository.loadVehicle();
+    final serviceItems = await widget.repository.listServices();
+    final rides = await widget.repository.listRides();
+    final now = DateTime.now();
+    final distance = rides
+        .where(
+          (r) =>
+              r.startedAt.toLocal().year == now.year &&
+              r.startedAt.toLocal().month == now.month &&
+              r.startedAt.toLocal().day == now.day,
+        )
+        .fold<double>(0, (sum, r) => sum + r.distanceKm);
     if (!mounted) return;
     setState(() {
-      odo = vehicle?.odometerKm ?? 0;
-      vehicleName = vehicle == null
-          ? ''
-          : (vehicle.userName.isEmpty ? vehicle.name : vehicle.userName);
-      serviceCount = services.length;
+      vehicle = value;
+      services = serviceItems;
+      todayDistance = distance;
     });
   }
 
-  String _greeting() {
+  String _greeting(AppLocalizations l10n) {
     final hour = DateTime.now().hour;
-    if (hour < 11) return 'Selamat pagi';
-    if (hour < 15) return 'Selamat siang';
-    if (hour < 18) return 'Selamat sore';
-    return 'Selamat malam';
+    if (hour < 11) return l10n.t('morning');
+    if (hour < 15) return l10n.t('afternoon');
+    if (hour < 18) return l10n.t('evening');
+    return l10n.t('night');
+  }
+
+  Future<void> _showNotifications() async {
+    final l10n = AppLocalizations.of(context);
+    final due = services
+        .where(
+          (s) =>
+              ServiceSchedule.status(vehicle?.odometerKm ?? 0, s) !=
+              ServiceStatus.safe,
+        )
+        .toList();
+    await showModalBottomSheet<void>(
+      context: context,
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.t('notifications'),
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.route),
+                title: Text(l10n.t('today_trip')),
+                subtitle: Text('${todayDistance.toStringAsFixed(1)} km'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.build_outlined),
+                title: Text(l10n.t('due_service')),
+                subtitle: Text(
+                  due.isEmpty
+                      ? l10n.t('no_notifications')
+                      : due.map((s) => s.name).join(', '),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(_greeting(), style: Theme.of(context).textTheme.bodySmall),
-          Text(vehicleName.isEmpty ? 'OdoMate' : vehicleName),
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final name = vehicle?.userName.isNotEmpty == true
+        ? vehicle!.userName
+        : vehicle?.name ?? 'OdoMate';
+    return Scaffold(
+      appBar: AppBar(
+        title: Row(
+          children: [
+            CircleAvatar(
+              radius: 20,
+              backgroundImage: vehicle?.photoPath == null
+                  ? null
+                  : FileImage(File(vehicle!.photoPath!)),
+              child: vehicle?.photoPath == null
+                  ? const Icon(Icons.person, size: 22)
+                  : null,
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _greeting(l10n),
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                Text(name, style: Theme.of(context).textTheme.titleMedium),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            onPressed: _showNotifications,
+            icon: const Icon(Icons.notifications_outlined),
+            tooltip: l10n.t('notifications'),
+          ),
         ],
       ),
-    ),
-    body: ValueListenableBuilder<RideTrackingState>(
-      valueListenable: widget.tracker.state,
-      builder: (context, state, child) => ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-        children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Odometer saat ini',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${odo.toStringAsFixed(1)} km',
-                    style: Theme.of(context).textTheme.displaySmall,
-                  ),
-                ],
+      body: ValueListenableBuilder<RideTrackingState>(
+        valueListenable: widget.tracker.state,
+        builder: (context, state, child) => ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+          children: [
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.t('odometer'),
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '${(vehicle?.odometerKm ?? 0).toStringAsFixed(1)} km',
+                      style: Theme.of(context).textTheme.displaySmall,
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          Card(
-            child: ListTile(
-              leading: Icon(
-                state.active ? Icons.gps_fixed : Icons.gps_not_fixed,
-              ),
-              title: Text(
-                state.active ? 'Ride sedang aktif' : 'Belum ada ride aktif',
-              ),
-              subtitle: state.active
-                  ? Text(
-                      '${state.ride!.distanceKm.toStringAsFixed(1)} km tercatat',
-                    )
-                  : const Text('Tekan tombol tengah untuk mulai'),
-            ),
-          ),
-          if (state.error != null)
+            const SizedBox(height: 12),
             Card(
               child: ListTile(
-                leading: const Icon(Icons.error_outline),
-                title: Text(state.error!),
+                leading: Icon(
+                  state.active ? Icons.gps_fixed : Icons.gps_not_fixed,
+                ),
+                title: Text(
+                  state.active
+                      ? l10n.t('ride_active')
+                      : l10n.t('no_active_ride'),
+                ),
+                subtitle: state.active
+                    ? Text(
+                        '${state.ride!.distanceKm.toStringAsFixed(1)} ${l10n.t('km_recorded')}',
+                      )
+                    : Text(l10n.t('start_hint')),
               ),
             ),
-          const SizedBox(height: 12),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.build_outlined),
-              title: const Text('Jadwal servis'),
-              subtitle: Text('$serviceCount item servis tersimpan'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => widget.onNavigate?.call(2),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.build_outlined),
+                title: Text(l10n.t('service_schedule')),
+                subtitle: Text(
+                  '${services.length} ${l10n.t('saved_services')}',
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => widget.onNavigate?.call(2),
+              ),
             ),
-          ),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.history),
-              title: const Text('Riwayat perjalanan'),
-              subtitle: const Text('Lihat perjalanan yang sudah tersimpan'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => widget.onNavigate?.call(1),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.history),
+                title: Text(l10n.t('trip_history')),
+                subtitle: Text(l10n.t('view_saved_trips')),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => widget.onNavigate?.call(1),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }

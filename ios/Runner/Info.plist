@@ -6,6 +6,10 @@
 	<string>OdoMate membutuhkan lokasi untuk menghitung jarak perjalanan.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>OdoMate membutuhkan lokasi di latar belakang saat ride aktif.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>OdoMate membutuhkan akses galeri untuk foto profil.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>OdoMate membutuhkan akses kamera untuk foto profil.</string>
 	<key>UIBackgroundModes</key>
 	<array><string>location</string></array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>

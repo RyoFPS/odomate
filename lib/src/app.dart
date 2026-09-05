@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'data/odomate_repository.dart';
+import 'i18n/app_localizations.dart';
 import 'notifications/notification_service.dart';
-import 'tracking/ride_tracker.dart';
-import 'screens/setup_screen.dart';
-import 'screens/home_screen.dart';
-import 'screens/services_screen.dart';
 import 'screens/history_screen.dart';
+import 'screens/home_screen.dart';
 import 'screens/profile_screen.dart';
-import 'screens/settings_screen.dart';
+import 'screens/services_screen.dart';
+import 'screens/setup_screen.dart';
+import 'tracking/ride_tracker.dart';
 
 class OdoMateApp extends StatefulWidget {
   final OdomateRepository repository;
@@ -28,7 +30,7 @@ class _OdoMateAppState extends State<OdoMateApp> {
   bool loading = true, hasVehicle = false;
   ThemeMode themeMode = ThemeMode.light;
   String language = 'id';
-  final navigatorKey = GlobalKey<NavigatorState>();
+
   @override
   void initState() {
     super.initState();
@@ -44,12 +46,29 @@ class _OdoMateAppState extends State<OdoMateApp> {
   @override
   Widget build(BuildContext context) => MaterialApp(
     title: 'OdoMate',
-    navigatorKey: navigatorKey,
     themeMode: themeMode,
     locale: Locale(language),
+    supportedLocales: AppLocalizations.supportedLocales,
+    localizationsDelegates: const [
+      AppLocalizations.delegate,
+      GlobalMaterialLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+    ],
     themeAnimationDuration: const Duration(milliseconds: 300),
-    theme: ThemeData(colorSchemeSeed: Colors.teal, useMaterial3: true),
-    darkTheme: ThemeData.dark(useMaterial3: true),
+    theme: ThemeData(
+      colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2D65B7)),
+      textTheme: GoogleFonts.poppinsTextTheme(),
+      useMaterial3: true,
+    ),
+    darkTheme: ThemeData(
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: const Color(0xFF5E9BE6),
+        brightness: Brightness.dark,
+      ),
+      textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
+      useMaterial3: true,
+    ),
     debugShowCheckedModeBanner: false,
     home: loading
         ? const Scaffold(body: Center(child: CircularProgressIndicator()))
@@ -65,16 +84,10 @@ class _OdoMateAppState extends State<OdoMateApp> {
               ServicesScreen(repository: widget.repository),
               ProfileScreen(
                 repository: widget.repository,
-                onSettings: () => navigatorKey.currentState!.push(
-                  MaterialPageRoute(
-                    builder: (_) => SettingsScreen(
-                      themeMode: themeMode,
-                      language: language,
-                      onThemeChanged: (v) => setState(() => themeMode = v),
-                      onLanguageChanged: (v) => setState(() => language = v),
-                    ),
-                  ),
-                ),
+                themeMode: themeMode,
+                language: language,
+                onThemeChanged: (v) => setState(() => themeMode = v),
+                onLanguageChanged: (v) => setState(() => language = v),
               ),
             ],
           )
@@ -106,6 +119,7 @@ class _MainNavigationState extends State<MainNavigation> {
   @override
   Widget build(BuildContext context) {
     final active = widget.tracker?.state.value.active ?? widget.rideActive;
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: _page(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -120,9 +134,9 @@ class _MainNavigationState extends State<MainNavigation> {
               } else {
                 await widget.tracker!.start();
               }
-              setState(() {});
+              if (mounted) setState(() {});
             },
-        tooltip: active ? 'Stop Ride' : 'Start Ride',
+        tooltip: active ? l10n.t('stop_ride') : l10n.t('start_ride'),
         child: Icon(active ? Icons.stop : Icons.play_arrow),
       ),
       bottomNavigationBar: BottomAppBar(
@@ -131,11 +145,11 @@ class _MainNavigationState extends State<MainNavigation> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _tab(0, Icons.home_outlined, 'Home'),
-            _tab(1, Icons.history, 'Riwayat'),
+            _tab(0, Icons.home_outlined, l10n.t('home')),
+            _tab(1, Icons.history, l10n.t('history')),
             const SizedBox(width: 48),
-            _tab(2, Icons.build_outlined, 'Service'),
-            _tab(3, Icons.person_outline, 'Profile'),
+            _tab(2, Icons.build_outlined, l10n.t('service')),
+            _tab(3, Icons.person_outline, l10n.t('profile')),
           ],
         ),
       ),
@@ -155,7 +169,6 @@ class _MainNavigationState extends State<MainNavigation> {
   }
 
   void _select(int value) => setState(() => index = value);
-
   Widget _tab(int value, IconData icon, String label) => IconButton(
     onPressed: () => setState(() => index = value),
     tooltip: label,
