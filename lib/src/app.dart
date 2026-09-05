@@ -39,6 +39,7 @@ class _OdoMateAppState extends State<OdoMateApp> {
   @override
   Widget build(BuildContext context) => MaterialApp(
     title: 'OdoMate',
+    debugShowCheckedModeBanner: false,
     home: loading
         ? const Scaffold(body: Center(child: CircularProgressIndicator()))
         : hasVehicle
