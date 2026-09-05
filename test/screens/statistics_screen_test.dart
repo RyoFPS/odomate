@@ -70,6 +70,13 @@ void main() {
     expect(find.text('Rata-rata'), findsOneWidget);
   });
 
+  testWidgets('selected period does not show a check icon', (tester) async {
+    await tester.pumpWidget(_app(_FakeRepository()));
+    await tester.pumpAndSettle();
+
+    expect(find.byIcon(Icons.check), findsNothing);
+  });
+
   testWidgets('switching to today updates the selected period metrics', (
     tester,
   ) async {

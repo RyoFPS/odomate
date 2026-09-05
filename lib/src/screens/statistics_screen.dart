@@ -55,6 +55,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
             children: [
               SegmentedButton<StatisticsPeriod>(
+                showSelectedIcon: false,
                 segments: [
                   ButtonSegment(
                     value: StatisticsPeriod.today,
