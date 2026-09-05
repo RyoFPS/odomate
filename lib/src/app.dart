@@ -87,6 +87,8 @@ class _MainNavigationState extends State<MainNavigation> {
       body: widget.pages[index],
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
+        shape: const CircleBorder(),
+        elevation: 6,
         onPressed:
             widget.onRide ??
             () async {
