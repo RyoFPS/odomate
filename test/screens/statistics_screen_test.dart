@@ -10,15 +10,20 @@ class _FakeRepository extends OdomateRepository {
   final Vehicle? vehicle;
   final List<Ride> rides;
   final List<ServiceItem> services;
+  final Object? error;
 
   _FakeRepository({
     this.vehicle,
     this.rides = const [],
     this.services = const [],
+    this.error,
   });
 
   @override
-  Future<Vehicle?> loadVehicle() async => vehicle;
+  Future<Vehicle?> loadVehicle() async {
+    if (error != null) throw error!;
+    return vehicle;
+  }
 
   @override
   Future<List<Ride>> listRides() async => rides;
@@ -117,5 +122,50 @@ void main() {
     expect(find.text('Ringkasan servis'), findsOneWidget);
     expect(find.textContaining('Oli mesin'), findsOneWidget);
     expect(find.textContaining('1 jatuh tempo'), findsOneWidget);
+    expect(find.textContaining('1 item servis tersimpan'), findsOneWidget);
+  });
+
+  testWidgets('shows a localized error when loading statistics fails', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_app(_FakeRepository(error: StateError('offline'))));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Gagal memuat statistik.'), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.text('offline'), findsNothing);
+  });
+
+  testWidgets('current month excludes rides from the previous month', (
+    tester,
+  ) async {
+    final now = DateTime(2026, 9, 5, 12);
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('id'),
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: StatisticsScreen(
+          repository: _FakeRepository(
+            rides: [
+              Ride(startedAt: DateTime(2026, 8, 31), distanceKm: 99),
+              Ride(startedAt: DateTime(2026, 9, 1), distanceKm: 12),
+            ],
+          ),
+          now: () => now,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Bulan ini'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('12.0 km'), findsAtLeastNWidgets(1));
+    expect(find.text('99.0 km'), findsNothing);
   });
 }

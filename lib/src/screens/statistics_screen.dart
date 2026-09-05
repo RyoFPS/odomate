@@ -43,6 +43,9 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       body: FutureBuilder<_StatisticsData>(
         future: future,
         builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(child: Text(l10n.t('statistics_error')));
+          }
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -156,6 +159,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               l10n.t('service_summary'),
               style: Theme.of(context).textTheme.titleMedium,
             ),
+            const SizedBox(height: 8),
+            Text('${statuses.length} ${l10n.t('saved_services')}'),
             const SizedBox(height: 8),
             Text(
               '$due ${l10n.t('due_count')} · $soon ${l10n.t('due_soon_count')}',
