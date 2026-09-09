@@ -116,7 +116,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Riwayat perjalanan'));
+    await tester.drag(find.byType(ListView).first, const Offset(0, -260));
+    await tester.pump();
+    await tester.tap(find.byIcon(Icons.history).first);
     await tester.pumpAndSettle();
 
     expect(find.byType(HistoryScreen), findsOneWidget);

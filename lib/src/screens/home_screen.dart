@@ -99,18 +99,24 @@ class _HomeScreenState extends State<HomeScreen> {
         : vehicle?.name ?? 'OdoMate';
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: 76,
         title: Row(
           children: [
             CircleAvatar(
-              radius: 20,
+              radius: 22,
+              backgroundColor: Theme.of(context).colorScheme.primaryContainer,
               backgroundImage: vehicle?.photoPath == null
                   ? null
                   : FileImage(File(vehicle!.photoPath!)),
               child: vehicle?.photoPath == null
-                  ? const Icon(Icons.person, size: 22)
+                  ? Icon(
+                      Icons.person,
+                      size: 24,
+                      color: Theme.of(context).colorScheme.primary,
+                    )
                   : null,
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -134,9 +140,10 @@ class _HomeScreenState extends State<HomeScreen> {
       body: ValueListenableBuilder<RideTrackingState>(
         valueListenable: widget.tracker.state,
         builder: (context, state, child) => ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
           children: [
             Card(
+              margin: const EdgeInsets.only(bottom: 12),
               child: ListTile(
                 leading: const Icon(Icons.insights_outlined),
                 title: Text(l10n.t('statistics')),
@@ -149,6 +156,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             Card(
+              margin: const EdgeInsets.only(bottom: 12),
               child: InkWell(
                 onTap: _correctOdometer,
                 borderRadius: BorderRadius.circular(16),
@@ -182,6 +190,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 12),
             Card(
+              margin: const EdgeInsets.only(bottom: 12),
               child: ListTile(
                 leading: Icon(
                   state.active ? Icons.gps_fixed : Icons.gps_not_fixed,
@@ -199,6 +208,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             Card(
+              margin: const EdgeInsets.only(bottom: 12),
               child: ListTile(
                 leading: const Icon(Icons.build_outlined),
                 title: Text(l10n.t('service_schedule')),
@@ -210,6 +220,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             Card(
+              margin: const EdgeInsets.only(bottom: 12),
               child: ListTile(
                 leading: const Icon(Icons.history),
                 title: Text(l10n.t('trip_history')),
