@@ -174,42 +174,127 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
           Center(
-            child: GestureDetector(
-              onTap: _pickPhoto,
-              child: CircleAvatar(
-                radius: 52,
-                backgroundImage: photoPath == null
-                    ? null
-                    : FileImage(File(photoPath!)),
-                child: photoPath == null
-                    ? const Icon(Icons.person, size: 52)
-                    : null,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                GestureDetector(
+                  onTap: _pickPhoto,
+                  child: CircleAvatar(
+                    radius: 52,
+                    backgroundColor: Theme.of(context)
+                        .colorScheme
+                        .primaryContainer,
+                    backgroundImage: photoPath == null
+                        ? null
+                        : FileImage(File(photoPath!)),
+                    child: photoPath == null
+                        ? Icon(
+                            Icons.person,
+                            size: 52,
+                            color: Theme.of(context).colorScheme.primary,
+                          )
+                        : null,
+                  ),
+                ),
+                Positioned(
+                  right: -2,
+                  bottom: -2,
+                  child: IconButton.filled(
+                    onPressed: _pickPhoto,
+                    icon: const Icon(Icons.camera_alt_outlined, size: 18),
+                    tooltip: l10n.t('add_photo'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Center(
+            child: Text(
+              userName.text.isEmpty ? l10n.t('user_name') : userName.text,
+              style: Theme.of(context).textTheme.titleLarge
+                  ?.copyWith(fontWeight: FontWeight.w800),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Center(
+            child: Text(
+              vehicle?.name ?? '',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
           ),
-          Center(
-            child: TextButton.icon(
-              onPressed: _pickPhoto,
-              icon: const Icon(Icons.photo_camera),
-              label: Text(l10n.t('add_photo')),
+          const SizedBox(height: 20),
+          _sectionCard(
+            context,
+            title: l10n.t('user_name'),
+            icon: Icons.badge_outlined,
+            child: Column(
+              children: [
+                TextField(
+                  controller: userName,
+                  decoration: InputDecoration(labelText: l10n.t('user_name')),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: plate,
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: InputDecoration(labelText: l10n.t('plate')),
+                ),
+              ],
             ),
           ),
-          TextField(
-            controller: userName,
-            decoration: InputDecoration(labelText: l10n.t('user_name')),
-          ),
-          TextField(
-            controller: plate,
-            textCapitalization: TextCapitalization.characters,
-            decoration: InputDecoration(labelText: l10n.t('plate')),
+          const SizedBox(height: 12),
+          Card(
+            child: ListTile(
+              leading: Icon(
+                Icons.two_wheeler_outlined,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              title: Text(vehicle?.name ?? l10n.t('vehicle_name')),
+              subtitle: Text(
+                '${plate.text.isEmpty ? '-' : plate.text} · '
+                '${(vehicle?.odometerKm ?? 0).toStringAsFixed(1)} km',
+              ),
+            ),
           ),
           const SizedBox(height: 24),
-          FilledButton(onPressed: _save, child: Text(l10n.t('save_profile'))),
+          FilledButton.icon(
+            onPressed: _save,
+            icon: const Icon(Icons.check),
+            label: Text(l10n.t('save_profile')),
+          ),
         ],
       ),
     );
   }
+
+  Widget _sectionCard(
+    BuildContext context, {
+    required String title,
+    required IconData icon,
+    required Widget child,
+  }) => Card(
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: Theme.of(context).colorScheme.primary),
+              const SizedBox(width: 8),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
+            ],
+          ),
+          const SizedBox(height: 16),
+          child,
+        ],
+      ),
+    ),
+  );
 }

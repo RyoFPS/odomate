@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/odomate_repository.dart';
 import '../domain/models.dart';
 import '../domain/service_schedule.dart';
+import '../i18n/app_localizations.dart';
 
 class ServicesScreen extends StatefulWidget {
   final OdomateRepository repository;
@@ -47,49 +48,149 @@ class _ServicesScreenState extends State<ServicesScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const Text('Servis'),
-      actions: [
-        IconButton(
-          onPressed: _addService,
-          icon: const Icon(Icons.add),
-          tooltip: 'Tambah servis',
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final due = items
+        .where((s) => ServiceSchedule.status(odo, s) == ServiceStatus.due)
+        .length;
+    final soon = items
+        .where((s) => ServiceSchedule.status(odo, s) == ServiceStatus.dueSoon)
+        .length;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          l10n.t('service_title'),
+          style: const TextStyle(fontWeight: FontWeight.w700),
         ),
-      ],
-    ),
-    body: items.isEmpty
-        ? const Center(
-            child: Text('Belum ada daftar servis. Tekan + untuk menambah.'),
-          )
-        : ListView(
-            children: items.map((s) {
-              final status = ServiceSchedule.status(odo, s);
-              return ListTile(
-                title: Text(s.name),
-                subtitle: Text(
-                  status == ServiceStatus.due
-                      ? 'Jatuh tempo'
-                      : status == ServiceStatus.dueSoon
-                      ? 'Mendekat'
-                      : 'Aman',
-                ),
-                trailing: Text(
-                  '${(s.lastServicedOdometerKm + s.intervalKm - odo).toStringAsFixed(0)} km',
-                ),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => ServiceDetailScreen(
-                      repository: widget.repository,
-                      service: s,
+        actions: [
+          IconButton(
+            onPressed: _addService,
+            icon: const Icon(Icons.add_circle_outline),
+            tooltip: l10n.t('add_service'),
+          ),
+        ],
+      ),
+      body: items.isEmpty
+          ? Center(child: Text(l10n.t('empty_services')))
+          : ListView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              children: [
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${l10n.t('odometer')}: ${odo.toStringAsFixed(1)} km',
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            _countPill(
+                              context,
+                              '$due ${l10n.t('due')}',
+                              Theme.of(context).colorScheme.error,
+                            ),
+                            _countPill(
+                              context,
+                              '$soon ${l10n.t('soon')}',
+                              const Color(0xFFD97706),
+                            ),
+                            _countPill(
+                              context,
+                              '${items.length - due - soon} ${l10n.t('safe')}',
+                              const Color(0xFF15803D),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                onLongPress: () => _serviceActions(s),
-              );
-            }).toList(),
+                const SizedBox(height: 20),
+                Text(
+                  l10n.t('service_schedule'),
+                  style: const TextStyle(fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 8),
+                ...items.map((s) => _serviceCard(context, s, l10n)),
+              ],
+            ),
+    );
+  }
+
+  Widget _serviceCard(
+    BuildContext context,
+    ServiceItem service,
+    AppLocalizations l10n,
+  ) {
+    final status = ServiceSchedule.status(odo, service);
+    final color = status == ServiceStatus.due
+        ? Theme.of(context).colorScheme.error
+        : status == ServiceStatus.dueSoon
+        ? const Color(0xFFD97706)
+        : const Color(0xFF15803D);
+    final remaining = service.lastServicedOdometerKm + service.intervalKm - odo;
+    return Card(
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        leading: CircleAvatar(
+          backgroundColor: color.withValues(alpha: .12),
+          foregroundColor: color,
+          child: Icon(
+            status == ServiceStatus.due
+                ? Icons.warning_amber_rounded
+                : Icons.build_outlined,
           ),
-  );
+        ),
+        title: Text(
+          service.name,
+          style: const TextStyle(fontWeight: FontWeight.w700),
+        ),
+        subtitle: Text('${remaining.toStringAsFixed(0)} km'),
+        trailing: _countPill(context, _statusLabel(status, l10n), color),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => ServiceDetailScreen(
+              repository: widget.repository,
+              service: service,
+            ),
+          ),
+        ),
+        onLongPress: () => _serviceActions(service),
+      ),
+    );
+  }
+
+  String _statusLabel(ServiceStatus status, AppLocalizations l10n) =>
+      status == ServiceStatus.due
+      ? l10n.t('due')
+      : status == ServiceStatus.dueSoon
+      ? l10n.t('soon')
+      : l10n.t('safe');
+
+  Widget _countPill(BuildContext context, String text, Color color) =>
+      DecoratedBox(
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: .12),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          child: Text(
+            text,
+            style: TextStyle(
+              color: color,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      );
 
   List<ServiceItem> _defaultServices(double km) => [
     ServiceItem(

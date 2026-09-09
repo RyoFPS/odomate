@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import '../data/odomate_repository.dart';
 import '../domain/models.dart';
 import '../domain/ride_statistics.dart';
-import '../domain/service_schedule.dart';
 import '../i18n/app_localizations.dart';
 import '../tracking/ride_tracker.dart';
+import 'notifications_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final OdomateRepository repository;
@@ -73,45 +73,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _showNotifications() async {
-    final l10n = AppLocalizations.of(context);
-    final due = services
-        .where(
-          (s) =>
-              ServiceSchedule.status(vehicle?.odometerKm ?? 0, s) !=
-              ServiceStatus.safe,
-        )
-        .toList();
-    await showModalBottomSheet<void>(
-      context: context,
-      builder: (_) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.t('notifications'),
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 16),
-              ListTile(
-                leading: const Icon(Icons.route),
-                title: Text(l10n.t('today_trip')),
-                subtitle: Text('${todayDistance.toStringAsFixed(1)} km'),
-              ),
-              ListTile(
-                leading: const Icon(Icons.build_outlined),
-                title: Text(l10n.t('due_service')),
-                subtitle: Text(
-                  due.isEmpty
-                      ? l10n.t('no_notifications')
-                      : due.map((s) => s.name).join(', '),
-                ),
-              ),
-            ],
-          ),
-        ),
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => NotificationsScreen(repository: widget.repository),
       ),
     );
   }
@@ -187,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Card(
               child: InkWell(
                 onTap: _correctOdometer,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
                 child: Padding(
                   padding: const EdgeInsets.all(20),
                   child: Column(
@@ -200,10 +164,17 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 8),
                       Text(
                         '${(vehicle?.odometerKm ?? 0).toStringAsFixed(1)} km',
-                        style: Theme.of(context).textTheme.displaySmall,
+                        style: Theme.of(context).textTheme.displaySmall
+                            ?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -1,
+                            ),
                       ),
                       const SizedBox(height: 4),
-                      const Text('Ketuk untuk koreksi'),
+                      Text(
+                        'Ketuk untuk koreksi',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
                     ],
                   ),
                 ),

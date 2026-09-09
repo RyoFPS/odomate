@@ -58,19 +58,8 @@ class _OdoMateAppState extends State<OdoMateApp> {
       GlobalCupertinoLocalizations.delegate,
     ],
     themeAnimationDuration: const Duration(milliseconds: 300),
-    theme: ThemeData(
-      colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2D65B7)),
-      textTheme: GoogleFonts.poppinsTextTheme(),
-      useMaterial3: true,
-    ),
-    darkTheme: ThemeData(
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF5E9BE6),
-        brightness: Brightness.dark,
-      ),
-      textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
-      useMaterial3: true,
-    ),
+    theme: _theme(Brightness.light),
+    darkTheme: _theme(Brightness.dark),
     debugShowCheckedModeBanner: false,
     home: loading
         ? const Scaffold(body: Center(child: CircularProgressIndicator()))
@@ -99,6 +88,71 @@ class _OdoMateAppState extends State<OdoMateApp> {
             onSaved: () => setState(() => hasVehicle = true),
           ),
   );
+
+  ThemeData _theme(Brightness brightness) {
+    final dark = brightness == Brightness.dark;
+    final scheme = ColorScheme.fromSeed(
+      seedColor: const Color(0xFF2563EB),
+      brightness: brightness,
+    );
+    final base = dark ? ThemeData.dark().textTheme : ThemeData.light().textTheme;
+    return ThemeData(
+      brightness: brightness,
+      colorScheme: scheme,
+      scaffoldBackgroundColor: dark
+          ? const Color(0xFF0F172A)
+          : const Color(0xFFF8FAFC),
+      textTheme: GoogleFonts.interTextTheme(base).apply(
+        bodyColor: dark ? const Color(0xFFE2E8F0) : const Color(0xFF0F172A),
+        displayColor: dark ? const Color(0xFFE2E8F0) : const Color(0xFF0F172A),
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: dark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+        foregroundColor: dark ? const Color(0xFFF8FAFC) : const Color(0xFF0F172A),
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        centerTitle: false,
+      ),
+      cardTheme: CardThemeData(
+        color: dark ? const Color(0xFF1E293B) : Colors.white,
+        elevation: 0,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: dark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+          ),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: dark ? const Color(0xFF1E293B) : Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: dark ? const Color(0xFF475569) : const Color(0xFFE2E8F0),
+          ),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: dark ? const Color(0xFF475569) : const Color(0xFFE2E8F0),
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: scheme.primary, width: 2),
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          minimumSize: const Size.fromHeight(48),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      ),
+      useMaterial3: true,
+    );
+  }
 }
 
 class MainNavigation extends StatefulWidget {
@@ -145,6 +199,8 @@ class _MainNavigationState extends State<MainNavigation> {
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         notchMargin: 8,
+        color: Theme.of(context).colorScheme.surface,
+        elevation: 0,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
@@ -172,15 +228,28 @@ class _MainNavigationState extends State<MainNavigation> {
   }
 
   void _select(int value) => setState(() => index = value);
-  Widget _tab(int value, IconData icon, String label) => IconButton(
-    onPressed: () => setState(() => index = value),
-    tooltip: label,
-    icon: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon),
-        Text(label, style: const TextStyle(fontSize: 10)),
-      ],
-    ),
-  );
+  Widget _tab(int value, IconData icon, String label) {
+    final selected = index == value;
+    final color = selected
+        ? Theme.of(context).colorScheme.primary
+        : Theme.of(context).colorScheme.onSurfaceVariant;
+    return IconButton(
+      onPressed: () => setState(() => index = value),
+      tooltip: label,
+      color: color,
+      icon: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 22),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
