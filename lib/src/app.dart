@@ -62,7 +62,7 @@ class _OdoMateAppState extends State<OdoMateApp> {
     darkTheme: _theme(Brightness.dark),
     debugShowCheckedModeBanner: false,
     home: loading
-        ? const Scaffold(body: Center(child: CircularProgressIndicator()))
+        ? const _SplashScreen()
         : hasVehicle
         ? MainNavigation(
             tracker: widget.tracker,
@@ -91,24 +91,49 @@ class _OdoMateAppState extends State<OdoMateApp> {
 
   ThemeData _theme(Brightness brightness) {
     final dark = brightness == Brightness.dark;
-    final scheme = ColorScheme.fromSeed(
-      seedColor: const Color(0xFF2563EB),
-      brightness: brightness,
-    );
-    final base = dark ? ThemeData.dark().textTheme : ThemeData.light().textTheme;
+    final scheme =
+        ColorScheme.fromSeed(
+          seedColor: const Color(0xFF2563EB),
+          brightness: brightness,
+        ).copyWith(
+          primary: dark ? const Color(0xFF93B4FF) : const Color(0xFF2563EB),
+          onPrimary: dark ? const Color(0xFF0F172A) : Colors.white,
+          primaryContainer: dark
+              ? const Color(0xFF1D4ED8)
+              : const Color(0xFF2563EB),
+          secondary: dark ? const Color(0xFFB7C8E1) : const Color(0xFF505F76),
+          tertiary: dark ? const Color(0xFF79DB8D) : const Color(0xFF15803D),
+          surface: dark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+          surfaceContainer: dark
+              ? const Color(0xFF1E293B)
+              : const Color(0xFFEDEDF9),
+          surfaceContainerLow: dark
+              ? const Color(0xFF172033)
+              : const Color(0xFFF8FAFC),
+          outlineVariant: dark
+              ? const Color(0xFF475569)
+              : const Color(0xFFE2E8F0),
+          onSurface: dark ? const Color(0xFFF0F0FB) : const Color(0xFF191B23),
+          onSurfaceVariant: dark
+              ? const Color(0xFFCBD5E1)
+              : const Color(0xFF434655),
+        );
+    final base = dark
+        ? ThemeData.dark().textTheme
+        : ThemeData.light().textTheme;
     return ThemeData(
       brightness: brightness,
       colorScheme: scheme,
-      scaffoldBackgroundColor: dark
-          ? const Color(0xFF0F172A)
-          : const Color(0xFFF8FAFC),
+      scaffoldBackgroundColor: dark ? scheme.surface : const Color(0xFFF8FAFC),
       textTheme: GoogleFonts.interTextTheme(base).apply(
         bodyColor: dark ? const Color(0xFFE2E8F0) : const Color(0xFF0F172A),
         displayColor: dark ? const Color(0xFFE2E8F0) : const Color(0xFF0F172A),
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: dark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-        foregroundColor: dark ? const Color(0xFFF8FAFC) : const Color(0xFF0F172A),
+        backgroundColor: dark ? scheme.surface : Colors.white,
+        foregroundColor: dark
+            ? const Color(0xFFF8FAFC)
+            : const Color(0xFF0F172A),
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
@@ -126,7 +151,7 @@ class _OdoMateAppState extends State<OdoMateApp> {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: dark ? const Color(0xFF1E293B) : Colors.white,
+        fillColor: dark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
@@ -147,10 +172,96 @@ class _OdoMateAppState extends State<OdoMateApp> {
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           minimumSize: const Size.fromHeight(48),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       ),
       useMaterial3: true,
+    );
+  }
+}
+
+class _SplashScreen extends StatelessWidget {
+  const _SplashScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    return Scaffold(
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            children: [
+              const Spacer(flex: 3),
+              Container(
+                width: 112,
+                height: 112,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: colors.primary.withValues(alpha: .16),
+                      blurRadius: 36,
+                    ),
+                  ],
+                ),
+                child: Image.asset(
+                  'stitch_odomate_modern_ui/odomate_transparent_mark/screen.png',
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text.rich(
+                TextSpan(
+                  text: 'Odo',
+                  children: [
+                    TextSpan(
+                      text: 'Mate',
+                      style: TextStyle(color: colors.primary),
+                    ),
+                  ],
+                ),
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -1,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Buku Log & Perawatan Kendaraan Roda Dua',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colors.secondary,
+                ),
+              ),
+              const SizedBox(height: 28),
+              const LinearProgressIndicator(minHeight: 5),
+              const Spacer(flex: 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.shield_outlined,
+                    size: 17,
+                    color: colors.secondary,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Aman & 100% Offline-First',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colors.secondary,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -199,7 +310,9 @@ class _MainNavigationState extends State<MainNavigation> {
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         notchMargin: 8,
-        color: Theme.of(context).colorScheme.surface,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Theme.of(context).colorScheme.surface
+            : Colors.white,
         elevation: 0,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,

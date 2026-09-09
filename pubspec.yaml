@@ -26,3 +26,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - stitch_odomate_modern_ui/odomate_rider_avatar_updated_full/screen.png
+    - stitch_odomate_modern_ui/odomate_transparent_mark/screen.png

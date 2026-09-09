@@ -74,6 +74,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    await tester.scrollUntilVisible(
+      find.text('Statistik perjalanan'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.tap(
       find.ancestor(
         of: find.text('Statistik perjalanan').first,
@@ -85,6 +90,24 @@ void main() {
     expect(find.byType(StatisticsScreen), findsOneWidget);
     expect(find.text('Jarak'), findsOneWidget);
     expect(find.byTooltip('Start Ride'), findsOneWidget);
+  });
+
+  testWidgets('Home shows the rider avatar template without a profile photo', (
+    tester,
+  ) async {
+    final repository = _FakeRepository();
+    final tracker = RideTracker(repository);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: HomeScreen(repository: repository, tracker: tracker),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('home-profile-avatar-fallback')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('Home history card opens the upgraded History screen', (
@@ -125,6 +148,13 @@ void main() {
     expect(find.text('Semua'), findsOneWidget);
     expect(find.byTooltip('Start Ride'), findsOneWidget);
 
+    await tester.scrollUntilVisible(
+      find.textContaining('1.0 km'),
+      240,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.drag(find.byType(ListView).first, const Offset(0, -220));
+    await tester.pump();
     await tester.tap(find.textContaining('1.0 km'));
     await tester.pumpAndSettle();
     expect(find.byType(RideDetailScreen), findsOneWidget);
