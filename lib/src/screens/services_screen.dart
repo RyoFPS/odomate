@@ -4,6 +4,7 @@ import '../data/odomate_repository.dart';
 import '../domain/models.dart';
 import '../domain/service_schedule.dart';
 import '../i18n/app_localizations.dart';
+import '../widgets/odometer_correction_sheet.dart';
 
 const _blue = Color(0xFF2563EB);
 const _red = Color(0xFFBE123C);
@@ -983,42 +984,15 @@ class _ServicesScreenState extends State<ServicesScreen> {
   );
 
   Future<void> _updateOdometer() async {
-    final controller = TextEditingController(text: odo.toStringAsFixed(1));
-    final value = await showDialog<double>(
+    final value = await showModalBottomSheet<double>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Perbarui odometer'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: const InputDecoration(
-            labelText: 'Odometer',
-            suffixText: 'km',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Batal'),
-          ),
-          FilledButton(
-            onPressed: () {
-              final parsed = double.tryParse(
-                controller.text.replaceAll(',', '.'),
-              );
-              if (parsed != null && parsed >= 0) {
-                Navigator.pop(dialogContext, parsed);
-              }
-            },
-            child: const Text('Simpan'),
-          ),
-        ],
-      ),
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) =>
+          OdometerCorrectionSheet(initialValue: odo, vehicle: vehicle),
     );
-    await Future<void>.delayed(kThemeAnimationDuration);
-    controller.dispose();
-    if (value == null) return;
+    if (value == null || value < 0) return;
     await widget.repository.updateOdometer(value);
     await _load();
   }
