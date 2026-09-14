@@ -637,6 +637,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         builder: (context, updateSheet) {
           final l10n = AppLocalizations.of(context);
           final theme = Theme.of(context);
+          final colors = theme.colorScheme;
           return SafeArea(
             top: false,
             child: Padding(
@@ -647,63 +648,84 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.tune, color: theme.colorScheme.primary),
+                      Icon(Icons.tune, size: 20, color: colors.primary),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           _copy(context, 'filterTitle'),
+                          // Desain: `text-base font-bold tracking-tight` —
+                          // 16px w700, bukan w800.
                           style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.4,
                           ),
                         ),
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(sheetContext),
-                        icon: const Icon(Icons.close),
+                        icon: const Icon(Icons.close, size: 18),
                         tooltip: MaterialLocalizations.of(context)
                             .closeButtonTooltip,
+                        // Desain: lingkaran 32px berlatar slate-100. Yang
+                        // mengecil hanya yang terlihat — `tapTargetSize`
+                        // bawaan tetap melapisi area sentuh 48px.
+                        style: IconButton.styleFrom(
+                          backgroundColor: colors.surfaceContainer,
+                          foregroundColor: colors.secondary,
+                          minimumSize: const Size(32, 32),
+                          padding: EdgeInsets.zero,
+                          shape: const CircleBorder(),
+                        ),
                       ),
                     ],
                   ),
                   const Divider(),
                   Text(
                     _copy(context, 'dateRange'),
-                    style: theme.textTheme.labelLarge,
+                    style: _filterLabelStyle(theme),
                   ),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
-                    children: RideHistoryPeriod.values
-                        .map(
-                          (value) => ChoiceChip(
-                            label: Text(_periodLabel(l10n, value)),
-                            selected: draftPeriod == value,
-                            onSelected: (_) =>
-                                updateSheet(() => draftPeriod = value),
-                          ),
-                        )
-                        .toList(),
+                    runSpacing: 8,
+                    children: [
+                      for (final value in RideHistoryPeriod.values)
+                        _filterChip(
+                          context,
+                          label: _periodLabel(l10n, value),
+                          selected: draftPeriod == value,
+                          onTap: () => updateSheet(() => draftPeriod = value),
+                        ),
+                    ],
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    _copy(context, 'sort'),
-                    style: theme.textTheme.labelLarge,
-                  ),
+                  Text(_copy(context, 'sort'), style: _filterLabelStyle(theme)),
                   const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    children: _HistorySort.values
-                        .map(
-                          (value) => ChoiceChip(
-                            label: Text(_sortLabel(context, value)),
-                            selected: draftSort == value,
-                            onSelected: (_) =>
-                                updateSheet(() => draftSort = value),
+                  // Desain memakai `grid grid-cols-3` untuk grup ini: ketiga
+                  // chip membagi lebar sama rata, bukan selebar isinya.
+                  Row(
+                    children: [
+                      for (var i = 0; i < _HistorySort.values.length; i++) ...[
+                        if (i > 0) const SizedBox(width: 8),
+                        Expanded(
+                          child: _filterChip(
+                            context,
+                            label: _sortLabel(context, _HistorySort.values[i]),
+                            selected: draftSort == _HistorySort.values[i],
+                            onTap: () => updateSheet(
+                              () => draftSort = _HistorySort.values[i],
+                            ),
+                            // `py-2 px-2` di desain, bukan `py-1.5 px-3`.
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 8,
+                            ),
                           ),
-                        )
-                        .toList(),
+                        ),
+                      ],
+                    ],
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 24),
                   Row(
                     children: [
                       OutlinedButton(
@@ -711,6 +733,21 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           draftPeriod = RideHistoryPeriod.all;
                           draftSort = _HistorySort.newest;
                         }),
+                        // `OutlinedButton` tanpa tema bawaan berbentuk pill;
+                        // desain memakai `px-4 py-3 rounded-xl`.
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: colors.secondary,
+                          side: BorderSide(color: colors.outlineVariant),
+                          minimumSize: const Size(0, 40),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(12)),
+                          ),
+                          textStyle: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                         child: Text(_copy(context, 'reset')),
                       ),
                       const SizedBox(width: 12),
@@ -723,7 +760,25 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             });
                             Navigator.pop(sheetContext);
                           },
-                          icon: const Icon(Icons.check),
+                          // `bg-[#2563EB] shadow-md shadow-blue-500/20`, teks
+                          // 12px w600. minimumSize menimpa tema yang memaksa
+                          // tinggi 48px di seluruh app.
+                          style: FilledButton.styleFrom(
+                            minimumSize: const Size(0, 40),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(12),
+                              ),
+                            ),
+                            textStyle: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            elevation: 4,
+                            shadowColor: colors.primary.withValues(alpha: .2),
+                          ),
+                          icon: const Icon(Icons.check, size: 16),
                           label: Text(_copy(context, 'apply')),
                         ),
                       ),
@@ -734,6 +789,67 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  /// Label grup di dalam sheet filter: desain memakai
+  /// `text-xs font-semibold text-slate-700` = 12px w600.
+  static TextStyle? _filterLabelStyle(ThemeData theme) =>
+      theme.textTheme.labelLarge?.copyWith(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        color: theme.colorScheme.onSurfaceVariant,
+      );
+
+  /// Chip filter sesuai desain.
+  ///
+  /// Keadaan terpilih hanya berubah warna — tint biru, border biru, teks biru
+  /// dengan weight naik ke w600. **Tanpa centang**, karena centang itu bawaan
+  /// `ChoiceChip` Material dan tidak ada di desain.
+  Widget _filterChip(
+    BuildContext context, {
+    required String label,
+    required bool selected,
+    required VoidCallback onTap,
+    EdgeInsetsGeometry padding = const EdgeInsets.symmetric(
+      horizontal: 12,
+      vertical: 6,
+    ),
+  }) {
+    final colors = Theme.of(context).colorScheme;
+    final radius = BorderRadius.circular(12);
+    return Material(
+      color: selected
+          ? colors.primary.withValues(alpha: .08)
+          : colors.surfaceContainerLow,
+      borderRadius: radius,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: radius,
+        child: Container(
+          // `center` membuat chip selebar isinya saat berada di dalam `Wrap`,
+          // dan menengahkan teks saat direntangkan `Expanded` di grup urutan.
+          alignment: Alignment.center,
+          padding: padding,
+          decoration: BoxDecoration(
+            borderRadius: radius,
+            border: Border.all(
+              color: selected
+                  ? colors.primary.withValues(alpha: .25)
+                  : colors.outlineVariant,
+            ),
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+              color: selected ? colors.primary : colors.secondary,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -781,13 +897,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
         'entries': 'entri',
         'offline': 'Semua data tersimpan secara offline',
         'filterTitle': 'Filter Riwayat Perjalanan',
-        'dateRange': 'Rentang waktu',
-        'sort': 'Urutan perjalanan',
+        'dateRange': 'Rentang Waktu',
+        'sort': 'Urutan Log',
         'newest': 'Terbaru',
         'oldest': 'Terlama',
         'farthest': 'Terjauh',
-        'reset': 'Reset',
-        'apply': 'Terapkan',
+        'reset': 'Reset Filter',
+        'apply': 'Terapkan Filter',
       },
       'en': {
         'subtitle': 'Time & distance log',
@@ -800,13 +916,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
         'entries': 'entries',
         'offline': 'All data is stored offline',
         'filterTitle': 'Filter Ride History',
-        'dateRange': 'Date range',
-        'sort': 'Ride order',
+        'dateRange': 'Date Range',
+        'sort': 'Log Order',
         'newest': 'Newest',
         'oldest': 'Oldest',
         'farthest': 'Farthest',
-        'reset': 'Reset',
-        'apply': 'Apply',
+        'reset': 'Reset Filters',
+        'apply': 'Apply Filters',
       },
       'ja': {
         'summary': '概要',
