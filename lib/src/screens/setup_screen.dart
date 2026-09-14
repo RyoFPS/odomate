@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/odomate_repository.dart';
 import '../domain/models.dart';
 import '../i18n/app_localizations.dart';
+import '../widgets/plate_number_sheet.dart';
 
 class SetupScreen extends StatefulWidget {
   final OdomateRepository repository;
@@ -66,6 +67,14 @@ class _SetupScreenState extends State<SetupScreen> {
     if (!mounted) return;
     setState(() => saving = false);
     widget.onSaved();
+  }
+
+  Future<void> _editPlate() async {
+    final value = await showPlateNumberSheet(
+      context,
+      initialValue: plateNumber.text,
+    );
+    if (value != null && mounted) setState(() => plateNumber.text = value);
   }
 
   @override
@@ -194,6 +203,7 @@ class _SetupScreenState extends State<SetupScreen> {
                         hint: 'F 6767 FJO',
                         icon: Icons.badge_outlined,
                         textCapitalization: TextCapitalization.characters,
+                        onTap: _editPlate,
                       ),
                       _SetupField(
                         key: const Key('setup-odometer'),
@@ -233,21 +243,29 @@ class _SetupScreenState extends State<SetupScreen> {
               ),
               const SizedBox(height: 14),
               Row(
+                mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    Icons.shield_outlined,
-                    size: 18,
-                    color: colors.secondary,
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Icon(
+                      Icons.shield_outlined,
+                      size: 18,
+                      color: colors.secondary,
+                    ),
                   ),
                   const SizedBox(width: 6),
-                  Flexible(
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.sizeOf(context).width - 80,
+                    ),
                     child: Text(
                       l10n.t('offline_safe'),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colors.secondary,
                       ),
-                      textAlign: TextAlign.center,
+                      textAlign: TextAlign.left,
                     ),
                   ),
                 ],
@@ -267,6 +285,7 @@ class _SetupField extends StatelessWidget {
   final IconData icon;
   final TextInputType? keyboardType;
   final TextCapitalization textCapitalization;
+  final VoidCallback? onTap;
 
   const _SetupField({
     super.key,
@@ -278,6 +297,7 @@ class _SetupField extends StatelessWidget {
     this.suffix,
     this.keyboardType,
     this.textCapitalization = TextCapitalization.none,
+    this.onTap,
   });
 
   @override
@@ -299,6 +319,7 @@ class _SetupField extends StatelessWidget {
           const SizedBox(height: 8),
           TextField(
             controller: controller,
+            onTap: onTap,
             keyboardType: keyboardType,
             textCapitalization: textCapitalization,
             decoration: InputDecoration(
