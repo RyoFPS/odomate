@@ -36,6 +36,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Future<_HistoryData> _load() async => _HistoryData(
     rides: await widget.repository.listRides(),
     logs: await widget.repository.listServiceLogs(),
+    vehicle: await widget.repository.loadVehicle(),
     now: widget.now(),
   );
 
@@ -111,7 +112,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             children: [
               _periodSelector(context, l10n),
               const SizedBox(height: 12),
-              _summary(context, l10n, rides.length, distance),
+              _summary(context, data, rides.length, distance),
               const SizedBox(height: 18),
               Row(
                 children: [
@@ -239,10 +240,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   Widget _summary(
     BuildContext context,
-    AppLocalizations l10n,
+    _HistoryData data,
     int count,
     double distance,
   ) {
+    final l10n = AppLocalizations.of(context);
+    final activeDays = _activeDays(rides: _ridesForPeriod(data));
+    final averageDaily = activeDays == 0 ? 0.0 : distance / activeDays;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -252,26 +256,127 @@ class _HistoryScreenState extends State<HistoryScreen> {
             Row(
               children: [
                 Expanded(
+                  child: Text(
+                    '${_copy(context, 'summary')} ${_periodLabel(l10n, period)}',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                if (data.vehicle?.name.isNotEmpty ?? false)
+                  Chip(
+                    avatar: Icon(
+                      Icons.two_wheeler,
+                      size: 14,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    label: Text(data.vehicle!.name),
+                    visualDensity: VisualDensity.compact,
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 3,
                   child: _metric(
                     context,
-                    '${l10n.t('distance')} (km)',
+                    _copy(context, 'totalDistance'),
                     distance.toStringAsFixed(1),
                     Icons.straighten_outlined,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 Expanded(
-                  child: _metric(
-                    context,
-                    l10n.t('ride_count'),
-                    '$count',
-                    Icons.alt_route,
+                  flex: 2,
+                  child: Column(
+                    children: [
+                      _smallMetric(
+                        context,
+                        _copy(context, 'frequency'),
+                        '$count',
+                        Icons.alt_route,
+                      ),
+                      const SizedBox(height: 8),
+                      _smallMetric(
+                        context,
+                        _copy(context, 'averageDaily'),
+                        averageDaily.toStringAsFixed(1),
+                        Icons.calendar_view_day_outlined,
+                      ),
+                    ],
                   ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Icon(
+                  Icons.circle,
+                  size: 7,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  '${_copy(context, 'activeDays')}: $activeDays',
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  List<Ride> _ridesForPeriod(_HistoryData data) =>
+      filterRides(data.rides, data.now, period);
+
+  static int _activeDays({required List<Ride> rides}) => rides
+      .map((ride) {
+        final date = ride.startedAt.toLocal();
+        return DateTime(date.year, date.month, date.day);
+      })
+      .toSet()
+      .length;
+
+  Widget _smallMetric(
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon,
+  ) {
+    final theme = Theme.of(context);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.colorScheme.outlineVariant),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: theme.textTheme.bodySmall),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(icon, size: 16, color: theme.colorScheme.primary),
+        ],
       ),
     );
   }
@@ -571,6 +676,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
     const copy = {
       'id': {
         'subtitle': 'Log waktu & jarak tempuh',
+        'summary': 'Ringkasan',
+        'totalDistance': 'Total Jarak',
+        'frequency': 'Frekuensi',
+        'averageDaily': 'Rata-rata harian',
+        'activeDays': 'Hari aktif',
         'filter': 'Filter',
         'entries': 'entri',
         'offline': 'Semua data tersimpan secara offline',
@@ -585,6 +695,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
       },
       'en': {
         'subtitle': 'Time & distance log',
+        'summary': 'Summary',
+        'totalDistance': 'Total distance',
+        'frequency': 'Frequency',
+        'averageDaily': 'Daily average',
+        'activeDays': 'Active days',
         'filter': 'Filter',
         'entries': 'entries',
         'offline': 'All data is stored offline',
@@ -598,6 +713,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
         'apply': 'Apply',
       },
       'ja': {
+        'summary': '概要',
+        'totalDistance': '合計距離',
+        'frequency': '回数',
+        'averageDaily': '日平均',
+        'activeDays': '走行日数',
         'subtitle': '時間と走行距離の記録',
         'filter': 'フィルター',
         'entries': '件',
@@ -635,11 +755,13 @@ enum _HistorySort { newest, oldest, distance }
 class _HistoryData {
   final List<Ride> rides;
   final List<ServiceLog> logs;
+  final Vehicle? vehicle;
   final DateTime now;
 
   const _HistoryData({
     required this.rides,
     required this.logs,
+    required this.vehicle,
     required this.now,
   });
 }

@@ -10,11 +10,13 @@ class _FakeRepository extends OdomateRepository {
   final List<Ride> rides;
   final Object? error;
   final Duration delay;
+  final Vehicle? vehicle;
 
   _FakeRepository({
     this.rides = const [],
     this.error,
     this.delay = Duration.zero,
+    this.vehicle,
   });
 
   @override
@@ -26,6 +28,9 @@ class _FakeRepository extends OdomateRepository {
 
   @override
   Future<List<ServiceLog>> listServiceLogs() async => const [];
+
+  @override
+  Future<Vehicle?> loadVehicle() async => vehicle;
 }
 
 Widget _app(OdomateRepository repository, {String language = 'id'}) =>
@@ -68,6 +73,47 @@ void main() {
     expect(find.text('Semua'), findsOneWidget);
     expect(find.textContaining('12.5 km'), findsOneWidget);
     expect(find.textContaining('1jam 05mnt'), findsOneWidget);
+  });
+
+  testWidgets('renders a period summary with active filter metrics', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _app(
+        _FakeRepository(
+          vehicle: const Vehicle(name: 'Honda Vario 160', odometerKm: 2500),
+          rides: [
+            Ride(
+              startedAt: DateTime(2026, 9, 10, 10),
+              endedAt: DateTime(2026, 9, 10, 11),
+              distanceKm: 12,
+            ),
+            Ride(
+              startedAt: DateTime(2026, 9, 9, 10),
+              endedAt: DateTime(2026, 9, 9, 11),
+              distanceKm: 8,
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Ringkasan Semua'), findsOneWidget);
+    expect(find.text('Honda Vario 160'), findsOneWidget);
+    expect(find.text('Total Jarak'), findsOneWidget);
+    expect(find.text('Frekuensi'), findsOneWidget);
+    expect(find.text('Rata-rata harian'), findsOneWidget);
+    expect(find.textContaining('Hari aktif'), findsOneWidget);
+    expect(find.text('20.0'), findsOneWidget);
+    expect(find.text('2'), findsWidgets);
+
+    await tester.tap(find.text('Hari ini'));
+    await tester.pump();
+
+    expect(find.text('Ringkasan Hari ini'), findsOneWidget);
+    expect(find.text('12.0'), findsWidgets);
+    expect(find.text('8.0'), findsNothing);
   });
 
   testWidgets('switches to today and filters out older rides', (tester) async {
