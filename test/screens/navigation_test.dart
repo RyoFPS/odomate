@@ -28,6 +28,15 @@ class _FakeRepository extends OdomateRepository {
   Future<List<ServiceLog>> listServiceLogs() async => const [];
 }
 
+/// Meniru halaman Profile: ada TextField yang memunculkan keyboard.
+class _ProfilePage extends StatelessWidget {
+  const _ProfilePage();
+
+  @override
+  Widget build(BuildContext context) =>
+      const Scaffold(body: Center(child: TextField()));
+}
+
 void main() {
   testWidgets('bottom navigation preserves four tabs and ride action', (
     tester,
@@ -51,6 +60,40 @@ void main() {
     expect(find.byTooltip('Start Ride'), findsOneWidget);
     expect(find.text('Service'), findsOneWidget);
     expect(find.text('Profile'), findsOneWidget);
+  });
+
+  testWidgets('keyboard does not lift the bottom bar or the Start button', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MainNavigation(
+          pages: const [
+            Text('Home page'),
+            Text('History page'),
+            Text('Service page'),
+            _ProfilePage(),
+          ],
+          rideActive: false,
+          onRide: () {},
+        ),
+      ),
+    );
+    await tester.tap(find.text('Profile'));
+    await tester.pumpAndSettle();
+
+    final buttonBefore = tester.getCenter(find.byTooltip('Start Ride'));
+    final tabBefore = tester.getCenter(find.text('Riwayat'));
+
+    // Keyboard setinggi 600px logis muncul di bawah layar.
+    tester.view.viewInsets = const FakeViewPadding(bottom: 600);
+    await tester.pumpAndSettle();
+
+    expect(tester.getCenter(find.byTooltip('Start Ride')), buttonBefore);
+    expect(tester.getCenter(find.text('Riwayat')), tabBefore);
   });
 
   testWidgets('Home statistics card opens Statistics and keeps ride action', (

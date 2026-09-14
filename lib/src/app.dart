@@ -324,6 +324,13 @@ class _MainNavigationState extends State<MainNavigation> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
+      // Bottom bar dan tombol Start Ride harus tetap terpaku di dasar layar.
+      // Dengan `resizeToAvoidBottomInset` default (true), Scaffold mengangkat
+      // keduanya ke atas keyboard begitu ada TextField yang difokuskan — di
+      // halaman Profile tombol Start ikut naik saat mengganti nama atau plat.
+      // Body tetap membawa `viewInsets`-nya, jadi TextField yang difokuskan
+      // masih di-scroll ke atas keyboard oleh scrollable di dalamnya.
+      resizeToAvoidBottomInset: false,
       body: _page(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: _rideButton(l10n),
