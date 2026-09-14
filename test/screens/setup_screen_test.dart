@@ -11,7 +11,7 @@ class _SetupRepository extends OdomateRepository {
   Future<void> saveVehicle(Vehicle vehicle) async => savedVehicle = vehicle;
 
   @override
-  Future<void> saveService(ServiceItem service) async {}
+  Future<int> saveService(ServiceItem service) async => service.id ?? 0;
 }
 
 void main() {

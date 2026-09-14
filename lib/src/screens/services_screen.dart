@@ -5,11 +5,12 @@ import '../domain/models.dart';
 import '../domain/service_schedule.dart';
 import '../i18n/app_localizations.dart';
 import '../widgets/odometer_correction_sheet.dart';
+import 'service_editor_screen.dart';
+import 'service_style.dart';
 
-const _blue = Color(0xFF2563EB);
-const _red = Color(0xFFBE123C);
-const _amber = Color(0xFFB45309);
-const _green = Color(0xFF047857);
+const _blue = serviceBlue;
+const _red = serviceRed;
+const _green = serviceGreen;
 
 class ServicesScreen extends StatefulWidget {
   final OdomateRepository repository;
@@ -23,9 +24,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
   List<ServiceItem> items = [];
   Vehicle? vehicle;
   bool sortByUrgency = true;
-  final nameController = TextEditingController();
-  final descriptionController = TextEditingController();
-  final intervalController = TextEditingController();
 
   double get odo => vehicle?.odometerKm ?? 0;
 
@@ -49,14 +47,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
       vehicle = loadedVehicle;
       items = loadedItems;
     });
-  }
-
-  @override
-  void dispose() {
-    nameController.dispose();
-    descriptionController.dispose();
-    intervalController.dispose();
-    super.dispose();
   }
 
   @override
@@ -84,20 +74,14 @@ class _ServicesScreenState extends State<ServicesScreen> {
           children: [
             Text(
               l10n.t('service_title'),
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-            ),
-            if (vehicle != null)
-              Text(
-                [
-                  vehicle!.name,
-                  if (vehicle!.plateNumber.isNotEmpty) vehicle!.plateNumber,
-                ].join('  •  '),
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
+              // Desain: `text-xl font-bold tracking-tight`.
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -.4,
               ),
+            ),
+            if (vehicle != null) _vehicleLine(context),
           ],
         ),
         actions: [
@@ -107,13 +91,30 @@ class _ServicesScreenState extends State<ServicesScreen> {
               sortByUrgency ? Icons.swap_vert_rounded : Icons.sort_by_alpha,
             ),
             tooltip: sortByUrgency ? 'Urut berdasarkan nama' : 'Urutkan jadwal',
+            color: Theme.of(context).colorScheme.secondary,
+            style: IconButton.styleFrom(
+              padding: const EdgeInsets.all(8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: IconButton.filled(
               onPressed: _addService,
-              icon: const Icon(Icons.add_rounded),
+              // Desain: `w-9 h-9 rounded-xl` — 36×36 dengan sudut 12, bukan
+              // tombol bulat bawaan Material.
+              icon: const Icon(Icons.add_rounded, size: 22),
               tooltip: l10n.t('add_service'),
+              style: IconButton.styleFrom(
+                minimumSize: const Size(36, 36),
+                maximumSize: const Size(36, 36),
+                padding: EdgeInsets.zero,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
             ),
           ),
         ],
@@ -124,29 +125,41 @@ class _ServicesScreenState extends State<ServicesScreen> {
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
           children: [
             _summaryCard(context, due, soon),
-            const SizedBox(height: 18),
+            const SizedBox(height: 16),
             Row(
               children: [
-                const Expanded(
-                  child: Text(
-                    'Jadwal Perawatan Berkala',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                Expanded(
+                  child: Row(
+                    children: [
+                      const Text(
+                        'Jadwal Perawatan Berkala',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      _countChip('${items.length} item'),
+                    ],
                   ),
                 ),
-                _badge('${items.length} item', const Color(0xFF64748B)),
-                const SizedBox(width: 4),
                 TextButton.icon(
                   onPressed: _showHistory,
-                  icon: const Icon(Icons.history_rounded, size: 17),
+                  icon: const Icon(Icons.history_rounded, size: 15),
                   label: const Text('Riwayat'),
                   style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 7),
-                    textStyle: const TextStyle(fontSize: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    textStyle: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             if (displayedItems.isEmpty)
               _emptyState(context, l10n)
             else
@@ -175,6 +188,48 @@ class _ServicesScreenState extends State<ServicesScreen> {
     );
   }
 
+  /// Baris kendaraan di bawah judul: ikon motor, nama, lalu plat bernomor
+  /// dengan pemisah titik. Desain menaruh plat di `font-mono` — app ini hanya
+  /// membawa Poppins, jadi yang dipertahankan adalah bobot dan ukurannya.
+  Widget _vehicleLine(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final vehicle = this.vehicle!;
+    return Padding(
+      padding: const EdgeInsets.only(top: 2),
+      child: Row(
+        children: [
+          Icon(Icons.two_wheeler_rounded, size: 14, color: colors.primary),
+          const SizedBox(width: 4),
+          Text(
+            vehicle.name,
+            style: TextStyle(
+              color: colors.secondary,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          if (vehicle.plateNumber.isNotEmpty) ...[
+            const SizedBox(width: 4),
+            Text(
+              '•',
+              style: TextStyle(color: colors.outlineVariant, fontSize: 12),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              vehicle.plateNumber,
+              style: TextStyle(
+                color: colors.onSurfaceVariant,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                letterSpacing: .2,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _summaryCard(BuildContext context, int due, int soon) {
     final colors = Theme.of(context).colorScheme;
     ServiceItem? dueService;
@@ -188,8 +243,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: colors.surface,
-        border: Border.all(color: colors.outlineVariant.withValues(alpha: .6)),
-        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: colors.outlineVariant.withValues(alpha: .3)),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: const [
           BoxShadow(
             color: Color(0x0D0F172A),
@@ -200,100 +255,130 @@ class _ServicesScreenState extends State<ServicesScreen> {
       ),
       child: Column(
         children: [
-          Row(
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: _blue.withValues(alpha: .09),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(Icons.speed_rounded, color: _blue, size: 20),
+          Container(
+            padding: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: colors.surfaceContainer),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'ODOMETER TERKINI',
-                      style: TextStyle(
-                        color: colors.onSurfaceVariant,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: .7,
-                      ),
-                    ),
-                    Text.rich(
-                      TextSpan(
-                        text: _km(odo),
-                        style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: colors.surfaceContainer,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.speed_rounded,
+                    color: colors.primary,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'ODOMETER TERKINI',
+                        style: TextStyle(
+                          color: colors.secondary,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: .6,
                         ),
-                        children: const [
-                          TextSpan(
-                            text: '  km',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
                       ),
+                      Text.rich(
+                        TextSpan(
+                          text: serviceKm(odo),
+                          style: TextStyle(
+                            color: colors.onSurface,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -.4,
+                          ),
+                          children: [
+                            TextSpan(
+                              text: ' km',
+                              style: TextStyle(
+                                color: colors.secondary,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w400,
+                                letterSpacing: 0,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                TextButton.icon(
+                  onPressed: _updateOdometer,
+                  icon: const Icon(Icons.edit_rounded, size: 14),
+                  label: const Text('Perbarui'),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    textStyle: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
                     ),
-                  ],
+                  ),
                 ),
-              ),
-              TextButton.icon(
-                onPressed: _updateOdometer,
-                icon: const Icon(Icons.edit_rounded, size: 15),
-                label: const Text('Perbarui'),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 6),
-                  textStyle: const TextStyle(fontSize: 12),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-          const Divider(height: 24),
-          Row(
-            children: [
-              Expanded(child: _metric(due, 'Jatuh Tempo', _red)),
-              const SizedBox(width: 8),
-              Expanded(child: _metric(soon, 'Mendekat', _amber)),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _metric(
-                  items.length - due - soon,
-                  'Kondisi Aman',
-                  _green,
+          Padding(
+            padding: const EdgeInsets.only(top: 12, bottom: 10),
+            child: Row(
+              children: [
+                Expanded(child: _metric(due, 'Jatuh Tempo', ServiceStatus.due)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _metric(soon, 'Mendekat', ServiceStatus.dueSoon),
                 ),
-              ),
-            ],
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _metric(
+                    items.length - due - soon,
+                    'Kondisi Aman',
+                    ServiceStatus.safe,
+                  ),
+                ),
+              ],
+            ),
           ),
           if (dueService != null) ...[
-            const SizedBox(height: 14),
+            const SizedBox(height: 8),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: _red.withValues(alpha: .07),
-                border: Border.all(color: _red.withValues(alpha: .14)),
+                color: _red.withValues(alpha: .06),
+                border: Border.all(color: _red.withValues(alpha: .12)),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.warning_rounded, color: _red, size: 19),
-                  const SizedBox(width: 9),
+                  const Padding(
+                    padding: EdgeInsets.only(top: 1),
+                    child: Icon(Icons.warning_rounded, color: _red, size: 18),
+                  ),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       '${dueService.name} perlu segera diservis sebelum perjalanan berikutnya.',
                       style: const TextStyle(
                         color: _red,
                         fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
+                        height: 1.5,
                       ),
                     ),
                   ),
@@ -306,35 +391,43 @@ class _ServicesScreenState extends State<ServicesScreen> {
     );
   }
 
-  Widget _metric(int count, String label, Color color) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 9),
-    decoration: BoxDecoration(
-      color: color.withValues(alpha: .07),
-      border: Border.all(color: color.withValues(alpha: .13)),
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: Column(
-      children: [
-        Text(
-          '$count',
-          style: TextStyle(
-            color: color,
-            fontSize: 16,
-            fontWeight: FontWeight.w800,
+  /// Kotak metrik di kartu ringkasan. Desain: `py-2 px-1 rounded-xl` dengan
+  /// latar shade -50, garis shade -100, dan label 10px.
+  Widget _metric(int count, String label, ServiceStatus status) {
+    final tone = serviceTone(status, Theme.of(context).colorScheme);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      decoration: BoxDecoration(
+        color: tone.soft,
+        border: Border.all(color: tone.softBorder),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Text(
+            '$count',
+            style: TextStyle(
+              color: tone.metricNumber,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              height: 1,
+            ),
           ),
-        ),
-        Text(
-          label,
-          maxLines: 1,
-          style: TextStyle(
-            color: color,
-            fontSize: 9,
-            fontWeight: FontWeight.w700,
+          const SizedBox(height: 4),
+          Text(
+            label,
+            maxLines: 1,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: tone.metricLabel,
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
+  }
 
   Widget _emptyState(BuildContext context, AppLocalizations l10n) => Container(
     padding: const EdgeInsets.all(28),
@@ -360,7 +453,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
   Widget _serviceCard(BuildContext context, ServiceItem service) {
     final colors = Theme.of(context).colorScheme;
     final status = _status(service);
-    final color = _statusColor(status);
+    final tone = serviceTone(status, colors);
     final dueAt = service.lastServicedOdometerKm + service.intervalKm;
     final remaining = dueAt - odo;
 
@@ -383,11 +476,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
         color: colors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(
-            color: status == ServiceStatus.safe
-                ? colors.outlineVariant.withValues(alpha: .55)
-                : color.withValues(alpha: .25),
-          ),
+          side: BorderSide(color: tone.card),
         ),
         child: InkWell(
           onTap: openDetail,
@@ -398,128 +487,178 @@ class _ServicesScreenState extends State<ServicesScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: .08),
-                    borderRadius: BorderRadius.circular(11),
-                  ),
-                  child: Icon(
-                    _serviceIcon(service.name),
-                    color: color,
-                    size: 21,
-                  ),
-                ),
-                const SizedBox(width: 11),
                 Expanded(
-                  child: Column(
+                  child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 4,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          Text(
-                            service.name,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          _badge(_statusLabel(status), color),
-                        ],
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        'Rutin tiap ${_km(service.intervalKm)} km',
-                        style: TextStyle(
-                          color: colors.onSurfaceVariant,
-                          fontSize: 11,
+                      Container(
+                        width: 40,
+                        height: 40,
+                        margin: const EdgeInsets.only(top: 2),
+                        decoration: BoxDecoration(
+                          color: tone.soft,
+                          border: Border.all(color: tone.softBorder),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          serviceIcon(service.name),
+                          color: tone.icon,
+                          size: 22,
                         ),
                       ),
-                      const SizedBox(height: 7),
-                      Text.rich(
-                        TextSpan(
-                          text: 'Terakhir: ',
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            TextSpan(
-                              text: '${_km(service.lastServicedOdometerKm)} km',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w700,
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 4,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: [
+                                Text(
+                                  service.name,
+                                  style: TextStyle(
+                                    color: colors.onSurface,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    height: 1.15,
+                                  ),
+                                ),
+                                _statusBadge(_statusLabel(status), tone),
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Rutin Tiap ${serviceKm(service.intervalKm)} km',
+                              style: TextStyle(
+                                color: colors.secondary,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
-                            const TextSpan(text: '  •  Batas: '),
-                            TextSpan(
-                              text: '${_km(dueAt)} km',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w700,
+                            const SizedBox(height: 8),
+                            Text.rich(
+                              TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: 'Terakhir: ',
+                                    style: TextStyle(color: colors.secondary),
+                                  ),
+                                  TextSpan(
+                                    text: '${serviceKm(service.lastServicedOdometerKm)} km',
+                                    style: TextStyle(
+                                      color: colors.onSurface,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text: ' • ',
+                                    style: TextStyle(
+                                      color: colors.outlineVariant,
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text: 'Batas: ',
+                                    style: TextStyle(color: colors.secondary),
+                                  ),
+                                  TextSpan(
+                                    text: '${serviceKm(dueAt)} km',
+                                    style: TextStyle(
+                                      color: colors.onSurface,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              style: TextStyle(
+                                color: colors.onSurfaceVariant,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            // Desain hanya menandai "Lewat" dengan ikon error;
+                            // "Sisa" pada item mendekat tetap polos, dan pada
+                            // item aman justru abu-abu — bukan hijau.
+                            Row(
+                              children: [
+                                if (status == ServiceStatus.due) ...[
+                                  const Icon(
+                                    Icons.error_outline_rounded,
+                                    color: Color(0xFFE11D48),
+                                    size: 14,
+                                  ),
+                                  const SizedBox(width: 4),
+                                ],
+                                Text(
+                                  remaining < 0
+                                      ? 'Lewat ${serviceKm(-remaining)} km'
+                                      : 'Sisa ${serviceKm(remaining)} km',
+                                  style: TextStyle(
+                                    color: tone.line,
+                                    fontSize: 12,
+                                    fontWeight: status == ServiceStatus.safe
+                                        ? FontWeight.w500
+                                        : FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 10),
+                if (status == ServiceStatus.due)
+                  Material(
+                    key: const ValueKey('service-card-mark-serviced'),
+                    color: tone.soft,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      side: BorderSide(color: tone.card),
+                    ),
+                    child: InkWell(
+                      onTap: openDetail,
+                      borderRadius: BorderRadius.circular(8),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.check_circle_rounded,
+                              color: tone.chipText,
+                              size: 15,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Servis',
+                              style: TextStyle(
+                                color: tone.chipText,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],
                         ),
-                        style: TextStyle(
-                          color: colors.onSurfaceVariant,
-                          fontSize: 11,
-                        ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        remaining < 0
-                            ? 'Lewat ${_km(-remaining)} km'
-                            : 'Sisa ${_km(remaining)} km',
-                        style: TextStyle(
-                          color: color,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      if (service.description.isNotEmpty) ...[
-                        const SizedBox(height: 8),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 9,
-                            vertical: 7,
-                          ),
-                          decoration: BoxDecoration(
-                            color: colors.surfaceContainerHighest.withValues(
-                              alpha: .55,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            service.description,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: colors.onSurfaceVariant,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
+                    ),
+                  )
+                else
+                  Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Icon(
+                      Icons.chevron_right_rounded,
+                      color: colors.secondary,
+                      size: 20,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 4),
-                status == ServiceStatus.due
-                    ? TextButton.icon(
-                        onPressed: openDetail,
-                        icon: const Icon(Icons.check_circle_outline, size: 16),
-                        label: const Text('Servis'),
-                        style: TextButton.styleFrom(
-                          foregroundColor: _red,
-                          backgroundColor: _red.withValues(alpha: .07),
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          textStyle: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      )
-                    : Icon(Icons.chevron_right_rounded, color: colors.outline),
               ],
             ),
           ),
@@ -531,457 +670,87 @@ class _ServicesScreenState extends State<ServicesScreen> {
   ServiceStatus _status(ServiceItem service) =>
       ServiceSchedule.status(odo, service);
 
-  Color _statusColor(ServiceStatus status) => status == ServiceStatus.due
-      ? _red
-      : status == ServiceStatus.dueSoon
-      ? _amber
-      : _green;
-
   String _statusLabel(ServiceStatus status) => status == ServiceStatus.due
       ? 'Jatuh Tempo'
       : status == ServiceStatus.dueSoon
       ? 'Mendekat'
       : 'Aman';
 
-  Widget _badge(String text, Color color) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+  Widget _statusBadge(String text, ServiceTone tone) => Container(
+    key: const ValueKey('service-card-status-badge'),
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
     decoration: BoxDecoration(
-      color: color.withValues(alpha: .09),
+      color: tone.chipBg,
       borderRadius: BorderRadius.circular(99),
     ),
     child: Text(
       text,
-      style: TextStyle(color: color, fontSize: 9, fontWeight: FontWeight.w700),
+      style: TextStyle(
+        color: tone.chipText,
+        fontSize: 10,
+        fontWeight: tone.chipWeight,
+        letterSpacing: -.1,
+      ),
     ),
   );
 
-  IconData _serviceIcon(String name) {
-    final value = name.toLowerCase();
-    if (value.contains('oli')) return Icons.oil_barrel_outlined;
-    if (value.contains('busi') || value.contains('listrik')) {
-      return Icons.bolt_rounded;
-    }
-    if (value.contains('filter')) return Icons.air_rounded;
-    if (value.contains('rem')) return Icons.stop_circle_outlined;
-    return Icons.build_outlined;
-  }
+  /// Penghitung "6 item" di sebelah judul bagian. Desain memakai `rounded-md`
+  /// dengan latar surface-container, bukan pill berwarna seperti badge status.
+  Widget _countChip(String text) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surfaceContainer,
+      borderRadius: BorderRadius.circular(6),
+    ),
+    child: Text(
+      text,
+      style: TextStyle(
+        color: Theme.of(context).colorScheme.secondary,
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+      ),
+    ),
+  );
 
+  /// Jadwal awal untuk kendaraan baru. Hanya komponen yang intervalnya tercatat
+  /// di [servicePresets] yang dipakai — preset tanpa angka tidak diikutkan,
+  /// supaya app tidak mengarang jadwal servis yang tidak diminta pengguna.
   List<ServiceItem> _defaultServices(double km) => [
-    ServiceItem(
-      name: 'Oli mesin',
-      intervalKm: 2000,
-      lastServicedOdometerKm: km,
-    ),
-    ServiceItem(
-      name: 'Oli gardan',
-      intervalKm: 8000,
-      lastServicedOdometerKm: km,
-    ),
-    ServiceItem(name: 'Busi', intervalKm: 8000, lastServicedOdometerKm: km),
-    ServiceItem(
-      name: 'Filter udara',
-      intervalKm: 12000,
-      lastServicedOdometerKm: km,
-    ),
+    for (final preset in servicePresets)
+      if (preset.intervalKm != null)
+        ServiceItem(
+          name: preset.name,
+          intervalKm: preset.intervalKm!,
+          lastServicedOdometerKm: km,
+        ),
   ];
 
   Future<void> _addService() async {
-    final service = await _showServiceEditor();
-    if (service == null) return;
-    await widget.repository.saveService(service);
+    final saved = await _openEditor();
+    if (saved != true) return;
     await _load();
   }
 
   Future<void> _editService(ServiceItem service) async {
-    final edited = await _showServiceEditor(service);
-    if (edited == null) return;
-    await widget.repository.saveService(edited);
+    final saved = await _openEditor(service);
+    if (saved != true) return;
     await _load();
   }
 
-  Future<ServiceItem?> _showServiceEditor([ServiceItem? service]) async {
-    final editing = service != null;
-    nameController.text = service?.name ?? '';
-    descriptionController.text = service?.description ?? '';
-    intervalController.text = service == null
-        ? ''
-        : service.intervalKm.toStringAsFixed(0);
-    final presets = <String, double>{
-      'Ganti Oli Mesin': 2000,
-      'Oli Gardan': 8000,
-      'Busi (Spark Plug)': 8000,
-      'Filter Udara': 12000,
-    };
-
-    return showModalBottomSheet<ServiceItem>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (sheetContext) => StatefulBuilder(
-        builder: (context, setSheetState) {
-          final interval = double.tryParse(intervalController.text);
-          final valid =
-              nameController.text.trim().isNotEmpty &&
-              interval != null &&
-              interval > 0;
-          void refresh() => setSheetState(() {});
-
-          return AnimatedPadding(
-            duration: const Duration(milliseconds: 160),
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.viewInsetsOf(sheetContext).bottom,
-            ),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.sizeOf(sheetContext).height * .92,
-              ),
-              child: Column(
-                children: [
-                  _editorHeader(context, sheetContext, editing),
-                  const Divider(height: 1),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          _vehicleCard(context),
-                          if (!editing) ...[
-                            const SizedBox(height: 16),
-                            _sheetSection(
-                              context,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Row(
-                                    children: [
-                                      Icon(
-                                        Icons.inventory_2_outlined,
-                                        color: _blue,
-                                        size: 17,
-                                      ),
-                                      SizedBox(width: 7),
-                                      Text(
-                                        'Pilih Cepat Komponen',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w800,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Wrap(
-                                    spacing: 8,
-                                    runSpacing: 8,
-                                    children: presets.entries.map((entry) {
-                                      final selected =
-                                          nameController.text == entry.key;
-                                      return ChoiceChip(
-                                        selected: selected,
-                                        label: Text(entry.key),
-                                        avatar: Icon(
-                                          _serviceIcon(entry.key),
-                                          size: 17,
-                                          color: selected ? _blue : null,
-                                        ),
-                                        onSelected: (_) {
-                                          nameController.text = entry.key;
-                                          intervalController.text = entry.value
-                                              .toStringAsFixed(0);
-                                          refresh();
-                                        },
-                                      );
-                                    }).toList(),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                          const SizedBox(height: 16),
-                          _editorFields(context, interval, refresh),
-                        ],
-                      ),
-                    ),
-                  ),
-                  _editorFooter(
-                    context,
-                    sheetContext,
-                    editing,
-                    valid,
-                    interval,
-                    service,
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _editorHeader(
-    BuildContext context,
-    BuildContext sheetContext,
-    bool editing,
-  ) => Padding(
-    padding: const EdgeInsets.fromLTRB(20, 10, 12, 12),
-    child: Column(
-      children: [
-        Container(
-          width: 42,
-          height: 4,
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.outlineVariant,
-            borderRadius: BorderRadius.circular(99),
+  /// Membuka halaman Tambah/Edit Servis, dan melaporkan apakah ada perubahan
+  /// yang tersimpan. Penulisannya sendiri ada di dalam halaman itu, karena satu
+  /// kali simpan bisa menyentuh dua tabel: jadwal servis dan log servisnya.
+  Future<bool?> _openEditor([ServiceItem? service]) =>
+      Navigator.of(context).push<bool>(
+        MaterialPageRoute(
+          builder: (_) => ServiceEditorScreen(
+            repository: widget.repository,
+            service: service,
+            odometerKm: odo,
+            vehicle: vehicle,
           ),
         ),
-        const SizedBox(height: 14),
-        Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    editing ? 'Edit Servis' : 'Tambah Servis',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  Text(
-                    'Pencatatan & Jadwal Perawatan',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      fontSize: 11,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(sheetContext),
-              child: const Text('Batal'),
-            ),
-          ],
-        ),
-      ],
-    ),
-  );
-
-  Widget _editorFields(
-    BuildContext context,
-    double? interval,
-    VoidCallback refresh,
-  ) => _sheetSection(
-    context,
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _fieldLabel('Nama Servis / Pekerjaan', required: true),
-        TextField(
-          controller: nameController,
-          textInputAction: TextInputAction.next,
-          onChanged: (_) => refresh(),
-          decoration: const InputDecoration(
-            hintText: 'Contoh: Ganti Oli Mesin',
-          ),
-        ),
-        const SizedBox(height: 16),
-        _fieldLabel('Interval Servis Berikutnya', required: true),
-        Wrap(
-          spacing: 7,
-          runSpacing: 7,
-          children: [2000, 4000, 6000, 10000].map((km) {
-            return ChoiceChip(
-              selected: interval == km,
-              label: Text('+${_km(km.toDouble())}'),
-              onSelected: (_) {
-                intervalController.text = '$km';
-                refresh();
-              },
-            );
-          }).toList(),
-        ),
-        const SizedBox(height: 9),
-        TextField(
-          controller: intervalController,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          textInputAction: TextInputAction.next,
-          onChanged: (_) => refresh(),
-          decoration: const InputDecoration(
-            hintText: 'Masukkan kilometer',
-            suffixText: 'Tiap km',
-          ),
-        ),
-        const SizedBox(height: 16),
-        _fieldLabel('Catatan & Spesifikasi Part'),
-        TextField(
-          controller: descriptionController,
-          minLines: 3,
-          maxLines: 4,
-          decoration: const InputDecoration(
-            hintText: 'Catatan servis (opsional)',
-          ),
-        ),
-      ],
-    ),
-  );
-
-  Widget _editorFooter(
-    BuildContext context,
-    BuildContext sheetContext,
-    bool editing,
-    bool valid,
-    double? interval,
-    ServiceItem? service,
-  ) => Container(
-    padding: const EdgeInsets.fromLTRB(20, 12, 20, 14),
-    decoration: BoxDecoration(
-      border: Border(
-        top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
-      ),
-    ),
-    child: SafeArea(
-      top: false,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          FilledButton.icon(
-            onPressed: valid
-                ? () => Navigator.pop(
-                    sheetContext,
-                    ServiceItem(
-                      id: service?.id,
-                      name: nameController.text.trim(),
-                      description: descriptionController.text.trim(),
-                      intervalKm: interval!,
-                      lastServicedOdometerKm:
-                          service?.lastServicedOdometerKm ?? odo,
-                    ),
-                  )
-                : null,
-            icon: const Icon(Icons.check_rounded),
-            label: Text(editing ? 'Simpan Perubahan' : 'Simpan Jadwal Servis'),
-          ),
-          const SizedBox(height: 7),
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.verified_user_outlined, color: _green, size: 15),
-              SizedBox(width: 5),
-              Text(
-                'Data tersimpan offline di database lokal ponsel',
-                style: TextStyle(fontSize: 10),
-              ),
-            ],
-          ),
-        ],
-      ),
-    ),
-  );
-
-  Widget _vehicleCard(BuildContext context) => _sheetSection(
-    context,
-    child: Row(
-      children: [
-        Container(
-          width: 46,
-          height: 46,
-          decoration: BoxDecoration(
-            color: _blue.withValues(alpha: .08),
-            border: Border.all(color: _blue.withValues(alpha: .15)),
-            borderRadius: BorderRadius.circular(13),
-          ),
-          child: const Icon(Icons.two_wheeler_rounded, color: _blue),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                vehicle?.name ?? 'Kendaraan',
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 3),
-              Text.rich(
-                TextSpan(
-                  text: 'Odometer Saat Ini: ',
-                  children: [
-                    TextSpan(
-                      text: '${_km(odo)} km',
-                      style: const TextStyle(
-                        color: _blue,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ],
-                ),
-                style: const TextStyle(fontSize: 12),
-              ),
-            ],
-          ),
-        ),
-        if (vehicle?.plateNumber.isNotEmpty == true)
-          Text(
-            vehicle!.plateNumber,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              fontSize: 11,
-            ),
-          ),
-      ],
-    ),
-  );
-
-  Widget _sheetSection(BuildContext context, {required Widget child}) =>
-      Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outlineVariant
-                .withValues(alpha: .75),
-          ),
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x080F172A),
-              blurRadius: 8,
-              offset: Offset(0, 2),
-            ),
-          ],
-        ),
-        child: child,
       );
-
-  Widget _fieldLabel(String text, {bool required = false}) => Padding(
-    padding: const EdgeInsets.only(bottom: 7),
-    child: Text.rich(
-      TextSpan(
-        text: text,
-        children: required
-            ? const [
-                TextSpan(
-                  text: ' *',
-                  style: TextStyle(color: _red),
-                ),
-              ]
-            : const [],
-      ),
-      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
-    ),
-  );
 
   Future<void> _updateOdometer() async {
     final value = await showModalBottomSheet<double>(
@@ -1039,7 +808,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                       title: Text(names[log.serviceItemId] ?? 'Servis'),
                       subtitle: Text(_date(log.servicedAt)),
                       trailing: Text(
-                        '${_km(log.odometerKm)} km',
+                        '${serviceKm(log.odometerKm)} km',
                         style: const TextStyle(fontWeight: FontWeight.w700),
                       ),
                     );
@@ -1108,11 +877,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
       await _load();
     }
   }
-
-  String _km(double value) => value.round().toString().replaceAllMapped(
-    RegExp(r'\B(?=(\d{3})+(?!\d))'),
-    (_) => '.',
-  );
 }
 
 class ServiceDetailScreen extends StatefulWidget {

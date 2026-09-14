@@ -8,19 +8,20 @@ import 'package:odomate/src/screens/services_screen.dart';
 import 'package:odomate/src/widgets/odometer_correction_sheet.dart';
 
 class _FakeRepository extends OdomateRepository {
-  _FakeRepository({this.vehicle});
+  _FakeRepository({this.vehicle, this.services = const []});
 
   final Vehicle? vehicle;
+  final List<ServiceItem> services;
   final List<double> savedOdometers = [];
 
   @override
   Future<Vehicle?> loadVehicle() async => vehicle;
 
   @override
-  Future<List<ServiceItem>> listServices() async => const [];
+  Future<List<ServiceItem>> listServices() async => services;
 
   @override
-  Future<void> saveService(ServiceItem item) async {}
+  Future<int> saveService(ServiceItem item) async => item.id ?? 0;
 
   @override
   Future<void> updateOdometer(double odometerKm) async =>
@@ -44,6 +45,26 @@ const _vehicle = Vehicle(
   odometerKm: 24582,
   plateNumber: 'B 1234 XYZ',
 );
+
+// Angka-angka ini sengaja sama dengan contoh di
+// stitch_odomate_modern_ui/odomate_servis/code.html supaya teks yang diuji
+// benar-benar teks yang muncul di desain ("Lewat 82 km", "Sisa 5.418 km").
+const _overdueService = ServiceItem(
+  id: 1,
+  name: 'Ganti Oli Mesin',
+  intervalKm: 2000,
+  lastServicedOdometerKm: 22500,
+);
+
+const _safeService = ServiceItem(
+  id: 2,
+  name: 'Ganti Busi (Spark Plug)',
+  intervalKm: 10000,
+  lastServicedOdometerKm: 20000,
+);
+
+/// Warna hijau tua `_green`; desain tidak memakainya untuk baris sisa km.
+const _safeGreen = Color(0xFF047857);
 
 Finder get _sheetField => find.descendant(
   of: find.byType(OdometerCorrectionSheet),
@@ -119,5 +140,124 @@ void main() {
 
     expect(repository.savedOdometers, isEmpty);
     expect(find.byType(BottomSheet), findsNothing);
+  });
+
+  testWidgets('a safe item shows its remaining distance in gray, not green', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _app(_FakeRepository(vehicle: _vehicle, services: const [_safeService])),
+    );
+    await tester.pumpAndSettle();
+
+    final scheme = Theme.of(
+      tester.element(find.byType(ServicesScreen)),
+    ).colorScheme;
+    final line = tester.widget<Text>(find.text('Sisa 5.418 km'));
+
+    // Teks desain: `text-secondary font-medium` untuk item yang masih aman.
+    expect(line.style?.color, scheme.secondary);
+    expect(line.style?.color, isNot(_safeGreen));
+    expect(line.style?.fontWeight, FontWeight.w500);
+  });
+
+  testWidgets('an overdue item is rose, carries the error icon, and offers Servis', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _app(
+        _FakeRepository(vehicle: _vehicle, services: const [_overdueService]),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // `text-rose-600 font-semibold` + ikon `error` 14 hanya untuk yang lewat.
+    final line = tester.widget<Text>(find.text('Lewat 82 km'));
+    expect(line.style?.color, const Color(0xFFE11D48));
+    expect(line.style?.fontWeight, FontWeight.w600);
+    expect(find.byIcon(Icons.error_outline_rounded), findsOneWidget);
+
+    // Badge `bg-rose-100 text-rose-700` 10px, dan tombol Servis bergaris.
+    // Dicari lewat key karena "Jatuh Tempo" juga jadi label kotak metrik di
+    // kartu ringkasan.
+    final badge = tester.widget<Text>(
+      find.descendant(
+        of: find.byKey(const ValueKey('service-card-status-badge')),
+        matching: find.text('Jatuh Tempo'),
+      ),
+    );
+    expect(badge.style?.fontSize, 10);
+    expect(badge.style?.color, const Color(0xFFBE123C));
+    expect(badge.style?.fontWeight, FontWeight.w700);
+    expect(
+      find.byKey(const ValueKey('service-card-mark-serviced')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('the due metric tile labels itself a shade lighter than its count', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _app(
+        _FakeRepository(vehicle: _vehicle, services: const [_overdueService]),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final scheme = Theme.of(
+      tester.element(find.byType(ServicesScreen)),
+    ).colorScheme;
+    // Desain: angka `text-rose-700`, label `text-rose-600`. Labelnya juga tidak
+    // boleh tertukar dengan badge kartu, yang 10px tapi ber-weight 700.
+    final label = tester.widget<Text>(find.text('Jatuh Tempo').first);
+    expect(label.style?.color, const Color(0xFFE11D48));
+    expect(label.style?.fontWeight, FontWeight.w600);
+    expect(label.style?.color, isNot(scheme.onSurface));
+  });
+
+  testWidgets('a safe item has no status line icon and no Servis button', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _app(_FakeRepository(vehicle: _vehicle, services: const [_safeService])),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byIcon(Icons.error_outline_rounded), findsNothing);
+    expect(find.byKey(const ValueKey('service-card-mark-serviced')), findsNothing);
+    expect(find.byIcon(Icons.chevron_right_rounded), findsOneWidget);
+  });
+
+  testWidgets('the schedule line reads "Rutin Tiap", matching the design', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _app(_FakeRepository(vehicle: _vehicle, services: const [_safeService])),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Rutin Tiap 10.000 km'), findsOneWidget);
+  });
+
+  testWidgets('the section counter is a flat chip next to the heading', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _app(
+        _FakeRepository(
+          vehicle: _vehicle,
+          services: const [_overdueService, _safeService],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final scheme = Theme.of(
+      tester.element(find.byType(ServicesScreen)),
+    ).colorScheme;
+    final chip = tester.widget<Text>(find.text('2 item'));
+    expect(chip.style?.color, scheme.secondary);
+    expect(chip.style?.fontSize, 12);
   });
 }

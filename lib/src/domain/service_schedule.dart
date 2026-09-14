@@ -14,6 +14,11 @@ class ServiceSchedule {
     ServiceItem item,
     NotificationState state,
   ) {
+    // Item yang tombol pengingatnya dimatikan di halaman Tambah Servis tidak
+    // pernah menghasilkan reminder. Gerbang-nya sengaja ditaruh di sini, bukan
+    // di pemanggil, supaya semua jalur pengiriman notifikasi ikut menghormatinya
+    // tanpa perlu tahu soal kolom `remind`.
+    if (!item.remind) return null;
     final status = ServiceSchedule.status(odometerKm, item);
     final reminder = status == ServiceStatus.due
         ? ServiceReminder.due

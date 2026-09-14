@@ -84,11 +84,16 @@ class OdomateRepository {
     'service_items',
     orderBy: 'id',
   )).map(_service).toList();
-  Future<void> saveService(ServiceItem s) async =>
+  /// Mengembalikan id baris, supaya pemanggil yang baru membuat jadwal bisa
+  /// langsung menuliskan log servis pertama untuk id itu.
+  Future<int> saveService(ServiceItem s) async =>
       (await db).insert('service_items', {
         'id': s.id,
         'name': s.name,
         'description': s.description,
+        'location': s.location,
+        'cost': s.cost,
+        'remind': s.remind ? 1 : 0,
         'interval_km': s.intervalKm,
         'last_serviced_km': s.lastServicedOdometerKm,
       }, conflictAlgorithm: ConflictAlgorithm.replace);
@@ -222,7 +227,10 @@ class OdomateRepository {
     id: r['id'] as int,
     name: r['name'] as String,
     description: r['description'] as String? ?? '',
+    location: r['location'] as String? ?? '',
+    cost: (r['cost'] as num?)?.toDouble() ?? 0,
     intervalKm: (r['interval_km'] as num).toDouble(),
     lastServicedOdometerKm: (r['last_serviced_km'] as num).toDouble(),
+    remind: (r['remind'] as int? ?? 1) != 0,
   );
 }

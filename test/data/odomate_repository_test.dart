@@ -26,7 +26,7 @@ void main() {
             'CREATE TABLE vehicle (id INTEGER PRIMARY KEY, name TEXT NOT NULL, odometer_km REAL NOT NULL, user_name TEXT NOT NULL DEFAULT \'\', plate_number TEXT NOT NULL DEFAULT \'\', photo_path TEXT)',
           );
           await db.execute(
-            'CREATE TABLE service_items (id INTEGER PRIMARY KEY, name TEXT NOT NULL, description TEXT NOT NULL DEFAULT \'\', interval_km REAL NOT NULL, last_serviced_km REAL NOT NULL)',
+            'CREATE TABLE service_items (id INTEGER PRIMARY KEY, name TEXT NOT NULL, description TEXT NOT NULL DEFAULT \'\', location TEXT NOT NULL DEFAULT \'\', cost REAL NOT NULL DEFAULT 0, remind INTEGER NOT NULL DEFAULT 1, interval_km REAL NOT NULL, last_serviced_km REAL NOT NULL)',
           );
           await db.execute(
             'CREATE TABLE service_logs (id INTEGER PRIMARY KEY, service_item_id INTEGER NOT NULL, serviced_at TEXT NOT NULL, odometer_km REAL NOT NULL, note TEXT)',
@@ -77,6 +77,41 @@ void main() {
     final state = await repository.loadNotificationState(1);
     expect(state.cycle, 2);
     expect(state.lastReminder, ServiceReminder.dueSoon);
+  });
+
+  test('round-trips the service cost, workshop, and reminder flag', () async {
+    await repository.saveService(
+      const ServiceItem(
+        id: 1,
+        name: 'Ganti Oli Mesin',
+        location: 'AHASS Tebet Jaya',
+        cost: 85000,
+        intervalKm: 2000,
+        lastServicedOdometerKm: 24582,
+        remind: false,
+      ),
+    );
+
+    final stored = (await repository.listServices()).single;
+    expect(stored.location, 'AHASS Tebet Jaya');
+    expect(stored.cost, 85000);
+    expect(stored.remind, isFalse);
+  });
+
+  test('defaults cost, workshop, and reminder for rows saved without them', () async {
+    // Baris lama (skema sebelum kolom ini ada) harus tetap terbaca: biaya 0,
+    // bengkel kosong, dan pengingat menyala.
+    await database.insert('service_items', {
+      'id': 7,
+      'name': 'Busi',
+      'interval_km': 8000.0,
+      'last_serviced_km': 1000.0,
+    });
+
+    final stored = (await repository.listServices()).single;
+    expect(stored.location, isEmpty);
+    expect(stored.cost, 0);
+    expect(stored.remind, isTrue);
   });
 
   test('corrects odometer without creating a ride', () async {

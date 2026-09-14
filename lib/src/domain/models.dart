@@ -73,27 +73,46 @@ class Ride {
 class ServiceItem {
   final int? id;
   final String name, description;
+
+  /// Bengkel / tempat servis dikerjakan. Diakses dari halaman Tambah Servis.
+  final String location;
+
+  /// Total biaya dalam rupiah. `0` berarti belum diisi (kolomnya opsional).
+  final double cost;
   final double intervalKm, lastServicedOdometerKm;
+
+  /// Kalau `false`, pengingat untuk item ini tidak pernah dikirim — dipakai
+  /// tombol "Pengingat Jadwal Servis" di halaman Tambah Servis.
+  final bool remind;
   const ServiceItem({
     this.id,
     required this.name,
     this.description = '',
+    this.location = '',
+    this.cost = 0,
     required this.intervalKm,
     required this.lastServicedOdometerKm,
+    this.remind = true,
   });
   ServiceItem copyWith({
     int? id,
     String? name,
     String? description,
+    String? location,
+    double? cost,
     double? intervalKm,
     double? lastServicedOdometerKm,
+    bool? remind,
   }) => ServiceItem(
     id: id ?? this.id,
     name: name ?? this.name,
     description: description ?? this.description,
+    location: location ?? this.location,
+    cost: cost ?? this.cost,
     intervalKm: intervalKm ?? this.intervalKm,
     lastServicedOdometerKm:
         lastServicedOdometerKm ?? this.lastServicedOdometerKm,
+    remind: remind ?? this.remind,
   );
 }
 

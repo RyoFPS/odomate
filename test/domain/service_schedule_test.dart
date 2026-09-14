@@ -35,4 +35,25 @@ void main() {
     );
     expect(described.description, contains('kebocoran'));
   });
+
+  test('a muted item never produces a reminder', () {
+    const muted = ServiceItem(
+      name: 'Oli mesin',
+      intervalKm: 1000,
+      lastServicedOdometerKm: 0,
+      remind: false,
+    );
+
+    // Statusnya tetap jatuh tempo — yang dimatikan hanya pengingatnya, supaya
+    // kartu di halaman Servis masih bisa menandainya merah.
+    expect(ServiceSchedule.status(1000, muted), ServiceStatus.due);
+    expect(
+      ServiceSchedule.reminderType(1000, muted, const NotificationState()),
+      isNull,
+    );
+    expect(
+      ServiceSchedule.reminderType(800, muted, const NotificationState()),
+      isNull,
+    );
+  });
 }
