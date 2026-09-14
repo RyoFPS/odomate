@@ -48,6 +48,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
+        // Header tab ini tidak punya tombol back, jadi leading-nya kosong dan
+        // `titleSpacing` bawaan appBarTheme (0, untuk tombol back) akan
+        // menempelkan judul ke tepi layar. Nilainya ditulis sendiri di sini.
+        titleSpacing: 16,
         title: searching
             ? TextField(
                 autofocus: true,

@@ -175,12 +175,12 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         backgroundColor: Colors.white,
-        leadingWidth: 40,
         leading: IconButton(
           onPressed: () => Navigator.of(context).pop(),
-          icon: const Icon(Icons.arrow_back_rounded, size: 22),
+          // Ukuran ikonnya dibiarkan bawaan (24) — jaraknya ke judul datang dari
+          // appBarTheme, dan ikon yang lebih kecil menggeser tepinya 1px.
+          icon: const Icon(Icons.arrow_back_rounded),
         ),
-        titleSpacing: 0,
         title: Text(
           editing ? 'Edit Servis' : 'Tambah Servis',
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),

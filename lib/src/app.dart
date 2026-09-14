@@ -12,6 +12,15 @@ import 'screens/setup_screen.dart';
 import 'screens/statistics_screen.dart';
 import 'tracking/ride_tracker.dart';
 
+/// Tema OdoMate.
+///
+/// Dipisah jadi fungsi publik supaya test bisa merender layar dengan tema yang
+/// benar-benar dipakai app. Tanpa ini, test yang mengukur apa pun dari tema —
+/// misalnya geometri AppBar — akan mengukur tema bawaan Material, dan angkanya
+/// menyesatkan.
+ThemeData odomateTheme(Brightness brightness) =>
+    _OdoMateAppState.themeFor(brightness);
+
 class OdoMateApp extends StatefulWidget {
   final OdomateRepository repository;
   final RideTracker tracker;
@@ -57,8 +66,8 @@ class _OdoMateAppState extends State<OdoMateApp> {
       GlobalCupertinoLocalizations.delegate,
     ],
     themeAnimationDuration: const Duration(milliseconds: 300),
-    theme: _theme(Brightness.light),
-    darkTheme: _theme(Brightness.dark),
+    theme: odomateTheme(Brightness.light),
+    darkTheme: odomateTheme(Brightness.dark),
     debugShowCheckedModeBanner: false,
     home: loading
         ? const _SplashScreen()
@@ -88,7 +97,7 @@ class _OdoMateAppState extends State<OdoMateApp> {
           ),
   );
 
-  ThemeData _theme(Brightness brightness) {
+  static ThemeData themeFor(Brightness brightness) {
     final dark = brightness == Brightness.dark;
     final scheme =
         ColorScheme.fromSeed(
@@ -174,13 +183,25 @@ class _OdoMateAppState extends State<OdoMateApp> {
         scrolledUnderElevation: 0,
         centerTitle: false,
         toolbarHeight: 64,
-        titleSpacing: 16,
         shape: Border(
           bottom: BorderSide(
             color: dark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
             width: 1,
           ),
         ),
+        // Jarak tombol back ke judul ditulis sekali di sini, dengan halaman
+        // Setting sebagai referensinya (jaraknya 16px di sana). Asalnya:
+        // leading duduk di slot selebar `leadingWidth`, judul mulai di
+        // `leadingWidth + titleSpacing`, dan ikon back selalu tepat di tengah
+        // slot — jadi 56 + 0 menaruh tepi kanan ikon 24 di x=40 dan judul di
+        // x=56. Layar berback tidak perlu mengeset apa pun lagi; mengubah salah
+        // satu angka di sini menggeser keenamnya sekaligus.
+        //
+        // `titleSpacing: 0` ikut berlaku untuk AppBar yang TIDAK punya leading,
+        // dan di situ judulnya jadi menempel ke tepi kiri layar — AppBar
+        // semacam itu (header tab) harus menulis `titleSpacing`-nya sendiri.
+        leadingWidth: 56,
+        titleSpacing: 0,
         // Tanpa ini, judul AppBar yang cuma mengeset weight akan mewarisi
         // titleLarge Material 3 — 22px — dan 22px tidak dipakai di satu pun layar
         // desain. Ukuran header di desain selalu ditulis eksplisit per layar

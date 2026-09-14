@@ -42,13 +42,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 64,
-        leadingWidth: 40,
         leading: IconButton(
           onPressed: () => Navigator.of(context).maybePop(),
           icon: const Icon(Icons.arrow_back),
           tooltip: MaterialLocalizations.of(context).backButtonTooltip,
         ),
-        titleSpacing: 0,
+        // Jaraknya ke judul datang dari appBarTheme — halaman inilah yang jadi
+        // referensinya, jadi tidak ada yang perlu ditulis ulang di sini.
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

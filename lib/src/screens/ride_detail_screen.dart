@@ -31,9 +31,6 @@ class RideDetailScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        centerTitle: false,
-        leadingWidth: 40,
-        titleSpacing: 0,
         title: Text(
           l10n.t('ride_detail'),
           // Desain: `text-xl font-bold` = 20px w700, bukan 18px bawaan

@@ -944,8 +944,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         backgroundColor: Colors.white,
-        leadingWidth: 40,
-        titleSpacing: 0,
         title: const Text('Detail servis'),
       ),
       body: ListView(

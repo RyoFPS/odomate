@@ -323,6 +323,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        // Header tab ini tidak punya tombol back; lihat catatan di
+        // appBarTheme soal `titleSpacing: 0` yang berlaku untuk leading kosong.
+        titleSpacing: 16,
         title: Text(
           l10n.t('profile'),
           // Desain: `text-lg font-bold tracking-tight` = 18px w700.
