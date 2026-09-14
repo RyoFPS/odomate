@@ -118,26 +118,35 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 68,
+        // 64 = h-16 di design.
+        toolbarHeight: 64,
         titleSpacing: 16,
         title: Row(
           children: [
             Stack(
               clipBehavior: Clip.none,
               children: [
-                CircleAvatar(
-                  key: ValueKey(
-                    vehicle?.photoPath == null
-                        ? 'home-profile-avatar-fallback'
-                        : 'home-profile-avatar-photo',
+                // Cincin tipis ini yang bikin avatar kebaca sebagai elemen
+                // tersendiri di design (border-outline-variant di sekelilingnya).
+                Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: colors.outlineVariant),
                   ),
-                  radius: 19,
-                  backgroundColor: colors.primaryContainer,
-                  backgroundImage: vehicle?.photoPath == null
-                      ? const AssetImage(
-                          'stitch_odomate_modern_ui/odomate_rider_avatar_updated_full/screen.png',
-                        )
-                      : FileImage(File(vehicle!.photoPath!)),
+                  child: CircleAvatar(
+                    key: ValueKey(
+                      vehicle?.photoPath == null
+                          ? 'home-profile-avatar-fallback'
+                          : 'home-profile-avatar-photo',
+                    ),
+                    radius: 19,
+                    backgroundColor: colors.primaryContainer,
+                    backgroundImage: vehicle?.photoPath == null
+                        ? const AssetImage(
+                            'stitch_odomate_modern_ui/odomate_rider_avatar_updated_full/screen.png',
+                          )
+                        : FileImage(File(vehicle!.photoPath!)),
+                  ),
                 ),
                 Positioned(
                   right: -1,
@@ -154,7 +163,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             Flexible(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -167,12 +176,17 @@ class _HomeScreenState extends State<HomeScreen> {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  Text(
-                    vehicleSummary.isEmpty ? 'Motor utama' : vehicleSummary,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.secondary,
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 160),
+                    child: Text(
+                      vehicleSummary.isEmpty ? 'Motor utama' : vehicleSummary,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colors.secondary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ],
@@ -183,18 +197,15 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
-            child: IconButton.filledTonal(
-              onPressed: _showNotifications,
-              icon: const Icon(Icons.notifications_none),
-              tooltip: l10n.t('notifications'),
-            ),
+            child: _notificationButton(context, l10n),
           ),
         ],
       ),
       body: ValueListenableBuilder<RideTrackingState>(
         valueListenable: widget.tracker.state,
         builder: (context, state, child) => ListView(
-          padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
+          // 16 = jarak header->konten di design (header h-16 + main pt-20).
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
           children: [
             _vehicleCard(context, state, l10n),
             const SizedBox(height: 12),
@@ -252,6 +263,44 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 12),
             _serviceSummary(context, l10n),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// Tombol lonceng di header.
+  ///
+  /// Design-nya bukan tombol bulat bertinta, tapi kotak 36x36 ber-radius 12
+  /// dengan garis tipis `outline-variant` dan ikon lonceng terisi berwarna
+  /// `on-surface` — lihat `stitch_odomate_modern_ui/odomate_home_dashboard_1`.
+  ///
+  /// Titik merah "belum dibaca" di design sengaja belum dipasang: app belum
+  /// punya state belum-dibaca yang persisten, dan titik yang tidak pernah padam
+  /// akan jadi sinyal palsu.
+  Widget _notificationButton(BuildContext context, AppLocalizations l10n) {
+    final colors = Theme.of(context).colorScheme;
+    return Tooltip(
+      message: l10n.t('notifications'),
+      child: SizedBox(
+        width: 36,
+        height: 36,
+        child: Material(
+          color: Colors.transparent,
+          clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: colors.outlineVariant),
+          ),
+          child: InkWell(
+            onTap: _showNotifications,
+            child: Center(
+              child: Icon(
+                Icons.notifications,
+                size: 18,
+                color: colors.onSurface,
+              ),
+            ),
+          ),
         ),
       ),
     );
