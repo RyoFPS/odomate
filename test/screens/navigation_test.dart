@@ -5,6 +5,7 @@ import 'package:odomate/src/data/odomate_repository.dart';
 import 'package:odomate/src/domain/models.dart';
 import 'package:odomate/src/screens/home_screen.dart';
 import 'package:odomate/src/screens/history_screen.dart';
+import 'package:odomate/src/screens/profile_screen.dart';
 import 'package:odomate/src/screens/ride_detail_screen.dart';
 import 'package:odomate/src/screens/statistics_screen.dart';
 import 'package:odomate/src/tracking/ride_tracker.dart';
@@ -233,5 +234,40 @@ void main() {
     expect(find.byType(HistoryScreen), findsOneWidget);
     expect(find.text('Semua'), findsOneWidget);
     expect(find.byTooltip('Start Ride'), findsOneWidget);
+  });
+
+  testWidgets('the Profile fields stay above the keyboard', (tester) async {
+    final repository = _FakeRepository();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MainNavigation(
+          pages: [
+            ProfileScreen(
+              repository: repository,
+              themeMode: ThemeMode.system,
+              language: 'id',
+              onThemeChanged: (_) {},
+              onLanguageChanged: (_) {},
+            ),
+          ],
+          rideActive: false,
+          onRide: () {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    const keyboard = 300.0;
+    tester.view.viewInsets = FakeViewPadding(
+      bottom: keyboard * tester.view.devicePixelRatio,
+    );
+    addTearDown(tester.view.reset);
+    await tester.pumpAndSettle();
+
+    // Scaffold halaman di dalam MainNavigation harus tetap menyusut sendiri,
+    // supaya kolom yang sedang diisi tidak tertutup keyboard. Kalau inset-nya
+    // ikut hilang, daftar ini akan tetap setinggi layar penuh.
+    final list = tester.getRect(find.byType(ListView).first);
+    expect(list.bottom, lessThanOrEqualTo(tester.view.physicalSize.height / tester.view.devicePixelRatio - keyboard));
   });
 }
