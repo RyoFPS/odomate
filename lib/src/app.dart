@@ -339,6 +339,16 @@ class _MainNavigationState extends State<MainNavigation> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    if (index == 4 && widget.pages.length > 4) {
+      final page = widget.pages[4];
+      if (page is StatisticsScreen) {
+        return StatisticsScreen(
+          repository: page.repository,
+          now: page.now,
+          onBack: () => setState(() => index = 0),
+        );
+      }
+    }
     return Scaffold(
       // Bottom bar dan tombol Start Ride harus tetap terpaku di dasar layar.
       // Dengan `resizeToAvoidBottomInset` default (true), Scaffold mengangkat
@@ -394,9 +404,9 @@ class _MainNavigationState extends State<MainNavigation> {
             await tracker.start();
           }
           if (!context.mounted || tracker.state.value.error == null) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(tracker.state.value.error!)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(tracker.state.value.error!)));
         },
         tooltip: state.active ? l10n.t('stop_ride') : l10n.t('start_ride'),
         child: Icon(

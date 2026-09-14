@@ -247,19 +247,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     onTap: () => widget.onNavigate?.call(1),
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _shortcutCard(
-                    context,
-                    icon: Icons.insights_outlined,
-                    title: l10n.t('statistics'),
-                    subtitle:
-                        '${_km(sevenDayDistance)} km • $sevenDayRideCount rit',
-                    onTap: () => widget.onNavigate?.call(4),
-                  ),
-                ),
               ],
             ),
+            const SizedBox(height: 12),
+            _tripStatisticsCard(context, l10n),
             const SizedBox(height: 12),
             _serviceSummary(context, l10n),
           ],
@@ -592,6 +583,172 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _tripStatisticsCard(BuildContext context, AppLocalizations l10n) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final averageRide = sevenDayRideCount == 0
+        ? 0.0
+        : sevenDayDistance / sevenDayRideCount;
+    final progress = sevenDayDistance == 0
+        ? 0.0
+        : (todayDistance / sevenDayDistance).clamp(0.0, 1.0).toDouble();
+
+    return Card(
+      key: const ValueKey('dashboard-trip-statistics'),
+      margin: EdgeInsets.zero,
+      child: InkWell(
+        onTap: () => widget.onNavigate?.call(4),
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: colors.primaryContainer,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      Icons.insights_outlined,
+                      size: 18,
+                      color: colors.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      l10n.t('trip_statistics'),
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => widget.onNavigate?.call(4),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      minimumSize: const Size(0, 32),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text(l10n.t('view_detail')),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.t('last_seven_days'),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: colors.secondary,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text.rich(
+                          TextSpan(
+                            text: _km(sevenDayDistance),
+                            children: [
+                              TextSpan(
+                                text: ' km',
+                                style: theme.textTheme.labelLarge?.copyWith(
+                                  color: colors.primary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                          style: theme.textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: _statisticsMiniMetric(
+                      context,
+                      l10n.t('ride_count'),
+                      '$sevenDayRideCount',
+                    ),
+                  ),
+                  Expanded(
+                    child: _statisticsMiniMetric(
+                      context,
+                      l10n.t('average_distance'),
+                      '${_km(averageRide)} km',
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(99),
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        minHeight: 7,
+                        backgroundColor: colors.surfaceContainerHighest,
+                        valueColor: AlwaysStoppedAnimation(colors.primary),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    '${_km(todayDistance)} km ${l10n.t('today_lower')}',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colors.secondary,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _statisticsMiniMetric(
+    BuildContext context,
+    String label,
+    String value,
+  ) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: theme.colorScheme.secondary,
+          ),
+        ),
+        const SizedBox(height: 3),
+        Text(
+          value,
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
     );
   }
 

@@ -133,7 +133,8 @@ void main() {
 
     expect(find.byType(StatisticsScreen), findsOneWidget);
     expect(find.text('Jarak'), findsOneWidget);
-    expect(find.byTooltip('Start Ride'), findsOneWidget);
+    expect(find.byIcon(Icons.arrow_back), findsOneWidget);
+    expect(find.byTooltip('Start Ride'), findsNothing);
   });
 
   testWidgets('Home shows the rider avatar template without a profile photo', (
