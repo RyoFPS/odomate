@@ -221,12 +221,21 @@ class _OdometerCorrectionSheetState extends State<OdometerCorrectionSheet> {
               children: [
                 for (final amount in const [10.0, 50.0, 100.0]) ...[
                   Expanded(
-                    child: OutlinedButton(
+                    child: FilledButton(
                       onPressed: () =>
                           _setValue((value ?? widget.initialValue) + amount),
-                      style: OutlinedButton.styleFrom(
-                        minimumSize: const Size(0, 40),
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFFF1F5F9),
+                        foregroundColor: const Color(0xFF0F172A),
+                        minimumSize: const Size(0, 32),
+                        padding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        textStyle: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                       child: Text('+${amount.toInt()} km'),
                     ),
@@ -234,12 +243,20 @@ class _OdometerCorrectionSheetState extends State<OdometerCorrectionSheet> {
                   const SizedBox(width: 8),
                 ],
                 Expanded(
-                  child: OutlinedButton(
+                  child: FilledButton(
                     onPressed: () => _setValue(widget.initialValue),
-                    style: OutlinedButton.styleFrom(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFFFEF2F2),
                       foregroundColor: colors.error,
-                      minimumSize: const Size(0, 40),
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      minimumSize: const Size(0, 32),
+                      padding: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      textStyle: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     child: Text(l10n.t('reset')),
                   ),
@@ -276,6 +293,14 @@ class _OdometerCorrectionSheetState extends State<OdometerCorrectionSheet> {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () => Navigator.pop(context),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(0, 48),
+                      side: BorderSide(color: colors.outlineVariant),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      textStyle: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
                     child: Text(l10n.t('cancel')),
                   ),
                 ),
@@ -284,6 +309,13 @@ class _OdometerCorrectionSheetState extends State<OdometerCorrectionSheet> {
                   child: FilledButton.icon(
                     onPressed: _submit,
                     icon: const Icon(Icons.check, size: 18),
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(0, 48),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      textStyle: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
                     label: Text(l10n.t('save_odometer')),
                   ),
                 ),

@@ -5,6 +5,7 @@ import '../domain/models.dart';
 import '../domain/ride_statistics.dart';
 import '../domain/service_schedule.dart';
 import '../i18n/app_localizations.dart';
+import '../widgets/date_range_chips.dart';
 
 class StatisticsScreen extends StatefulWidget {
   final OdomateRepository repository;
@@ -84,37 +85,11 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       StatisticsPeriod.lastSevenDays: l10n.t('last_seven_days'),
       StatisticsPeriod.currentMonth: l10n.t('current_month'),
     };
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: StatisticsPeriod.values.map((value) {
-          final selected = value == period;
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: ChoiceChip(
-              label: Text(labels[value]!, textAlign: TextAlign.center),
-              selected: selected,
-              showCheckmark: false,
-              onSelected: (_) => setState(() => period = value),
-              backgroundColor: Colors.white,
-              selectedColor: const Color(0xFFEFF6FF),
-              side: BorderSide(
-                color: selected
-                    ? const Color(0xFF93C5FD)
-                    : Theme.of(context).colorScheme.outlineVariant,
-              ),
-              labelStyle: TextStyle(
-                color: selected
-                    ? const Color(0xFF2563EB)
-                    : Theme.of(context).colorScheme.onSurfaceVariant,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                fontSize: 12,
-              ),
-              visualDensity: VisualDensity.compact,
-            ),
-          );
-        }).toList(),
-      ),
+    return DateRangeChips(
+      labels: StatisticsPeriod.values.map((value) => labels[value]!).toList(),
+      selectedIndex: StatisticsPeriod.values.indexOf(period),
+      onSelected: (index) =>
+          setState(() => period = StatisticsPeriod.values[index]),
     );
   }
 

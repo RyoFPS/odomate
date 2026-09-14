@@ -4,6 +4,7 @@ import '../data/odomate_repository.dart';
 import '../domain/models.dart';
 import '../domain/ride_history.dart';
 import '../i18n/app_localizations.dart';
+import '../widgets/date_range_chips.dart';
 import 'ride_detail_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -221,50 +222,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget _periodSelector(BuildContext context, AppLocalizations l10n) =>
-      SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            for (var i = 0; i < RideHistoryPeriod.values.length; i++) ...[
-              if (i > 0) const SizedBox(width: 6),
-              _periodChip(
-                context,
-                _periodLabel(l10n, RideHistoryPeriod.values[i]),
-                period == RideHistoryPeriod.values[i],
-                () => setState(() => period = RideHistoryPeriod.values[i]),
-              ),
-            ],
-          ],
-        ),
+      DateRangeChips(
+        labels: RideHistoryPeriod.values
+            .map((value) => _periodLabel(l10n, value))
+            .toList(),
+        selectedIndex: RideHistoryPeriod.values.indexOf(period),
+        onSelected: (index) =>
+            setState(() => period = RideHistoryPeriod.values[index]),
       );
-
-  Widget _periodChip(
-    BuildContext context,
-    String label,
-    bool selected,
-    VoidCallback onSelected,
-  ) {
-    const blue = Color(0xFF2563EB);
-    return ChoiceChip(
-      label: Text(label),
-      selected: selected,
-      showCheckmark: false,
-      onSelected: (_) => onSelected(),
-      backgroundColor: Colors.white,
-      selectedColor: const Color(0xFFEFF6FF),
-      side: BorderSide(
-        color: selected ? const Color(0xFFBFDBFE) : const Color(0xFFE2E8F0),
-      ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      labelStyle: TextStyle(
-        color: selected ? blue : const Color(0xFF475569),
-        fontSize: 12,
-        fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      visualDensity: VisualDensity.compact,
-    );
-  }
 
   Widget _summary(
     BuildContext context,
@@ -685,18 +650,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     style: _filterLabelStyle(theme),
                   ),
                   const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final value in RideHistoryPeriod.values)
-                        _filterChip(
-                          context,
-                          label: _periodLabel(l10n, value),
-                          selected: draftPeriod == value,
-                          onTap: () => updateSheet(() => draftPeriod = value),
-                        ),
-                    ],
+                  DateRangeChips(
+                    labels: RideHistoryPeriod.values
+                        .map((value) => _periodLabel(l10n, value))
+                        .toList(),
+                    selectedIndex: RideHistoryPeriod.values.indexOf(
+                      draftPeriod,
+                    ),
+                    onSelected: (index) => updateSheet(
+                      () => draftPeriod = RideHistoryPeriod.values[index],
+                    ),
                   ),
                   const SizedBox(height: 16),
                   Text(_copy(context, 'sort'), style: _filterLabelStyle(theme)),
