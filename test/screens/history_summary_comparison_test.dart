@@ -154,4 +154,28 @@ void main() {
 
     expect(find.text('+20% vs bulan lalu'), findsOneWidget);
   });
+
+  testWidgets('keeps the label flexible so a long one is cut, not spilled', (
+    tester,
+  ) async {
+    await _open(tester, _rising, period: '7 hari terakhir');
+
+    // Kartu Total Jarak hanya selebar separuh baris, dan labelnya bisa lebih
+    // panjang dari "+18% vs minggu lalu" — "+100% vs bulan lalu" misalnya.
+    // Tanpa flex, teksnya meluber keluar kartu alih-alih dipotong elipsis.
+    //
+    // Diukur pada lebar perangkat sebenarnya dengan font aslinya, baris ini
+    // memakai 112,4px dari ~130px yang tersedia. Test ini tidak mengukur itu
+    // karena font bawaan `flutter test` memberi setiap glyph kotak 1em, jadi
+    // lebar teks di sini tidak mewakili perangkat.
+    final label = find.text('+18% vs minggu lalu');
+    // `Row` terdekat di atas label adalah baris pembanding itu sendiri — bukan
+    // `Row` kartu yang membungkus seluruh blok Total Jarak.
+    final row = find.ancestor(of: label, matching: find.byType(Row)).first;
+    expect(
+      find.descendant(of: row, matching: find.byType(Expanded)),
+      findsOneWidget,
+    );
+    expect(tester.widget<Text>(label).overflow, TextOverflow.ellipsis);
+  });
 }
