@@ -1026,6 +1026,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
         ],
       ),
     );
+    await Future<void>.delayed(kThemeAnimationDuration);
     controller.dispose();
     if (value == null) return;
     await widget.repository.updateOdometer(value);

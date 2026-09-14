@@ -32,7 +32,7 @@ void main() {
             'CREATE TABLE service_logs (id INTEGER PRIMARY KEY, service_item_id INTEGER NOT NULL, serviced_at TEXT NOT NULL, odometer_km REAL NOT NULL, note TEXT)',
           );
           await db.execute(
-            'CREATE TABLE rides (id INTEGER PRIMARY KEY, started_at TEXT NOT NULL, ended_at TEXT, distance_km REAL NOT NULL)',
+            'CREATE TABLE rides (id INTEGER PRIMARY KEY, started_at TEXT NOT NULL, ended_at TEXT, distance_km REAL NOT NULL, odometer_applied_km REAL NOT NULL DEFAULT 0)',
           );
           await db.execute(
             'CREATE TABLE notification_state (service_item_id INTEGER PRIMARY KEY, cycle INTEGER NOT NULL, last_reminder TEXT)',
@@ -86,6 +86,43 @@ void main() {
     expect((await repository.loadVehicle())!.odometerKm, 1234.5);
     expect(await repository.listRides(), isEmpty);
   });
+
+  test(
+    'applies an active ride checkpoint to the odometer immediately',
+    () async {
+      await repository.saveVehicle(
+        const Vehicle(name: 'Beat', odometerKm: 1000),
+      );
+      final id = await repository.createRide(
+        Ride(startedAt: DateTime(2026, 9, 14, 8)),
+      );
+
+      await repository.saveActiveRideCheckpoint(
+        Ride(id: id, startedAt: DateTime(2026, 9, 14, 8), distanceKm: 1.25),
+      );
+
+      expect((await repository.loadVehicle())!.odometerKm, 1001.25);
+    },
+  );
+
+  test(
+    'does not add an already applied checkpoint again when stopping',
+    () async {
+      await repository.saveVehicle(
+        const Vehicle(name: 'Beat', odometerKm: 1000),
+      );
+      final id = await repository.createRide(
+        Ride(startedAt: DateTime(2026, 9, 14, 8)),
+      );
+      await repository.saveActiveRideCheckpoint(
+        Ride(id: id, startedAt: DateTime(2026, 9, 14, 8), distanceKm: 1.25),
+      );
+
+      await repository.finishRide(id, DateTime(2026, 9, 14, 8, 10), 1.25);
+
+      expect((await repository.loadVehicle())!.odometerKm, 1001.25);
+    },
+  );
 
   test('lists stored rides after reopening the repository', () async {
     final startedAt = DateTime(2026, 9, 5, 8, 30);

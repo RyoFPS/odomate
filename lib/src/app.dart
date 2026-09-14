@@ -322,27 +322,11 @@ class _MainNavigationState extends State<MainNavigation> {
   int index = 0;
   @override
   Widget build(BuildContext context) {
-    final active = widget.tracker?.state.value.active ?? widget.rideActive;
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: _page(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton(
-        shape: const CircleBorder(),
-        elevation: 6,
-        onPressed:
-            widget.onRide ??
-            () async {
-              if (active) {
-                await widget.tracker!.stop();
-              } else {
-                await widget.tracker!.start();
-              }
-              if (mounted) setState(() {});
-            },
-        tooltip: active ? l10n.t('stop_ride') : l10n.t('start_ride'),
-        child: Icon(active ? Icons.stop : Icons.play_arrow),
-      ),
+      floatingActionButton: _rideButton(l10n),
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         notchMargin: 8,
@@ -359,6 +343,43 @@ class _MainNavigationState extends State<MainNavigation> {
             _tab(2, Icons.build_outlined, l10n.t('service')),
             _tab(3, Icons.person_outline, l10n.t('profile')),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _rideButton(AppLocalizations l10n) {
+    final tracker = widget.tracker;
+    if (tracker == null) {
+      return FloatingActionButton(
+        shape: const CircleBorder(),
+        elevation: 6,
+        onPressed: widget.onRide,
+        tooltip: widget.rideActive ? l10n.t('stop_ride') : l10n.t('start_ride'),
+        child: Icon(widget.rideActive ? Icons.stop : Icons.play_arrow),
+      );
+    }
+    return ValueListenableBuilder<RideTrackingState>(
+      valueListenable: tracker.state,
+      builder: (context, state, _) => FloatingActionButton(
+        shape: const CircleBorder(),
+        elevation: 6,
+        onPressed: () async {
+          if (state.active) {
+            await tracker.stop();
+          } else {
+            await tracker.start();
+          }
+          if (!context.mounted || tracker.state.value.error == null) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(tracker.state.value.error!)),
+          );
+        },
+        tooltip: state.active ? l10n.t('stop_ride') : l10n.t('start_ride'),
+        child: Icon(
+          state.active
+              ? (state.waitingForFix ? Icons.gps_not_fixed : Icons.stop)
+              : Icons.play_arrow,
         ),
       ),
     );

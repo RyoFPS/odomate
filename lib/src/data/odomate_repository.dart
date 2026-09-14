@@ -33,6 +33,19 @@ class OdomateRepository {
   });
   Future<void> finishRide(int id, DateTime endedAt, double distanceKm) async =>
       (await db).transaction((tx) async {
+        final ride = await tx.query(
+          'rides',
+          columns: ['distance_km', 'odometer_applied_km'],
+          where: 'id = ?',
+          whereArgs: [id],
+          limit: 1,
+        );
+        final appliedDistance = ride.isEmpty
+            ? 0.0
+            : (ride.first['odometer_applied_km'] as num).toDouble();
+        final remainingDistance = (distanceKm - appliedDistance)
+            .clamp(0.0, double.infinity)
+            .toDouble();
         await tx.update(
           'rides',
           {'ended_at': endedAt.toIso8601String(), 'distance_km': distanceKm},
@@ -45,7 +58,8 @@ class OdomateRepository {
             'vehicle',
             {
               'odometer_km':
-                  (v.first['odometer_km'] as num).toDouble() + distanceKm,
+                  (v.first['odometer_km'] as num).toDouble() +
+                  remainingDistance,
             },
             where: 'id = ?',
             whereArgs: [v.first['id']],
@@ -101,12 +115,43 @@ class OdomateRepository {
   Future<void> saveActiveRideCheckpoint(Ride r) async {
     final d = await db;
     if (r.id == null) return;
-    await d.update(
-      'rides',
-      {'distance_km': r.distanceKm},
-      where: 'id = ?',
-      whereArgs: [r.id],
-    );
+    await d.transaction((tx) async {
+      final ride = await tx.query(
+        'rides',
+        columns: ['distance_km', 'odometer_applied_km'],
+        where: 'id = ?',
+        whereArgs: [r.id],
+        limit: 1,
+      );
+      if (ride.isEmpty) return;
+      final storedDistance = (ride.first['distance_km'] as num).toDouble();
+      final appliedDistance = (ride.first['odometer_applied_km'] as num)
+          .toDouble();
+      final increment = (r.distanceKm - storedDistance)
+          .clamp(0.0, double.infinity)
+          .toDouble();
+      await tx.update(
+        'rides',
+        {
+          'distance_km': r.distanceKm,
+          'odometer_applied_km': appliedDistance + increment,
+        },
+        where: 'id = ?',
+        whereArgs: [r.id],
+      );
+      if (increment == 0) return;
+      final vehicle = await tx.query('vehicle', limit: 1);
+      if (vehicle.isEmpty) return;
+      await tx.update(
+        'vehicle',
+        {
+          'odometer_km':
+              (vehicle.first['odometer_km'] as num).toDouble() + increment,
+        },
+        where: 'id = ?',
+        whereArgs: [vehicle.first['id']],
+      );
+    });
   }
 
   Future<List<ServiceLog>> listServiceLogs() async =>

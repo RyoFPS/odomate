@@ -385,7 +385,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     state.error != null
                         ? Icons.location_off_outlined
                         : state.active
-                        ? Icons.gps_fixed
+                        ? state.waitingForFix
+                            ? Icons.gps_not_fixed
+                            : Icons.gps_fixed
                         : Icons.sensors_outlined,
                     size: 18,
                     color: state.error != null
@@ -411,7 +413,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             text: state.error != null
                                 ? ' • ${state.error}'
                                 : state.active
-                                ? ' • ${_km(state.ride?.distanceKm ?? 0)} ${l10n.t('km_recorded')}'
+                                ? state.waitingForFix
+                                    ? ' • ${l10n.t('waiting_for_gps')}'
+                                    : ' • ${_km(state.ride?.distanceKm ?? 0)} ${l10n.t('km_recorded')}'
                                 : ' • ${l10n.t('start_hint')}',
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: colors.secondary,

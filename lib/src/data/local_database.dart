@@ -4,13 +4,13 @@ import 'package:sqflite/sqflite.dart';
 class LocalDatabase {
   static Future<Database> open() async => openDatabase(
     p.join(await getDatabasesPath(), 'odomate.db'),
-    version: 4,
+    version: 5,
     onCreate: _create,
-    onUpgrade: (db, oldVersion, newVersion) => _ensureVehicleColumns(db),
-    onOpen: _ensureVehicleColumns,
+    onUpgrade: (db, oldVersion, newVersion) => _ensureColumns(db),
+    onOpen: _ensureColumns,
   );
 
-  static Future<void> _ensureVehicleColumns(Database db) async {
+  static Future<void> _ensureColumns(Database db) async {
     final rows = await db.rawQuery('PRAGMA table_info(vehicle)');
     final columns = rows.map((row) => row['name'] as String).toSet();
     if (!columns.contains('user_name')) {
@@ -35,6 +35,13 @@ class LocalDatabase {
         "ALTER TABLE service_items ADD COLUMN description TEXT NOT NULL DEFAULT ''",
       );
     }
+    final rideRows = await db.rawQuery('PRAGMA table_info(rides)');
+    final rideColumns = rideRows.map((row) => row['name'] as String).toSet();
+    if (!rideColumns.contains('odometer_applied_km')) {
+      await db.execute(
+        'ALTER TABLE rides ADD COLUMN odometer_applied_km REAL NOT NULL DEFAULT 0',
+      );
+    }
   }
 
   static Future<void> _create(Database db, int version) async {
@@ -42,7 +49,7 @@ class LocalDatabase {
       "CREATE TABLE vehicle (id INTEGER PRIMARY KEY, name TEXT NOT NULL, odometer_km REAL NOT NULL, user_name TEXT NOT NULL DEFAULT '', plate_number TEXT NOT NULL DEFAULT '', photo_path TEXT)",
     );
     await db.execute(
-      'CREATE TABLE rides (id INTEGER PRIMARY KEY, started_at TEXT NOT NULL, ended_at TEXT, distance_km REAL NOT NULL)',
+      'CREATE TABLE rides (id INTEGER PRIMARY KEY, started_at TEXT NOT NULL, ended_at TEXT, distance_km REAL NOT NULL, odometer_applied_km REAL NOT NULL DEFAULT 0)',
     );
     await db.execute(
       "CREATE TABLE service_items (id INTEGER PRIMARY KEY, name TEXT NOT NULL, description TEXT NOT NULL DEFAULT '', interval_km REAL NOT NULL, last_serviced_km REAL NOT NULL)",
