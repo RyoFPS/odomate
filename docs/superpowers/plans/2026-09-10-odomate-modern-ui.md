@@ -6,7 +6,7 @@
 
 **Architecture:** Keep the current screen and domain structure. Centralize colors, typography, component shapes, app bars, cards, buttons, navigation, and input styling in `app.dart`, then make minimal owning-screen layout edits where hierarchy needs to change.
 
-**Tech Stack:** Flutter Material 3, Dart, existing `google_fonts` dependency, existing repository/tracker/localization contracts.
+**Tech Stack:** Flutter Material 3, Dart, existing repository/tracker/localization contracts.
 
 **Spec:** `docs/superpowers/specs/2026-09-10-odomate-modern-ui-design.md`
 
@@ -22,7 +22,7 @@
 **Files:**
 - Modify: `lib/src/app.dart`
 
-- [ ] Update light/dark `ThemeData` with the Stitch palette, Inter typography, page background, card/input/button shapes, app-bar styling, and consistent visual density.
+- [ ] Update light/dark `ThemeData` with the Stitch palette, Poppins typography, page background, card/input/button shapes, app-bar styling, and consistent visual density.
 - [ ] Restyle the existing bottom navigation and centered FAB without changing indices or callbacks.
 - [ ] Run `flutter analyze`.
 

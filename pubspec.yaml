@@ -13,7 +13,6 @@ dependencies:
     sdk: flutter
   flutter_local_notifications: ^22.3.0
   geolocator: ^14.0.3
-  google_fonts: ^6.2.1
   image_picker: ^1.2.3
   path: ^1.9.1
   sqflite: ^2.4.3
@@ -26,6 +25,24 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  # Poppins is bundled rather than fetched at runtime: the app's headline promise
+  # is working fully offline, and a CDN fetch would leave riders on a fallback
+  # face on first launch and permanently when offline. Declaring all five weights
+  # under one family is also what makes `copyWith(fontWeight:)` resolve to a real
+  # face instead of a synthesised bold.
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Poppins-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Poppins-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Poppins-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Poppins-ExtraBold.ttf
+          weight: 800
   assets:
     - stitch_odomate_modern_ui/odomate_rider_avatar_updated_full/screen.png
     - stitch_odomate_modern_ui/odomate_transparent_mark/screen.png

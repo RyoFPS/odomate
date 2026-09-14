@@ -9,7 +9,7 @@ Create a new modern visual layer for OdoMate using Google Stitch as the design s
 - Light modern utility UI inspired by the new Stitch project `OdoMate Modern UI`.
 - Background `#F8FAFC`, white surfaces, thin `#E2E8F0` borders.
 - Primary `#2563EB`, success `#15803D`, warning `#D97706`, danger `#DC2626`.
-- Inter typography, 4px spacing rhythm, 12–16px card radii, restrained shadows.
+- Poppins typography, 4px spacing rhythm, 12–16px card radii, restrained shadows.
 - Strong odometer and ride-status hierarchy; status colors are reserved for meaning.
 - Minimum touch target: 48px. No gradients or glassmorphism.
 

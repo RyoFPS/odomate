@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'data/odomate_repository.dart';
 import 'i18n/app_localizations.dart';
@@ -121,14 +120,51 @@ class _OdoMateAppState extends State<OdoMateApp> {
     final base = dark
         ? ThemeData.dark().textTheme
         : ThemeData.light().textTheme;
+    // DESIGN.md typography scale: Poppins 600 headline, 400 body, 500 label.
+    // The family carries all five weights (see pubspec.yaml), so the weight set
+    // here is what picks the face: 600 resolves to Poppins-SemiBold.ttf.
+    final textTheme = base
+        .copyWith(
+          displayLarge: base.displayLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+          displayMedium: base.displayMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+          displaySmall: base.displaySmall?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+          headlineLarge: base.headlineLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+          headlineMedium: base.headlineMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+          headlineSmall: base.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+          titleLarge: base.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+          titleMedium: base.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+          titleSmall: base.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+          bodyLarge: base.bodyLarge?.copyWith(fontWeight: FontWeight.w400),
+          bodyMedium: base.bodyMedium?.copyWith(fontWeight: FontWeight.w400),
+          bodySmall: base.bodySmall?.copyWith(fontWeight: FontWeight.w400),
+          labelLarge: base.labelLarge?.copyWith(fontWeight: FontWeight.w500),
+          labelMedium: base.labelMedium?.copyWith(fontWeight: FontWeight.w500),
+          labelSmall: base.labelSmall?.copyWith(fontWeight: FontWeight.w500),
+        )
+        .apply(
+          fontFamily: 'Poppins',
+          bodyColor: dark ? const Color(0xFFE2E8F0) : const Color(0xFF0F172A),
+          displayColor: dark
+              ? const Color(0xFFE2E8F0)
+              : const Color(0xFF0F172A),
+        );
     return ThemeData(
       brightness: brightness,
       colorScheme: scheme,
       scaffoldBackgroundColor: dark ? scheme.surface : const Color(0xFFF8FAFC),
-      textTheme: GoogleFonts.interTextTheme(base).apply(
-        bodyColor: dark ? const Color(0xFFE2E8F0) : const Color(0xFF0F172A),
-        displayColor: dark ? const Color(0xFFE2E8F0) : const Color(0xFF0F172A),
-      ),
+      textTheme: textTheme,
       appBarTheme: AppBarTheme(
         backgroundColor: dark ? scheme.surface : Colors.white,
         foregroundColor: dark
