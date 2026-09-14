@@ -331,43 +331,48 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  flex: 1,
-                  child: _metric(
-                    context,
-                    _copy(context, 'totalDistance'),
-                    distance.toStringAsFixed(1),
-                    Icons.straighten_outlined,
-                    suffix: 'km',
+            // Desain: `grid grid-cols-12 gap-3`, blok Total Jarak `col-span-6`
+            // dan kolom kanannya `col-span-6` — jadi separuh-separuh, bukan
+            // sepertiga. Sel grid juga direntangkan setinggi barisnya, dan
+            // `IntrinsicHeight` itu padanannya di Flutter.
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: _metric(
+                      context,
+                      _copy(context, 'totalDistance'),
+                      distance.toStringAsFixed(1),
+                      Icons.straighten_outlined,
+                      suffix: 'km',
+                    ),
                   ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  flex: 2,
-                  child: Column(
-                    children: [
-                      _smallMetric(
-                        context,
-                        _copy(context, 'frequency'),
-                        '$count',
-                        Icons.alt_route,
-                        suffix: 'rit',
-                      ),
-                      const SizedBox(height: 8),
-                      _smallMetric(
-                        context,
-                        _copy(context, 'averageDaily'),
-                        averageDaily.toStringAsFixed(1),
-                        Icons.calendar_view_day_outlined,
-                        suffix: 'km',
-                      ),
-                    ],
+                  // `gap-3` di desain = 12.
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        _smallMetric(
+                          context,
+                          _copy(context, 'frequency'),
+                          '$count',
+                          Icons.alt_route,
+                          suffix: 'rit',
+                        ),
+                        const SizedBox(height: 8),
+                        _smallMetric(
+                          context,
+                          _copy(context, 'averageDaily'),
+                          averageDaily.toStringAsFixed(1),
+                          Icons.calendar_view_day_outlined,
+                          suffix: 'km',
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             const SizedBox(height: 10),
             Divider(
@@ -487,7 +492,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(12),
-      constraints: const BoxConstraints(minHeight: 108),
+      // Tingginya tidak dipatok: di desain blok ini ada di dalam sel grid
+      // dengan `justify-between`, jadi tingginya mengikuti kolom di
+      // sebelahnya (lihat `IntrinsicHeight` di pemanggilnya).
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(12),
@@ -495,6 +502,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        // Label menempel atas, angkanya ke bawah — padanan `justify-between`
+        // desain untuk dua kelompok isi yang dimiliki app ini.
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             children: [
