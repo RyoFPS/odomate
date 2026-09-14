@@ -171,21 +171,13 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        // Desain: back button bulat bergaris, judul 18px bold, aksi "Batal".
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 12),
-          child: IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: const Icon(Icons.arrow_back_rounded, size: 20),
-            style: IconButton.styleFrom(
-              backgroundColor: colors.surface,
-              side: BorderSide(color: colors.outlineVariant),
-              shape: const CircleBorder(),
-            ),
-          ),
+        backgroundColor: Colors.white,
+        leading: IconButton(
+          onPressed: () => Navigator.of(context).pop(),
+          icon: const Icon(Icons.arrow_back_rounded, size: 22),
         ),
         titleSpacing: 10,
         title: Text(
@@ -204,7 +196,7 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
                 ),
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                foregroundColor: colors.onSurfaceVariant,
+                foregroundColor: Theme.of(context).colorScheme.onSurfaceVariant,
                 textStyle: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -578,7 +570,11 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
             ],
           ),
           const SizedBox(height: 14),
-          _label(context, 'Interval Servis Berikutnya', trailing: _targetBadge(context)),
+          _label(
+            context,
+            'Interval Servis Berikutnya',
+            trailing: _targetBadge(context),
+          ),
           Row(
             children: [
               for (final km in const [2000, 4000, 6000, 10000]) ...[
@@ -660,9 +656,7 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
       color: selected ? colors.primary : colors.surfaceContainer,
       borderRadius: BorderRadius.circular(8),
       child: InkWell(
-        onTap: () => setState(
-          () => intervalController.text = km.toString(),
-        ),
+        onTap: () => setState(() => intervalController.text = km.toString()),
         borderRadius: BorderRadius.circular(8),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 6),
@@ -815,7 +809,7 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       decoration: BoxDecoration(
-        color: colors.surface,
+        color: Colors.white,
         border: Border(top: BorderSide(color: colors.outlineVariant)),
       ),
       child: SafeArea(
@@ -868,7 +862,7 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: colors.surface,
+        color: Colors.white,
         border: Border.all(color: colors.outlineVariant),
         borderRadius: BorderRadius.circular(16),
       ),
