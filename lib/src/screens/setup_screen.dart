@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../data/odomate_repository.dart';
 import '../domain/models.dart';
+import '../i18n/app_localizations.dart';
 
 class SetupScreen extends StatefulWidget {
   final OdomateRepository repository;
@@ -34,13 +35,14 @@ class _SetupScreenState extends State<SetupScreen> {
   }
 
   Future<void> save() async {
+    final l10n = AppLocalizations.of(context);
     final km = double.tryParse(odometer.text.trim());
     if (userName.text.trim().isEmpty ||
         vehicleName.text.trim().isEmpty ||
         plateNumber.text.trim().isEmpty ||
         km == null ||
         km < 0) {
-      setState(() => error = 'Lengkapi data profil dan odometer yang valid.');
+      setState(() => error = l10n.t('valid_setup'));
       return;
     }
 
@@ -70,6 +72,7 @@ class _SetupScreenState extends State<SetupScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -113,7 +116,7 @@ class _SetupScreenState extends State<SetupScreen> {
                           Icon(Icons.circle, size: 10, color: colors.tertiary),
                           const SizedBox(width: 6),
                           Text(
-                            'Setup Cepat',
+                            l10n.t('quick_setup'),
                             style: theme.textTheme.labelMedium?.copyWith(
                               color: colors.secondary,
                               fontWeight: FontWeight.w700,
@@ -129,9 +132,9 @@ class _SetupScreenState extends State<SetupScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Langkah 1 dari 1', style: theme.textTheme.bodyMedium),
+                  Text(l10n.t('step_one'), style: theme.textTheme.bodyMedium),
                   Text(
-                    '100% Siap',
+                    l10n.t('ready_percent'),
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: colors.primary,
                       fontWeight: FontWeight.w700,
@@ -146,7 +149,7 @@ class _SetupScreenState extends State<SetupScreen> {
               ),
               const SizedBox(height: 28),
               Text(
-                'Selamat datang di OdoMate',
+                l10n.t('welcome_odomate'),
                 style: theme.textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.8,
@@ -154,7 +157,7 @@ class _SetupScreenState extends State<SetupScreen> {
               ),
               const SizedBox(height: 6),
               Text(
-                'Catat perjalanan dan rawat kendaraanmu dengan mudah.',
+                l10n.t('welcome_subtitle'),
                 style: theme.textTheme.titleMedium?.copyWith(
                   color: colors.secondary,
                   height: 1.45,
@@ -169,23 +172,23 @@ class _SetupScreenState extends State<SetupScreen> {
                       _SetupField(
                         key: const Key('setup-user-name'),
                         controller: userName,
-                        label: 'NAMA KAMU',
+                        label: l10n.t('your_name_upper'),
                         hint: 'Ryo',
-                        helper: 'Nama panggilan Anda di aplikasi',
+                        helper: l10n.t('name_helper'),
                         icon: Icons.person_outline,
                       ),
                       _SetupField(
                         key: const Key('setup-vehicle-name'),
                         controller: vehicleName,
-                        label: 'NAMA MOTOR',
+                        label: l10n.t('vehicle_upper'),
                         hint: 'Honda BeaT',
-                        helper: 'Merk & tipe motor utama',
+                        helper: l10n.t('vehicle_helper'),
                         icon: Icons.two_wheeler,
                       ),
                       _SetupField(
                         key: const Key('setup-plate-number'),
                         controller: plateNumber,
-                        label: 'PLAT NOMOR',
+                        label: l10n.t('plate_upper'),
                         hint: 'F 6767 FJO',
                         icon: Icons.badge_outlined,
                         textCapitalization: TextCapitalization.characters,
@@ -193,9 +196,9 @@ class _SetupScreenState extends State<SetupScreen> {
                       _SetupField(
                         key: const Key('setup-odometer'),
                         controller: odometer,
-                        label: 'ODOMETER SAAT INI (KM)',
+                        label: l10n.t('current_odo_upper'),
                         hint: '16000',
-                        helper: 'Angka kilometer di speedometer motor kamu saat ini',
+                        helper: l10n.t('odo_helper'),
                         icon: Icons.speed_outlined,
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
@@ -224,9 +227,7 @@ class _SetupScreenState extends State<SetupScreen> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.arrow_forward),
-                label: Text(
-                  saving ? 'Menyimpan...' : 'Mulai menggunakan OdoMate',
-                ),
+                label: Text(saving ? l10n.t('saving') : l10n.t('start_using')),
               ),
               const SizedBox(height: 14),
               Row(
@@ -240,7 +241,7 @@ class _SetupScreenState extends State<SetupScreen> {
                   const SizedBox(width: 6),
                   Flexible(
                     child: Text(
-                      'Data tersimpan di perangkat ini (Offline-first & Aman)',
+                      l10n.t('offline_safe'),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colors.secondary,
                       ),

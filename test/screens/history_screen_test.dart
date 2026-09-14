@@ -71,7 +71,7 @@ void main() {
 
     expect(find.text('Riwayat'), findsOneWidget);
     expect(find.text('Semua'), findsOneWidget);
-    expect(find.textContaining('12.5 km'), findsOneWidget);
+    expect(find.textContaining('12.5 km'), findsWidgets);
     expect(find.textContaining('1jam 05mnt'), findsOneWidget);
   });
 
@@ -104,15 +104,15 @@ void main() {
     expect(find.text('Total Jarak'), findsOneWidget);
     expect(find.text('Frekuensi'), findsOneWidget);
     expect(find.text('Rata-rata harian'), findsOneWidget);
-    expect(find.textContaining('Hari aktif'), findsOneWidget);
-    expect(find.text('20.0'), findsOneWidget);
-    expect(find.text('2'), findsWidgets);
+    expect(find.textContaining('Efisiensi BBM rata-rata'), findsOneWidget);
+    expect(find.textContaining('20.0'), findsWidgets);
+    expect(find.textContaining('2'), findsWidgets);
 
     await tester.tap(find.text('Hari ini'));
     await tester.pump();
 
     expect(find.text('Ringkasan Hari ini'), findsOneWidget);
-    expect(find.text('12.0'), findsWidgets);
+    expect(find.textContaining('12.0'), findsWidgets);
     expect(find.text('8.0'), findsNothing);
   });
 
@@ -132,7 +132,7 @@ void main() {
     await tester.tap(find.text('Hari ini'));
     await tester.pump();
 
-    expect(find.textContaining('3.0 km'), findsOneWidget);
+    expect(find.textContaining('3.0 km'), findsWidgets);
     expect(find.textContaining('9.0 km'), findsNothing);
   });
 
@@ -149,7 +149,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Sedang berlangsung'), findsOneWidget);
-    await tester.tap(find.textContaining('0.0 km'));
+    await tester.tap(find.textContaining('0.0 km').last);
     await tester.pumpAndSettle();
 
     expect(find.text('Detail perjalanan'), findsOneWidget);

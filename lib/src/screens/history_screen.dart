@@ -223,20 +223,48 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget _periodSelector(BuildContext context, AppLocalizations l10n) =>
       SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        child: SegmentedButton<RideHistoryPeriod>(
-          showSelectedIcon: false,
-          segments: RideHistoryPeriod.values
-              .map(
-                (value) => ButtonSegment(
-                  value: value,
-                  label: Text(_periodLabel(l10n, value)),
-                ),
-              )
-              .toList(),
-          selected: {period},
-          onSelectionChanged: (value) => setState(() => period = value.first),
+        child: Row(
+          children: [
+            for (var i = 0; i < RideHistoryPeriod.values.length; i++) ...[
+              if (i > 0) const SizedBox(width: 6),
+              _periodChip(
+                context,
+                _periodLabel(l10n, RideHistoryPeriod.values[i]),
+                period == RideHistoryPeriod.values[i],
+                () => setState(() => period = RideHistoryPeriod.values[i]),
+              ),
+            ],
+          ],
         ),
       );
+
+  Widget _periodChip(
+    BuildContext context,
+    String label,
+    bool selected,
+    VoidCallback onSelected,
+  ) {
+    const blue = Color(0xFF2563EB);
+    return ChoiceChip(
+      label: Text(label),
+      selected: selected,
+      showCheckmark: false,
+      onSelected: (_) => onSelected(),
+      backgroundColor: Colors.white,
+      selectedColor: const Color(0xFFEFF6FF),
+      side: BorderSide(
+        color: selected ? const Color(0xFFBFDBFE) : const Color(0xFFE2E8F0),
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      labelStyle: TextStyle(
+        color: selected ? blue : const Color(0xFF475569),
+        fontSize: 12,
+        fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      visualDensity: VisualDensity.compact,
+    );
+  }
 
   Widget _summary(
     BuildContext context,
@@ -259,18 +287,29 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   child: Text(
                     '${_copy(context, 'summary')} ${_periodLabel(l10n, period)}',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF334155),
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
                 if (data.vehicle?.name.isNotEmpty ?? false)
                   Chip(
+                    backgroundColor: const Color(0xFFEFF6FF),
+                    side: BorderSide.none,
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
                     avatar: Icon(
                       Icons.two_wheeler,
                       size: 14,
-                      color: Theme.of(context).colorScheme.primary,
+                      color: const Color(0xFF2563EB),
                     ),
-                    label: Text(data.vehicle!.name),
+                    label: Text(
+                      data.vehicle!.name,
+                      style: const TextStyle(
+                        color: Color(0xFF1D4ED8),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     visualDensity: VisualDensity.compact,
                   ),
               ],
@@ -280,12 +319,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  flex: 3,
+                  flex: 1,
                   child: _metric(
                     context,
                     _copy(context, 'totalDistance'),
                     distance.toStringAsFixed(1),
                     Icons.straighten_outlined,
+                    suffix: 'km',
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -298,6 +338,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         _copy(context, 'frequency'),
                         '$count',
                         Icons.alt_route,
+                        suffix: 'rit',
                       ),
                       const SizedBox(height: 8),
                       _smallMetric(
@@ -305,6 +346,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         _copy(context, 'averageDaily'),
                         averageDaily.toStringAsFixed(1),
                         Icons.calendar_view_day_outlined,
+                        suffix: 'km',
                       ),
                     ],
                   ),
@@ -312,17 +354,39 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ],
             ),
             const SizedBox(height: 10),
+            Divider(
+              height: 1,
+              color: Theme.of(context).colorScheme.outlineVariant,
+            ),
+            const SizedBox(height: 10),
             Row(
               children: [
                 Icon(
-                  Icons.circle,
-                  size: 7,
-                  color: Theme.of(context).colorScheme.primary,
+                  Icons.show_chart,
+                  size: 14,
+                  color: const Color(0xFF16A34A),
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  '${_copy(context, 'activeDays')}: $activeDays',
-                  style: Theme.of(context).textTheme.bodySmall,
+                  '${_copy(context, 'fuelEfficiency')}: —',
+                  style: Theme.of(context).textTheme.bodySmall
+                      ?.copyWith(color: const Color(0xFF475569)),
+                ),
+                const Spacer(),
+                ...List.generate(
+                  5,
+                  (index) => Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: Container(
+                      width: 4,
+                      height: 6 + index * 3,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2563EB)
+                            .withValues(alpha: .25 + index * .15),
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -347,12 +411,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
     BuildContext context,
     String label,
     String value,
-    IconData icon,
-  ) {
+    IconData icon, {
+    String? suffix,
+  }) {
     final theme = Theme.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(10),
+      constraints: const BoxConstraints(minHeight: 52),
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(12),
@@ -366,9 +432,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
               children: [
                 Text(label, style: theme.textTheme.bodySmall),
                 const SizedBox(height: 2),
-                Text(
-                  value,
+                Text.rich(
+                  TextSpan(
+                    text: value,
+                    children: suffix == null
+                        ? const []
+                        : [
+                            TextSpan(
+                              text: ' $suffix',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: const Color(0xFF64748B),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                  ),
                   style: theme.textTheme.titleMedium?.copyWith(
+                    color: const Color(0xFF0F172A),
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -385,11 +465,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
     BuildContext context,
     String label,
     String value,
-    IconData icon,
-  ) {
+    IconData icon, {
+    String? suffix,
+  }) {
     final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(12),
+      constraints: const BoxConstraints(minHeight: 108),
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(12),
@@ -405,9 +487,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ],
           ),
           const SizedBox(height: 5),
-          Text(
-            value,
+          Text.rich(
+            TextSpan(
+              text: value,
+              children: suffix == null
+                  ? const []
+                  : [
+                      TextSpan(
+                        text: ' $suffix',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: const Color(0xFF64748B),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+            ),
             style: theme.textTheme.titleLarge?.copyWith(
+              color: const Color(0xFF0F172A),
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -680,7 +776,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         'totalDistance': 'Total Jarak',
         'frequency': 'Frekuensi',
         'averageDaily': 'Rata-rata harian',
-        'activeDays': 'Hari aktif',
+        'fuelEfficiency': 'Efisiensi BBM rata-rata',
         'filter': 'Filter',
         'entries': 'entri',
         'offline': 'Semua data tersimpan secara offline',
@@ -699,7 +795,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         'totalDistance': 'Total distance',
         'frequency': 'Frequency',
         'averageDaily': 'Daily average',
-        'activeDays': 'Active days',
+        'fuelEfficiency': 'Average fuel efficiency',
         'filter': 'Filter',
         'entries': 'entries',
         'offline': 'All data is stored offline',
@@ -717,7 +813,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         'totalDistance': '合計距離',
         'frequency': '回数',
         'averageDaily': '日平均',
-        'activeDays': '走行日数',
+        'fuelEfficiency': '平均燃費',
         'subtitle': '時間と走行距離の記録',
         'filter': 'フィルター',
         'entries': '件',

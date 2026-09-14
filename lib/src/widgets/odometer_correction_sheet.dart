@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../domain/models.dart';
+import '../i18n/app_localizations.dart';
 
 /// Bottom sheet untuk mengoreksi odometer kendaraan secara manual.
 ///
@@ -54,7 +55,7 @@ class _OdometerCorrectionSheetState extends State<OdometerCorrectionSheet> {
   void _submit() {
     final next = value;
     if (next == null || next < 0) {
-      setState(() => errorText = 'Masukkan angka odometer yang valid.');
+      setState(() => errorText = AppLocalizations.of(context).t('valid_odo'));
       return;
     }
     Navigator.pop(context, next);
@@ -64,6 +65,7 @@ class _OdometerCorrectionSheetState extends State<OdometerCorrectionSheet> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
     final vehicleSummary = [
       widget.vehicle?.name,
       widget.vehicle?.plateNumber,
@@ -104,13 +106,13 @@ class _OdometerCorrectionSheetState extends State<OdometerCorrectionSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Edit Odometer Manual',
+                        l10n.t('edit_odometer'),
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w800,
                         ),
                       ),
                       Text(
-                        'Sinkronisasi fisik speedometer kendaraan',
+                        l10n.t('odometer_sync'),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: colors.secondary,
                         ),
@@ -121,7 +123,7 @@ class _OdometerCorrectionSheetState extends State<OdometerCorrectionSheet> {
                 IconButton.outlined(
                   onPressed: () => Navigator.pop(context),
                   icon: const Icon(Icons.close, size: 18),
-                  tooltip: 'Tutup',
+                  tooltip: l10n.t('close'),
                 ),
               ],
             ),
@@ -181,7 +183,7 @@ class _OdometerCorrectionSheetState extends State<OdometerCorrectionSheet> {
             ],
             const SizedBox(height: 16),
             Text(
-              'ANGKA ODOMETER BARU',
+              l10n.t('new_odo'),
               style: theme.textTheme.labelSmall?.copyWith(
                 color: colors.secondary,
                 fontWeight: FontWeight.w700,
@@ -235,7 +237,7 @@ class _OdometerCorrectionSheetState extends State<OdometerCorrectionSheet> {
                       minimumSize: const Size(0, 40),
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                     ),
-                    child: const Text('Reset'),
+                    child: Text(l10n.t('reset')),
                   ),
                 ),
               ],
@@ -255,7 +257,7 @@ class _OdometerCorrectionSheetState extends State<OdometerCorrectionSheet> {
                   const SizedBox(width: 9),
                   Expanded(
                     child: Text(
-                      'Estimasi jadwal servis akan dihitung dari angka odometer ini.',
+                      l10n.t('service_estimate_note'),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colors.secondary,
                       ),
@@ -270,7 +272,7 @@ class _OdometerCorrectionSheetState extends State<OdometerCorrectionSheet> {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Batal'),
+                    child: Text(l10n.t('cancel')),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -278,7 +280,7 @@ class _OdometerCorrectionSheetState extends State<OdometerCorrectionSheet> {
                   child: FilledButton.icon(
                     onPressed: _submit,
                     icon: const Icon(Icons.check, size: 18),
-                    label: const Text('Simpan Odometer'),
+                    label: Text(l10n.t('save_odometer')),
                   ),
                 ),
               ],

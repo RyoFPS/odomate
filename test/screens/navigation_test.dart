@@ -193,13 +193,13 @@ void main() {
     expect(find.byTooltip('Start Ride'), findsOneWidget);
 
     await tester.scrollUntilVisible(
-      find.textContaining('1.0 km'),
+      find.textContaining('1.0 km').last,
       240,
       scrollable: find.byType(Scrollable).first,
     );
     await tester.drag(find.byType(ListView).first, const Offset(0, -220));
     await tester.pump();
-    await tester.tap(find.textContaining('1.0 km'));
+    await tester.tap(find.textContaining('1.0 km').last);
     await tester.pumpAndSettle();
     expect(find.byType(RideDetailScreen), findsOneWidget);
     await tester.pageBack();
@@ -268,6 +268,12 @@ void main() {
     // supaya kolom yang sedang diisi tidak tertutup keyboard. Kalau inset-nya
     // ikut hilang, daftar ini akan tetap setinggi layar penuh.
     final list = tester.getRect(find.byType(ListView).first);
-    expect(list.bottom, lessThanOrEqualTo(tester.view.physicalSize.height / tester.view.devicePixelRatio - keyboard));
+    expect(
+      list.bottom,
+      lessThanOrEqualTo(
+        tester.view.physicalSize.height / tester.view.devicePixelRatio -
+            keyboard,
+      ),
+    );
   });
 }

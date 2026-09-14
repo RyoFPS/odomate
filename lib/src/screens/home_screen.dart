@@ -215,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: _metricCard(
                     context,
-                    label: 'HARI INI',
+                    label: l10n.t('today_upper'),
                     value: _km(todayDistance),
                     unit: 'km',
                     footer: '$todayRideCount rit',
@@ -226,7 +226,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: _metricCard(
                     context,
-                    label: '7 HARI TERAKHIR',
+                    label: l10n.t('last_seven_days_upper'),
                     value: _km(sevenDayDistance),
                     unit: 'km',
                     footer: '$sevenDayRideCount rit',
@@ -340,7 +340,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          'Motor Utama',
+                          l10n.t('main_vehicle'),
                           style: theme.textTheme.labelSmall?.copyWith(
                             fontWeight: FontWeight.w700,
                           ),
@@ -353,7 +353,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 TextButton.icon(
                   onPressed: () => widget.onNavigate?.call(3),
                   icon: const Icon(Icons.swap_horiz, size: 16),
-                  label: const Text('Ganti'),
+                  label: Text(l10n.t('switch_vehicle')),
                 ),
               ],
             ),
@@ -374,7 +374,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Row(
                       children: [
                         Text(
-                          'ODOMETER TOTAL',
+                          l10n.t('total_odometer'),
                           style: theme.textTheme.labelSmall?.copyWith(
                             color: colors.secondary,
                             letterSpacing: 0.8,
@@ -436,8 +436,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         ? Icons.location_off_outlined
                         : state.active
                         ? state.waitingForFix
-                            ? Icons.gps_not_fixed
-                            : Icons.gps_fixed
+                              ? Icons.gps_not_fixed
+                              : Icons.gps_fixed
                         : Icons.sensors_outlined,
                     size: 18,
                     color: state.error != null
@@ -464,8 +464,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ? ' • ${state.error}'
                                 : state.active
                                 ? state.waitingForFix
-                                    ? ' • ${l10n.t('waiting_for_gps')}'
-                                    : ' • ${_km(state.ride?.distanceKm ?? 0)} ${l10n.t('km_recorded')}'
+                                      ? ' • ${l10n.t('waiting_for_gps')}'
+                                      : ' • ${_km(state.ride?.distanceKm ?? 0)} ${l10n.t('km_recorded')}'
                                 : ' • ${l10n.t('start_hint')}',
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: colors.secondary,
@@ -612,7 +612,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const Spacer(),
                 TextButton(
                   onPressed: () => widget.onNavigate?.call(2),
-                  child: const Text('Lihat semua'),
+                  child: Text(l10n.t('view_all')),
                 ),
               ],
             ),
