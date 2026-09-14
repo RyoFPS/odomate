@@ -346,6 +346,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       distance.toStringAsFixed(1),
                       Icons.straighten_outlined,
                       suffix: 'km',
+                      detail: _distanceComparison(context, data, distance),
                     ),
                   ),
                   // `gap-3` di desain = 12.
@@ -416,6 +417,74 @@ class _HistoryScreenState extends State<HistoryScreen> {
       ),
     );
   }
+
+  /// Baris pembanding jarak di bawah angka Total Jarak.
+  ///
+  /// Desain: `mt-2 flex items-center gap-1 text-[10px] text-[#15803D]` — ikon
+  /// 12px, teks 10px w500, hijau `#15803D` (persis `tertiary` tema) saat naik
+  /// dan merah `error` saat turun.
+  ///
+  /// Mengembalikan null kalau tidak ada pembanding yang berguna: periode
+  /// "Semua" memang tidak punya periode sebelumnya, dan kalau periode
+  /// sebelumnya nol km persentase perubahannya tak hingga.
+  Widget? _distanceComparison(
+    BuildContext context,
+    _HistoryData data,
+    double distance,
+  ) {
+    final key = _comparisonKey(period);
+    final previous = previousPeriodDistance(data.rides, data.now, period);
+    if (key == null || previous == null) return null;
+
+    final percent = distanceChangePercent(distance, previous);
+    if (percent == null) return null;
+
+    final theme = Theme.of(context);
+    // Arahnya dibaca dari angka yang benar-benar tampil, bukan dari persen
+    // mentahnya: penurunan 0,4% yang dibulatkan jadi "0%" lebih jujur
+    // ditandai datar daripada merah dengan tanda minus yang tidak ikut tampil.
+    final rounded = percent.round();
+    final Color color;
+    final IconData icon;
+    if (rounded > 0) {
+      color = theme.colorScheme.tertiary;
+      icon = Icons.trending_up;
+    } else if (rounded < 0) {
+      color = theme.colorScheme.error;
+      icon = Icons.trending_down;
+    } else {
+      color = theme.colorScheme.onSurfaceVariant;
+      icon = Icons.trending_flat;
+    }
+
+    return Row(
+      children: [
+        Icon(icon, size: 12, color: color),
+        const SizedBox(width: 4),
+        Expanded(
+          child: Text(
+            '${rounded > 0 ? '+' : ''}$rounded% ${_copy(context, key)}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+              color: color,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Kunci teks pembanding tiap periode — null kalau periodenya tidak punya
+  /// periode sebelumnya untuk dibandingkan.
+  static String? _comparisonKey(RideHistoryPeriod period) => switch (period) {
+    RideHistoryPeriod.today => 'vsYesterday',
+    RideHistoryPeriod.lastSevenDays => 'vsLastWeek',
+    RideHistoryPeriod.currentMonth => 'vsLastMonth',
+    RideHistoryPeriod.all => null,
+  };
 
   List<Ride> _ridesForPeriod(_HistoryData data) =>
       filterRides(data.rides, data.now, period);
@@ -488,6 +557,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     String value,
     IconData icon, {
     String? suffix,
+    Widget? detail,
   }) {
     final theme = Theme.of(context);
     return Container(
@@ -513,25 +583,37 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ],
           ),
           const SizedBox(height: 5),
-          Text.rich(
-            TextSpan(
-              text: value,
-              children: suffix == null
-                  ? const []
-                  : [
-                      TextSpan(
-                        text: ' $suffix',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: const Color(0xFF64748B),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-            ),
-            style: theme.textTheme.titleLarge?.copyWith(
-              color: const Color(0xFF0F172A),
-              fontWeight: FontWeight.w800,
-            ),
+          // Angka dan baris pembandingnya turun bersama sebagai satu blok,
+          // jadi `spaceBetween` hanya membagi ruang antara label dan blok ini.
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text.rich(
+                TextSpan(
+                  text: value,
+                  children: suffix == null
+                      ? const []
+                      : [
+                          TextSpan(
+                            text: ' $suffix',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: const Color(0xFF64748B),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                ),
+                style: theme.textTheme.titleLarge?.copyWith(
+                  color: const Color(0xFF0F172A),
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              if (detail != null) ...[
+                // `mt-2` di desain = 8.
+                const SizedBox(height: 8),
+                detail,
+              ],
+            ],
           ),
         ],
       ),
@@ -916,6 +998,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
         'totalDistance': 'Total Jarak',
         'frequency': 'Frekuensi',
         'averageDaily': 'Rata-rata harian',
+        'vsYesterday': 'vs kemarin',
+        'vsLastWeek': 'vs minggu lalu',
+        'vsLastMonth': 'vs bulan lalu',
         'fuelEfficiency': 'Efisiensi BBM rata-rata',
         'filter': 'Filter',
         'entries': 'entri',
@@ -935,6 +1020,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
         'totalDistance': 'Total distance',
         'frequency': 'Frequency',
         'averageDaily': 'Daily average',
+        'vsYesterday': 'vs yesterday',
+        'vsLastWeek': 'vs last week',
+        'vsLastMonth': 'vs last month',
         'fuelEfficiency': 'Average fuel efficiency',
         'filter': 'Filter',
         'entries': 'entries',
@@ -953,6 +1041,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
         'totalDistance': '合計距離',
         'frequency': '回数',
         'averageDaily': '日平均',
+        'vsYesterday': '前日比',
+        'vsLastWeek': '前週比',
+        'vsLastMonth': '前月比',
         'fuelEfficiency': '平均燃費',
         'subtitle': '時間と走行距離の記録',
         'filter': 'フィルター',
