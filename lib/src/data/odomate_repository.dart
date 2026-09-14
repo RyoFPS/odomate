@@ -80,10 +80,20 @@ class OdomateRepository {
     'rides',
     orderBy: 'started_at DESC',
   )).map(_ride).toList();
+  Future<List<Ride>> listRidesPage({
+    required int limit,
+    required int offset,
+  }) async => (await (await db).query(
+    'rides',
+    orderBy: 'started_at DESC, id DESC',
+    limit: limit,
+    offset: offset,
+  )).map(_ride).toList();
   Future<List<ServiceItem>> listServices() async => (await (await db).query(
     'service_items',
     orderBy: 'id',
   )).map(_service).toList();
+
   /// Mengembalikan id baris, supaya pemanggil yang baru membuat jadwal bisa
   /// langsung menuliskan log servis pertama untuk id itu.
   Future<int> saveService(ServiceItem s) async =>
@@ -161,6 +171,26 @@ class OdomateRepository {
 
   Future<List<ServiceLog>> listServiceLogs() async =>
       (await (await db).query('service_logs', orderBy: 'serviced_at DESC'))
+          .map(
+            (r) => ServiceLog(
+              id: r['id'] as int,
+              serviceItemId: r['service_item_id'] as int,
+              servicedAt: DateTime.parse(r['serviced_at'] as String),
+              odometerKm: (r['odometer_km'] as num).toDouble(),
+              note: r['note'] as String?,
+            ),
+          )
+          .toList();
+  Future<List<ServiceLog>> listServiceLogsPage({
+    required int limit,
+    required int offset,
+  }) async =>
+      (await (await db).query(
+            'service_logs',
+            orderBy: 'serviced_at DESC, id DESC',
+            limit: limit,
+            offset: offset,
+          ))
           .map(
             (r) => ServiceLog(
               id: r['id'] as int,

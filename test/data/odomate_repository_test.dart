@@ -98,21 +98,24 @@ void main() {
     expect(stored.remind, isFalse);
   });
 
-  test('defaults cost, workshop, and reminder for rows saved without them', () async {
-    // Baris lama (skema sebelum kolom ini ada) harus tetap terbaca: biaya 0,
-    // bengkel kosong, dan pengingat menyala.
-    await database.insert('service_items', {
-      'id': 7,
-      'name': 'Busi',
-      'interval_km': 8000.0,
-      'last_serviced_km': 1000.0,
-    });
+  test(
+    'defaults cost, workshop, and reminder for rows saved without them',
+    () async {
+      // Baris lama (skema sebelum kolom ini ada) harus tetap terbaca: biaya 0,
+      // bengkel kosong, dan pengingat menyala.
+      await database.insert('service_items', {
+        'id': 7,
+        'name': 'Busi',
+        'interval_km': 8000.0,
+        'last_serviced_km': 1000.0,
+      });
 
-    final stored = (await repository.listServices()).single;
-    expect(stored.location, isEmpty);
-    expect(stored.cost, 0);
-    expect(stored.remind, isTrue);
-  });
+      final stored = (await repository.listServices()).single;
+      expect(stored.location, isEmpty);
+      expect(stored.cost, 0);
+      expect(stored.remind, isTrue);
+    },
+  );
 
   test('corrects odometer without creating a ride', () async {
     await repository.saveVehicle(const Vehicle(name: 'Beat', odometerKm: 1000));
@@ -121,6 +124,73 @@ void main() {
     expect((await repository.loadVehicle())!.odometerKm, 1234.5);
     expect(await repository.listRides(), isEmpty);
   });
+
+  test('paginates rides by timestamp then id with page boundaries', () async {
+    for (final row in [
+      {'id': 1, 'started_at': '2026-09-05T08:00:00.000', 'distance_km': 1.0},
+      {'id': 2, 'started_at': '2026-09-05T08:00:00.000', 'distance_km': 2.0},
+      {'id': 3, 'started_at': '2026-09-06T08:00:00.000', 'distance_km': 3.0},
+    ]) {
+      await database.insert('rides', row);
+    }
+
+    expect(
+      (await repository.listRidesPage(
+        limit: 2,
+        offset: 0,
+      )).map((ride) => ride.id),
+      [3, 2],
+    );
+    expect(
+      (await repository.listRidesPage(
+        limit: 2,
+        offset: 2,
+      )).map((ride) => ride.id),
+      [1],
+    );
+    expect(await repository.listRidesPage(limit: 2, offset: 3), isEmpty);
+  });
+
+  test(
+    'paginates service logs by timestamp then id with short pages',
+    () async {
+      for (final row in [
+        {
+          'id': 1,
+          'service_item_id': 1,
+          'serviced_at': '2026-09-05T08:00:00.000',
+          'odometer_km': 1.0,
+        },
+        {
+          'id': 2,
+          'service_item_id': 1,
+          'serviced_at': '2026-09-05T08:00:00.000',
+          'odometer_km': 2.0,
+        },
+      ]) {
+        await database.insert('service_logs', row);
+      }
+
+      expect(
+        (await repository.listServiceLogsPage(
+          limit: 1,
+          offset: 0,
+        )).map((log) => log.id),
+        [2],
+      );
+      expect(
+        (await repository.listServiceLogsPage(
+          limit: 1,
+          offset: 1,
+        )).map((log) => log.id),
+        [1],
+      );
+      expect(
+        await repository.listServiceLogsPage(limit: 1, offset: 2),
+        isEmpty,
+      );
+    },
+  );
 
   test(
     'applies an active ride checkpoint to the odometer immediately',
@@ -171,7 +241,7 @@ void main() {
 
     database = await reopenedRepository.db;
     databaseClosed = false;
-    final rides = await reopenedRepository.listRides();
+    final rides = await reopenedRepository.listRidesPage(limit: 1, offset: 0);
     expect(rides, hasLength(1));
     expect(rides.single.startedAt, startedAt);
     expect(rides.single.distanceKm, 12.5);
