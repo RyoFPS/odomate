@@ -61,16 +61,18 @@ double _chipWidth(WidgetTester tester, String label) =>
     tester.getSize(_chip(_inSheet(find.text(label)))).width;
 
 void main() {
-  testWidgets('the sheet does not use Material chips', (tester) async {
+  testWidgets('no chip in the sheet draws a checkmark', (tester) async {
     await _openSheet(tester);
 
     // `ChoiceChip` bawaan menyisipkan centang di keadaan terpilih; desain
-    // menandai pilihan dengan warna saja.
-    expect(_inSheet(find.byType(ChoiceChip)), findsNothing);
-
-    // Selector periode di layar belakang memang masih memakai `ChoiceChip`,
-    // jadi assertion di atas membuktikan sheet-nya — bukan seluruh layar.
-    expect(find.byType(ChoiceChip), findsWidgets);
+    // menandai pilihan dengan warna saja. Grup periode memakai `DateRangeChips`
+    // bersama dan grup urutan memakai chip sendiri, jadi yang dijaga di sini
+    // adalah sifatnya — bukan widget mana yang dipakai.
+    final chips = _inSheet(find.byType(ChoiceChip));
+    expect(chips, findsWidgets);
+    for (final chip in tester.widgetList<ChoiceChip>(chips)) {
+      expect(chip.showCheckmark, isFalse);
+    }
   });
 
   testWidgets('labels read the way the design writes them', (tester) async {
