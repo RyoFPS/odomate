@@ -1,0 +1,147 @@
+<!DOCTYPE html><html lang="id"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OdoMate Splash Screen</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#EFF6FF',
+              100: '#DBEAFE',
+              500: '#3B82F6',
+              600: '#2563EB',
+              700: '#1D4ED8',
+            }
+          },
+          animation: {
+            'pulse-slow': 'pulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'spin-slow': 'spin 3s linear infinite',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @keyframes sweepGlow {
+      0% { transform: rotate(-30deg); }
+      50% { transform: rotate(45deg); }
+      100% { transform: rotate(-30deg); }
+    }
+    .needle-sweep {
+      transform-origin: 256px 256px;
+      animation: sweepGlow 2.4s ease-in-out infinite;
+    }
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(200%); }
+    }
+    .progress-shimmer {
+      animation: shimmer 1.8s infinite;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 flex items-center justify-center min-h-screen p-0 m-0 font-sans antialiased select-none">
+  <!-- Mobile Device Container (390px x 844px) -->
+  <div class="relative w-full max-w-[390px] h-[844px] bg-[#F8FAFC] overflow-hidden flex flex-col justify-between shadow-2xl border border-slate-200/80">
+    
+    <!-- Top System Status Bar Simulation -->
+    <div class="w-full pt-3 px-6 flex justify-between items-center z-20 text-slate-700">
+      <span class="text-xs font-semibold tracking-tight">09:41</span>
+      <div class="flex items-center gap-1.5 text-slate-800">
+        <span class="material-symbols-outlined text-[15px]">signal_cellular_4_bar</span>
+        <span class="material-symbols-outlined text-[15px]">wifi</span>
+        <span class="material-symbols-outlined text-[16px] -rotate-90">battery_charging_full</span>
+      </div>
+    </div>
+
+    <!-- Ambient Subtle Background Elements -->
+    <div class="absolute inset-0 pointer-events-none overflow-hidden">
+      <!-- Glow aura behind center logo -->
+      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl"></div>
+      <div class="absolute top-[28%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-sky-400/10 rounded-full blur-2xl"></div>
+    </div>
+
+    <!-- Center Content: Brand Icon, Name, Tagline -->
+    <div class="flex-1 flex flex-col items-center justify-center px-8 z-10 -mt-8">
+      
+      <!-- Brand Logo Container with soft modern elevation -->
+      <div class="relative mb-6">
+        <!-- Glow ring -->
+        <div class="absolute -inset-2 bg-blue-500/15 rounded-3xl blur-md"></div>
+        
+        <!-- Icon Card Surface -->
+        <div class="relative w-28 h-28 bg-white rounded-3xl p-3.5 shadow-xl shadow-blue-600/10 border border-slate-100 flex items-center justify-center">
+          <img src="https://lh3.googleusercontent.com/aida/AEtjO1V34Duewl6XmWjfLPkiF-NvVIbIcuhfvxT3QO_eVdhnGAv8cuo3hwPKbWEQQF157FkfbRl4ANsF7_E0VJDFciBq_Kx6N6VdTUcbHrwy89PzKmDlyBjVufGe8q_CnG3pG_LcKdZre6-dgyrpyIvujNvc-TUujnNuXlFup6ohRKR7dvRHqITWq67CrIdetWgh7krRm1v3Fxmggyr-xFd-f91jwPii-eKcxzS0bRU9yQQqogd2egUruiNB" alt="OdoMate Logo" class="w-full h-full object-contain">
+        </div>
+
+        <!-- Pulse Badge (Offline Engine Ready) -->
+        <div class="absolute -bottom-1.5 -right-1.5 bg-white py-0.5 px-2 rounded-full border border-slate-200 shadow-sm flex items-center gap-1">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping opacity-75"></span>
+          <span class="text-[9px] font-bold text-slate-600 tracking-wider">OFFLINE</span>
+        </div>
+      </div>
+
+      <!-- App Title -->
+      <div class="flex items-center gap-1.5 mb-1.5">
+        <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 font-sans">
+          Odo<span class="text-blue-600">Mate</span>
+        </h1>
+      </div>
+
+      <!-- Tagline / Subtitle -->
+      <p class="text-sm font-medium text-slate-500 text-center max-w-[240px] leading-relaxed">
+        Buku Log &amp; Perawatan Kendaraan Roda Dua
+      </p>
+
+      <!-- Status Indicator Pill -->
+      <div class="mt-8 flex items-center gap-2 bg-white px-3.5 py-1.5 rounded-full border border-slate-200/80 shadow-xs">
+        <span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+        <span class="text-xs font-medium text-slate-600">Memuat logbook lokal...</span>
+      </div>
+
+    </div>
+
+    <!-- Bottom Progress & System Integrity Bar -->
+    <div class="w-full px-8 pb-10 z-10 flex flex-col items-center">
+      
+      <!-- Loading Progress Bar Container -->
+      <div class="w-full max-w-[240px] mb-4">
+        <div class="flex justify-between items-center text-[11px] font-medium text-slate-400 mb-1.5">
+          <span class="">Inisialisasi sensor odometer</span>
+          <span class="font-semibold text-blue-600">92%</span>
+        </div>
+        <div class="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden relative">
+          <div class="h-full bg-blue-600 rounded-full w-[92%] relative overflow-hidden">
+            <div class="progress-shimmer absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent w-24"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Offline-first Guarantee & Security Badge -->
+      <div class="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
+        <span class="material-symbols-outlined text-[15px] text-slate-400">verified_user</span>
+        <span class="">Aman &amp; 100% Offline-First</span>
+      </div>
+
+      <!-- Version Tag -->
+      <p class="text-[10px] text-slate-400 mt-2 tracking-wide font-mono">v2.4.1 (Build 2024.1)</p>
+
+      <!-- Bottom Home Bar Indicator -->
+      <div class="w-32 h-1 bg-slate-300 rounded-full mt-4"></div>
+    </div>
+
+  </div>
+
+
+
+</body></html>

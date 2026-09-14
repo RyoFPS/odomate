@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="512" height="512">
+  <defs>
+    <!-- Background Circle Gradient -->
+    <linearGradient id="avatarBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#1D4ED8"/>
+    </linearGradient>
+
+    <!-- Helmet Light Surface Gradient -->
+    <linearGradient id="helmetGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="85%" stop-color="#F1F5F9"/>
+      <stop offset="100%" stop-color="#E2E8F0"/>
+    </linearGradient>
+
+    <!-- Visor Reflection Gradient -->
+    <linearGradient id="visorGlare" x1="0%" y1="0%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#0284C7" stop-opacity="0.2"/>
+    </linearGradient>
+
+    <!-- Clip path to keep torso within circle boundary -->
+    <clipPath id="circleClip">
+      <circle cx="60" cy="60" r="56"/>
+    </clipPath>
+  </defs>
+
+  <!-- Base Circle Background with subtle border ring -->
+  <circle cx="60" cy="60" r="56" fill="url(#avatarBgGrad)" stroke="#DBEAFE" stroke-width="2"/>
+  <circle cx="60" cy="60" r="53" fill="none" stroke="#FFFFFF" stroke-opacity="0.15" stroke-width="1.5"/>
+
+  <!-- Group clipped to circular frame so body cuts cleanly at the bottom without overflowing or truncating top -->
+  <g clip-path="url(#circleClip)">
+    <!-- Rider Jacket / Torso with natural shoulder drape -->
+    <path d="M 24 104 C 24 88 38 80 60 80 C 82 80 96 88 96 104 C 96 114 90 118 60 118 C 30 118 24 114 24 104 Z" fill="#0F172A"/>
+    
+    <!-- Inner Jacket Collar / Zip Accent (Electric Blue accent) -->
+    <path d="M 52 80 L 60 90 L 68 80 Z" fill="#2563EB"/>
+    <line x1="60" y1="90" x2="60" y2="114" stroke="#334155" stroke-width="2" stroke-linecap="round"/>
+
+    <!-- Neck / Balaclava base -->
+    <rect x="52" y="70" width="16" height="13" rx="4" fill="#1E293B"/>
+
+    <!-- Helmet Silhouette (Properly scaled down and centered so top has generous clearance) -->
+    <!-- Full Face Modern Aerodynamic Rider Helmet -->
+    <!-- Helmet Outer Shell (top at y=23, width=46, leaving 23px margin from top, plenty of breathability) -->
+    <path d="M 60 22 C 43 22 36 34 36 48 C 36 62 44 74 60 74 C 76 74 84 62 84 48 C 84 34 77 22 60 22 Z" fill="url(#helmetGrad)"/>
+
+    <!-- Helmet Aero Chin Guard / Bottom Contour -->
+    <path d="M 43 65 C 48 71 54 73 60 73 C 66 73 72 71 77 65 C 80 61 78 57 76 56 C 72 58 66 59 60 59 C 54 59 48 58 44 56 C 42 57 40 61 43 65 Z" fill="#E2E8F0"/>
+
+    <!-- Helmet Dark Visor (Centered, sleek curved visor) -->
+    <path d="M 41 41 C 41 37 47 34 60 34 C 73 34 79 37 79 41 C 79 50 74 53 60 53 C 46 53 41 50 41 41 Z" fill="#090D16"/>
+
+    <!-- Visor Aerodynamic Rim / Bezel -->
+    <path d="M 41 41 C 41 37 47 34 60 34 C 73 34 79 37 79 41 C 79 50 74 53 60 53 C 46 53 41 50 41 41 Z" fill="none" stroke="#1E293B" stroke-width="1.5"/>
+
+    <!-- Modern Cyan/Electric Blue Visor Specular Glare -->
+    <path d="M 46 38 C 50 36 57 36 61 36 C 56 38 49 40 46 43 C 45 42 45 39 46 38 Z" fill="url(#visorGlare)"/>
+
+    <!-- Top Air Vent Accent on Helmet -->
+    <path d="M 54 27 C 57 26 63 26 66 27 C 65 28.5 55 28.5 54 27 Z" fill="#CBD5E1"/>
+  </g>
+</svg>

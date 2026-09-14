@@ -21,6 +21,12 @@ class RideDetailScreen extends StatelessWidget {
             hourSuffix: l10n.t('hours_unit'),
             minuteSuffix: l10n.t('minutes_unit'),
           );
+    final elapsedMinutes = active
+        ? 0
+        : ride.endedAt!.difference(ride.startedAt).inMinutes;
+    final averageSpeed = elapsedMinutes > 0
+        ? ride.distanceKm / elapsedMinutes * 60
+        : null;
 
     return Scaffold(
       appBar: AppBar(
@@ -33,7 +39,7 @@ class RideDetailScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
         children: [
-          _summaryCard(context, l10n, active, duration),
+          _summaryCard(context, l10n, active, duration, averageSpeed),
           const SizedBox(height: 16),
           _timelineCard(context, l10n, active),
         ],
@@ -46,6 +52,7 @@ class RideDetailScreen extends StatelessWidget {
     AppLocalizations l10n,
     bool active,
     String duration,
+    double? averageSpeed,
   ) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
@@ -87,6 +94,38 @@ class RideDetailScreen extends StatelessWidget {
                 _statusPill(context, l10n, active),
               ],
             ),
+            if (averageSpeed != null) ...[
+              const SizedBox(height: 16),
+              Container(
+                key: const ValueKey('ride-average-speed'),
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: colors.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: colors.outlineVariant),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.speed_outlined, color: colors.primary),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        l10n.t('average_speed'),
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: colors.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '${averageSpeed.toStringAsFixed(1)} km/${l10n.t('hours_unit')}',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             const Divider(height: 32),
             Row(
               crossAxisAlignment: CrossAxisAlignment.end,

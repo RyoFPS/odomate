@@ -1,0 +1,469 @@
+<!DOCTYPE html><html lang="id"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>OdoMate - Jadwal Servis &amp; Perawatan</title>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS Play CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "inverse-surface": "#2e3039",
+            "on-secondary-fixed-variant": "#38485d",
+            "tertiary-container": "#117e3b",
+            "inverse-on-surface": "#f0f0fb",
+            "on-tertiary-container": "#c4ffc9",
+            "background": "#faf8ff",
+            "on-surface-variant": "#434655",
+            "error": "#ba1a1a",
+            "secondary-container": "#d0e1fb",
+            "surface-container-lowest": "#ffffff",
+            "inverse-primary": "#b4c5ff",
+            "secondary": "#505f76",
+            "tertiary": "#00632b",
+            "surface-variant": "#e1e2ed",
+            "surface-container-highest": "#e1e2ed",
+            "tertiary-fixed-dim": "#79db8d",
+            "surface-container": "#ededf9",
+            "on-secondary-fixed": "#0b1c30",
+            "on-secondary": "#ffffff",
+            "on-error": "#ffffff",
+            "tertiary-fixed": "#95f8a7",
+            "secondary-fixed-dim": "#b7c8e1",
+            "primary-fixed-dim": "#b4c5ff",
+            "on-primary-fixed": "#00174b",
+            "error-container": "#ffdad6",
+            "surface-container-low": "#f3f3fe",
+            "outline-variant": "#c3c6d7",
+            "on-primary-container": "#eeefff",
+            "surface-container-high": "#e7e7f3",
+            "primary": "#004ac6",
+            "on-secondary-container": "#54647a",
+            "surface-bright": "#faf8ff",
+            "secondary-fixed": "#d3e4fe",
+            "surface": "#faf8ff",
+            "primary-container": "#2563eb",
+            "on-error-container": "#93000a",
+            "on-tertiary": "#ffffff",
+            "surface-dim": "#d9d9e5",
+            "outline": "#737686",
+            "on-primary-fixed-variant": "#003ea8",
+            "on-primary": "#ffffff",
+            "surface-tint": "#0053db",
+            "on-tertiary-fixed-variant": "#005323",
+            "on-surface": "#191b23",
+            "primary-fixed": "#dbe1ff",
+            "on-tertiary-fixed": "#00210a",
+            "on-background": "#191b23"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {},
+          "fontFamily": {
+            "headline": ["Inter"],
+            "display": ["Inter"],
+            "body": ["Inter"],
+            "label": ["Inter"]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      background-color: #f8fafc;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .material-symbols-outlined.fill-1 {
+      font-variation-settings: 'FILL' 1;
+    }
+    /* Hide scrollbar for tabs/chips */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-[#f8fafc] text-on-surface antialiased selection:bg-primary-fixed selection:text-on-primary-fixed" style="font-family: Poppins, sans-serif;">
+<!-- Mobile Viewport Shell (Max 390px / Typical Mobile Canvas) -->
+<div class="relative mx-auto min-h-screen max-w-[390px] bg-[#f8fafc] flex flex-col justify-between">
+<!-- Top Sticky Header -->
+<header class="sticky top-0 z-40 bg-surface-container-lowest/95 backdrop-blur-md px-4 py-3 border-b border-outline-variant/30 flex items-center justify-between">
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<h1 class="text-xl font-bold tracking-tight text-on-surface">Servis</h1>
+
+</div>
+<div class="flex items-center gap-1 mt-0.5 text-xs text-secondary font-medium">
+<span class="material-symbols-outlined text-[14px] text-primary" data-icon="two_wheeler">two_wheeler</span>
+<span class="">Honda Vario 160</span>
+<span class="text-outline-variant">•</span>
+<span class="font-mono text-[11px] text-on-surface-variant font-semibold">B 4920 SXX</span>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center gap-1.5">
+<!-- Urgency Filter Button -->
+<button aria-label="Urutkan Jadwal" class="p-2 rounded-xl text-secondary hover:text-on-surface hover:bg-surface-container active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="swap_vert">swap_vert</span>
+</button>
+<!-- Primary Add Reminder Action -->
+<button aria-label="Tambah Pengingat Servis" class="flex items-center justify-center w-9 h-9 rounded-xl bg-primary-container text-on-primary shadow-sm hover:brightness-110 active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[22px]" data-icon="add">add</span>
+</button>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 px-4 pt-3 pb-28">
+<!-- Summary / Current Status Card -->
+<div class="rounded-2xl bg-surface-container-lowest border border-outline-variant/30 p-4 mb-4 shadow-sm">
+<div class="flex items-center justify-between pb-3 border-b border-surface-container">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]" data-icon="speed">speed</span>
+</div>
+<div>
+<p class="text-[11px] font-medium text-secondary uppercase tracking-wider">Odometer Terkini</p>
+<p class="text-lg font-bold tracking-tight text-on-surface font-mono">24.582 <span class="text-xs font-normal text-secondary">km</span></p>
+</div>
+</div>
+<button class="text-xs font-medium text-primary hover:underline flex items-center gap-0.5" type="button">
+<span class="">Perbarui</span>
+<span class="material-symbols-outlined text-[14px]" data-icon="edit">edit</span>
+</button>
+</div>
+<!-- Status Metrics Bar -->
+<div class="grid grid-cols-3 gap-2 pt-3 pb-2.5">
+<!-- Jatuh Tempo -->
+<div class="flex flex-col items-center justify-center py-2 px-1 rounded-xl bg-rose-50 border border-rose-100">
+<span class="text-base font-bold text-rose-700 leading-none">1</span>
+<span class="text-[10px] font-semibold text-rose-600 mt-1 text-center">Jatuh Tempo</span>
+</div>
+<!-- Segera Mendekat -->
+<div class="flex flex-col items-center justify-center py-2 px-1 rounded-xl bg-amber-50 border border-amber-100">
+<span class="text-base font-bold text-amber-700 leading-none">2</span>
+<span class="text-[10px] font-semibold text-amber-700 mt-1 text-center">Mendekat</span>
+</div>
+<!-- Kondisi Aman -->
+<div class="flex flex-col items-center justify-center py-2 px-1 rounded-xl bg-emerald-50 border border-emerald-100">
+<span class="text-base font-bold text-emerald-700 leading-none">3</span>
+<span class="text-[10px] font-semibold text-emerald-700 mt-1 text-center">Kondisi Aman</span>
+</div>
+</div>
+<!-- Warning Callout Banner -->
+<div class="mt-2 flex items-start gap-2 bg-error-container/40 p-2.5 rounded-xl border border-error-container">
+<span class="material-symbols-outlined text-error text-[18px] shrink-0 mt-0.5 fill-1" data-icon="warning">warning</span>
+<p class="text-xs text-on-error-container leading-relaxed font-medium">
+            Perlu penggantian oli mesin segera sebelum perjalanan berikutnya.
+          </p>
+</div>
+</div>
+<!-- Quick Category Nav / Schedule Header -->
+<div class="flex items-center justify-between mb-3 px-1">
+<div class="flex items-center gap-1.5">
+<h2 class="text-sm font-bold text-on-surface">Jadwal Perawatan Berkala</h2>
+<span class="text-xs font-semibold text-secondary px-1.5 py-0.5 rounded-md bg-surface-container">6 item</span>
+</div>
+<button class="text-xs font-medium text-primary flex items-center gap-0.5 hover:underline" type="button">
+<span class="material-symbols-outlined text-[15px]" data-icon="history">history</span>
+<span class="">Riwayat</span>
+</button>
+</div>
+<!-- Service Schedule List -->
+<div class="space-y-2.5">
+<!-- 1. Ganti Oli Mesin (OVERDUE) -->
+<div class="group relative rounded-2xl bg-surface-container-lowest border border-rose-200 p-3.5 shadow-sm transition-all hover:border-rose-300">
+<div class="flex items-start justify-between gap-2.5">
+<div class="flex items-start gap-3">
+<!-- Urgency Icon Box -->
+<div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 mt-0.5 border border-rose-100">
+<span class="material-symbols-outlined text-[22px]" data-icon="oil_barrel">oil_barrel</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2 flex-wrap">
+<h3 class="text-sm font-bold text-on-surface leading-tight">Ganti Oli Mesin</h3>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 tracking-tight">
+                    Jatuh Tempo
+                  </span>
+</div>
+<p class="text-[11px] text-secondary font-medium mt-0.5">Rutin Tiap 2.000 km</p>
+<div class="mt-2 text-xs font-medium text-on-surface-variant flex items-center flex-wrap gap-x-1.5 gap-y-0.5">
+<span class="text-secondary">Terakhir: <span class="font-mono text-on-surface font-semibold">22.500 km</span></span>
+<span class="text-outline-variant">•</span>
+<span class="text-secondary">Batas: <span class="font-mono text-on-surface font-semibold">24.500 km</span></span>
+</div>
+<p class="text-xs font-semibold text-rose-600 mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="error">error</span>
+                  Lewat 82 km
+                </p>
+</div>
+</div>
+<!-- Quick Action: Selesai Servis -->
+<button class="shrink-0 text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-rose-50 text-rose-700 hover:bg-rose-100 active:scale-95 transition-all border border-rose-200 flex items-center gap-1" type="button">
+<span class="material-symbols-outlined text-[15px]" data-icon="check_circle">check_circle</span>
+<span class="text-[11px]">Servis</span>
+</button>
+</div>
+</div>
+<!-- 2. Oli Gardan (APPROACHING) -->
+<div class="group relative rounded-2xl bg-surface-container-lowest border border-amber-200/80 p-3.5 shadow-sm transition-all hover:border-amber-300">
+<div class="flex items-start justify-between gap-2.5">
+<div class="flex items-start gap-3">
+<div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0 mt-0.5 border border-amber-100">
+<span class="material-symbols-outlined text-[22px]" data-icon="settings_suggest">settings_suggest</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2 flex-wrap">
+<h3 class="text-sm font-bold text-on-surface leading-tight">Ganti Oli Gardan</h3>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800">
+                    Mendekat
+                  </span>
+</div>
+<p class="text-[11px] text-secondary font-medium mt-0.5">Rutin Tiap 6.000 km</p>
+<div class="mt-2 text-xs font-medium text-on-surface-variant flex items-center flex-wrap gap-x-1.5 gap-y-0.5">
+<span class="text-secondary">Terakhir: <span class="font-mono text-on-surface font-semibold">19.000 km</span></span>
+<span class="text-outline-variant">•</span>
+<span class="text-secondary">Batas: <span class="font-mono text-on-surface font-semibold">25.000 km</span></span>
+</div>
+<p class="text-xs font-semibold text-amber-700 mt-1">
+                  Sisa 418 km
+                </p>
+</div>
+</div>
+<!-- Detail Chevron -->
+<button aria-label="Detail Oli Gardan" class="text-secondary hover:text-on-surface p-1 rounded-lg" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- 3. Filter Udara (APPROACHING) -->
+<div class="group relative rounded-2xl bg-surface-container-lowest border border-amber-200/80 p-3.5 shadow-sm transition-all hover:border-amber-300">
+<div class="flex items-start justify-between gap-2.5">
+<div class="flex items-start gap-3">
+<div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0 mt-0.5 border border-amber-100">
+<span class="material-symbols-outlined text-[22px]" data-icon="air">air</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2 flex-wrap">
+<h3 class="text-sm font-bold text-on-surface leading-tight">Pembersihan / Ganti Filter Udara</h3>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800">
+                    Mendekat
+                  </span>
+</div>
+<p class="text-[11px] text-secondary font-medium mt-0.5">Tiap 8.000 km</p>
+<div class="mt-2 text-xs font-medium text-on-surface-variant flex items-center flex-wrap gap-x-1.5 gap-y-0.5">
+<span class="text-secondary">Terakhir: <span class="font-mono text-on-surface font-semibold">17.500 km</span></span>
+<span class="text-outline-variant">•</span>
+<span class="text-secondary">Batas: <span class="font-mono text-on-surface font-semibold">25.500 km</span></span>
+</div>
+<p class="text-xs font-semibold text-amber-700 mt-1">
+                  Sisa 918 km
+                </p>
+</div>
+</div>
+<button aria-label="Detail Filter Udara" class="text-secondary hover:text-on-surface p-1 rounded-lg" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- 4. Ganti Busi (SAFE) -->
+<div class="group relative rounded-2xl bg-surface-container-lowest border border-outline-variant/30 p-3.5 shadow-sm transition-all hover:border-outline-variant">
+<div class="flex items-start justify-between gap-2.5">
+<div class="flex items-start gap-3">
+<div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5 border border-emerald-100">
+<span class="material-symbols-outlined text-[22px]" data-icon="electric_bolt">electric_bolt</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2 flex-wrap">
+<h3 class="text-sm font-bold text-on-surface leading-tight">Ganti Busi (Spark Plug)</h3>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800">
+                    Aman
+                  </span>
+</div>
+<p class="text-[11px] text-secondary font-medium mt-0.5">Rutin Tiap 10.000 km</p>
+<div class="mt-2 text-xs font-medium text-on-surface-variant flex items-center flex-wrap gap-x-1.5 gap-y-0.5">
+<span class="text-secondary">Terakhir: <span class="font-mono text-on-surface font-semibold">20.000 km</span></span>
+<span class="text-outline-variant">•</span>
+<span class="text-secondary">Batas: <span class="font-mono text-on-surface font-semibold">30.000 km</span></span>
+</div>
+<p class="text-xs font-medium text-secondary mt-1">
+                  Sisa 5.418 km
+                </p>
+</div>
+</div>
+<button aria-label="Detail Busi" class="text-secondary hover:text-on-surface p-1 rounded-lg" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- 5. Ganti Filter Oli (SAFE) -->
+<div class="group relative rounded-2xl bg-surface-container-lowest border border-outline-variant/30 p-3.5 shadow-sm transition-all hover:border-outline-variant">
+<div class="flex items-start justify-between gap-2.5">
+<div class="flex items-start gap-3">
+<div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5 border border-emerald-100">
+<span class="material-symbols-outlined text-[22px]" data-icon="filter_alt">filter_alt</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2 flex-wrap">
+<h3 class="text-sm font-bold text-on-surface leading-tight">Filter Oli Mesin</h3>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800">
+                    Aman
+                  </span>
+</div>
+<p class="text-[11px] text-secondary font-medium mt-0.5">Tiap 12.000 km</p>
+<div class="mt-2 text-xs font-medium text-on-surface-variant flex items-center flex-wrap gap-x-1.5 gap-y-0.5">
+<span class="text-secondary">Terakhir: <span class="font-mono text-on-surface font-semibold">18.000 km</span></span>
+<span class="text-outline-variant">•</span>
+<span class="text-secondary">Batas: <span class="font-mono text-on-surface font-semibold">30.000 km</span></span>
+</div>
+<p class="text-xs font-medium text-secondary mt-1">
+                  Sisa 5.418 km
+                </p>
+</div>
+</div>
+<button aria-label="Detail Filter Oli" class="text-secondary hover:text-on-surface p-1 rounded-lg" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- 6. Pemeriksaan Aki & Tegangan (SAFE) -->
+<div class="group relative rounded-2xl bg-surface-container-lowest border border-outline-variant/30 p-3.5 shadow-sm transition-all hover:border-outline-variant">
+<div class="flex items-start justify-between gap-2.5">
+<div class="flex items-start gap-3">
+<div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 mt-0.5 border border-emerald-100">
+<span class="material-symbols-outlined text-[22px]" data-icon="battery_charging_full">battery_charging_full</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2 flex-wrap">
+<h3 class="text-sm font-bold text-on-surface leading-tight">Pemeriksaan Aki &amp; Tegangan</h3>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800">
+                    Aman
+                  </span>
+</div>
+<p class="text-[11px] text-secondary font-medium mt-0.5">Tiap 12 Bulan / 15.000 km</p>
+<div class="mt-2 text-xs font-medium text-on-surface-variant flex items-center flex-wrap gap-x-1.5 gap-y-0.5">
+<span class="text-secondary">Terakhir: <span class="text-on-surface font-medium">Nov 2023</span></span>
+<span class="text-outline-variant">•</span>
+<span class="text-secondary">Tegangan: <span class="font-mono text-emerald-700 font-semibold">12.6V</span></span>
+</div>
+<p class="text-xs font-medium text-secondary mt-1">
+                  Kondisi Prima
+                </p>
+</div>
+</div>
+<button aria-label="Detail Aki" class="text-secondary hover:text-on-surface p-1 rounded-lg" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- 7. Custom Service Card (Pengingat Kustom) -->
+<div class="group relative rounded-2xl bg-surface-container-lowest border border-outline-variant/50 p-3.5 shadow-sm transition-all hover:border-primary/40">
+<div class="flex items-start justify-between gap-2.5">
+<div class="flex items-start gap-3">
+<div class="w-10 h-10 rounded-xl bg-secondary-container/60 text-primary flex items-center justify-center shrink-0 mt-0.5 border border-secondary-container">
+<span class="material-symbols-outlined text-[22px]" data-icon="build">build</span>
+</div>
+<div class="flex flex-col pr-1">
+<div class="flex items-center gap-1.5 flex-wrap">
+<h3 class="text-sm font-bold text-on-surface leading-tight">Ganti Kampas Rem Depan</h3>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-surface-container-high text-on-surface-variant">
+                    Kustom
+                  </span>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800">
+                    Mendekat
+                  </span>
+</div>
+<p class="text-[11px] text-secondary font-medium mt-0.5">Daytona Gold Ultra Pad</p>
+<div class="mt-2 text-xs font-medium text-on-surface-variant flex items-center flex-wrap gap-x-1.5 gap-y-0.5">
+<span class="text-secondary">Sisa: <span class="font-mono text-amber-700 font-bold">650 km</span></span>
+<span class="text-outline-variant">•</span>
+<span class="text-secondary">Target: <span class="font-mono text-on-surface font-semibold">25.230 km</span></span>
+</div>
+<!-- Custom Note -->
+<div class="mt-2 p-2 rounded-lg bg-surface-container-low text-[11px] text-on-surface-variant flex items-start gap-1.5 border border-outline-variant/20">
+<span class="material-symbols-outlined text-[14px] text-secondary shrink-0 mt-0.5" data-icon="sticky_note_2">sticky_note_2</span>
+<span class="leading-normal">Catatan: Bunyi mendecit ringan saat pengereman turunan.</span>
+</div>
+</div>
+</div>
+<!-- 3-Dot Overflow Menu for Custom Item -->
+<button aria-label="Opsi Layanan Kustom" class="text-secondary hover:text-on-surface p-1 rounded-lg hover:bg-surface-container active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Offline Logbook Badge Info -->
+<div class="mt-6 flex items-center justify-center gap-1.5 text-center text-xs text-secondary py-3">
+<span class="material-symbols-outlined text-[16px] text-tertiary" data-icon="cloud_off">cloud_off</span>
+<span class="">Semua jadwal &amp; riwayat tersimpan lokal (Offline-first)</span>
+</div>
+</main>
+<!-- Bottom Navigation Bar & Center Floating FAB Cluster -->
+<div class="fixed bottom-0 left-0 right-0 z-50 max-w-[390px] mx-auto">
+<!-- Central Floating Action Button (Mulai Perjalanan) -->
+<div class="absolute -top-6 left-1/2 -translate-x-1/2 z-50">
+<button aria-label="Mulai Perjalanan" class="flex items-center justify-center w-14 h-14 rounded-full bg-primary text-on-primary shadow-lg ring-4 ring-[#f8fafc] hover:brightness-110 active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-[28px] fill-1" data-icon="two_wheeler">two_wheeler</span>
+</button>
+</div>
+<!-- Bottom Bar Surface -->
+<nav class="bg-surface-container-lowest/95 backdrop-blur-md px-2 h-16 w-full flex items-center justify-around shadow-[0_-2px_10px_rgba(0,0,0,0.03)] border-t border-outline-variant/20">
+<!-- Tab: Dashboard -->
+<button class="flex flex-col items-center justify-center text-secondary hover:text-primary transition-colors duration-150 active:scale-95 w-16 py-1" type="button">
+<span class="material-symbols-outlined text-[22px]" data-icon="speed">speed</span>
+<span class="font-label text-[10px] font-medium mt-0.5">Dashboard</span>
+</button>
+<!-- Tab: Trips -->
+<button class="flex flex-col items-center justify-center text-secondary hover:text-primary transition-colors duration-150 active:scale-95 w-16 py-1 mr-4" type="button">
+<span class="material-symbols-outlined text-[22px]" data-icon="route">route</span>
+<span class="font-label text-[10px] font-medium mt-0.5">Trips</span>
+</button>
+<!-- Tab: Service (ACTIVE) -->
+<button class="flex flex-col items-center justify-center text-primary font-semibold transition-colors duration-150 active:scale-95 w-16 py-1 ml-4 relative" type="button">
+<span class="material-symbols-outlined text-[22px] fill-1" data-icon="build">build</span>
+<span class="font-label text-[10px] font-semibold mt-0.5">Service</span>
+<!-- Active Indicator Pill/Dot -->
+<span class="w-1.5 h-1.5 rounded-full bg-primary mt-0.5"></span>
+</button>
+<!-- Tab: Settings -->
+<button class="flex flex-col items-center justify-center text-secondary hover:text-primary transition-colors duration-150 active:scale-95 w-16 py-1" type="button">
+<span class="material-symbols-outlined text-[22px]" data-icon="settings">settings</span>
+<span class="font-label text-[10px] font-medium mt-0.5">Settings</span>
+</button>
+</nav>
+</div>
+</div>
+
+
+
+
+</body></html>

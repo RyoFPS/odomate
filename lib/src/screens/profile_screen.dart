@@ -189,18 +189,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   clipBehavior: Clip.none,
                   children: [
                     CircleAvatar(
+                      key: ValueKey(
+                        photoPath == null
+                            ? 'profile-avatar-fallback'
+                            : 'profile-avatar-photo',
+                      ),
                       radius: 48,
                       backgroundColor: colors.primaryContainer,
                       backgroundImage: photoPath == null
-                          ? null
-                          : FileImage(File(photoPath!)),
-                      child: photoPath == null
-                          ? Icon(
-                              Icons.person,
-                              size: 52,
-                              color: colors.onPrimaryContainer,
+                          ? const AssetImage(
+                              'stitch_odomate_modern_ui/odomate_rider_avatar_updated_full/screen.png',
                             )
-                          : null,
+                          : FileImage(File(photoPath!)),
                     ),
                     Positioned(
                       right: -4,

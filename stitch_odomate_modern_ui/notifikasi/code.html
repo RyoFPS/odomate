@@ -1,0 +1,255 @@
+<!DOCTYPE html><html lang="id"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Notifikasi - OdoMate</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "inverse-primary": "#b4c5ff",
+            "surface-container-low": "#f3f3fe",
+            "tertiary-fixed-dim": "#79db8d",
+            "on-error": "#ffffff",
+            "tertiary-fixed": "#95f8a7",
+            "surface-tint": "#0053db",
+            "surface-dim": "#d9d9e5",
+            "outline-variant": "#c3c6d7",
+            "on-secondary-fixed": "#0b1c30",
+            "primary-fixed-dim": "#b4c5ff",
+            "error-container": "#ffdad6",
+            "surface-container-high": "#e7e7f3",
+            "secondary-fixed-dim": "#b7c8e1",
+            "on-secondary-fixed-variant": "#38485d",
+            "on-primary-container": "#eeefff",
+            "on-secondary-container": "#54647a",
+            "tertiary": "#00632b",
+            "on-surface-variant": "#434655",
+            "surface": "#faf8ff",
+            "on-tertiary-fixed-variant": "#005323",
+            "inverse-on-surface": "#f0f0fb",
+            "error": "#ba1a1a",
+            "on-primary": "#ffffff",
+            "on-tertiary-container": "#c4ffc9",
+            "surface-bright": "#faf8ff",
+            "on-tertiary-fixed": "#00210a",
+            "primary": "#004ac6",
+            "on-primary-fixed": "#00174b",
+            "on-error-container": "#93000a",
+            "surface-variant": "#e1e2ed",
+            "on-secondary": "#ffffff",
+            "on-primary-fixed-variant": "#003ea8",
+            "on-background": "#191b23",
+            "surface-container-highest": "#e1e2ed",
+            "surface-container": "#ededf9",
+            "secondary": "#505f76",
+            "secondary-container": "#d0e1fb",
+            "primary-fixed": "#dbe1ff",
+            "tertiary-container": "#117e3b",
+            "surface-container-lowest": "#ffffff",
+            "outline": "#737686",
+            "on-surface": "#191b23",
+            "secondary-fixed": "#d3e4fe",
+            "inverse-surface": "#2e3039",
+            "primary-container": "#2563eb",
+            "on-tertiary": "#ffffff",
+            "background": "#faf8ff"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            headline: ["Inter", "sans-serif"],
+            display: ["Inter", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Inter", "sans-serif"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #F8FAFC;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-[#F8FAFC] text-[#0F172A] antialiased min-h-screen" style="font-family: Poppins, sans-serif;">
+<div class="max-w-md mx-auto min-h-screen flex flex-col bg-[#F8FAFC]">
+<!-- TopAppBar (JSON Shared Anchor Pattern) -->
+<header class="sticky top-0 z-30 bg-surface-container-lowest border-b border-outline-variant/30 flex justify-between items-center w-full px-4 h-14 max-w-md mx-auto">
+<div class="flex items-center gap-2">
+<button aria-label="Kembali" class="w-10 h-10 -ml-2 rounded-full flex items-center justify-center text-on-surface hover:bg-surface-container-low transition-colors active:opacity-75" type="button">
+<span class="material-symbols-outlined text-[22px]" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="text-base font-bold font-headline text-on-surface tracking-tight">Notifikasi</h1>
+</div>
+<button class="text-sm font-medium font-label text-primary hover:text-primary-container active:opacity-75 transition-colors py-1 px-2 -mr-2 rounded" type="button">
+        Tandai semua dibaca
+      </button>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 px-4 pt-3.5 pb-10 flex flex-col gap-4">
+<!-- Filter Chips Row -->
+<section aria-label="Filter Notifikasi" class="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+<button class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-secondary-container/40 text-primary border border-secondary-container active:opacity-80 transition-all" type="button">
+<span class="">Semua</span>
+<span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-primary-container text-white text-[10px] font-bold">3</span>
+</button>
+<button class="inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-medium bg-surface-container-lowest text-[#64748B] border border-outline-variant/40 hover:bg-surface-container-low active:opacity-80 transition-all" type="button">
+          Perjalanan
+        </button>
+<button class="inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-medium bg-surface-container-lowest text-[#64748B] border border-outline-variant/40 hover:bg-surface-container-low active:opacity-80 transition-all" type="button">
+          Servis
+        </button>
+</section>
+<!-- Section: Hari ini -->
+<section class="flex flex-col gap-2.5">
+<div class="flex items-center justify-between pt-1">
+<div class="flex items-center gap-2">
+<h2 class="text-xs font-bold uppercase tracking-wider text-[#64748B]">Hari ini</h2>
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+</div>
+<span class="text-[11px] font-medium text-[#64748B]">2 baru</span>
+</div>
+<!-- Card 1: Active Ride (Blue Priority) -->
+<article class="bg-surface-container-lowest rounded-xl p-3.5 border border-outline-variant/30 flex gap-3 transition-all relative">
+<!-- Leading Icon Container -->
+<div class="flex-shrink-0">
+<div class="w-10 h-10 rounded-xl bg-secondary-container/50 text-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]" data-icon="navigation" data-weight="fill" style="font-variation-settings: 'FILL' 1;">navigation</span>
+</div>
+</div>
+<!-- Content Body -->
+<div class="flex-1 min-w-0">
+<div class="flex items-start justify-between gap-2">
+<h3 class="text-sm font-semibold text-[#0F172A] leading-snug">Ride sedang merekam</h3>
+<span class="w-2 h-2 rounded-full bg-primary-container flex-shrink-0 mt-1.5" title="Belum dibaca"></span>
+</div>
+<p class="text-xs text-[#334155] mt-1 leading-relaxed">
+              GPS siaga aktif merekam perjalanan Honda Vario 160. <span class="font-semibold text-[#0F172A]">6,2 km</span> tercatat.
+            </p>
+<div class="mt-2.5 flex items-center justify-between pt-0.5">
+<span class="text-[11px] font-medium text-[#64748B]">07:45 WIB</span>
+<button class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-primary-container text-white active:opacity-90 transition-opacity" type="button">
+<span class="">Lihat Live Ride</span>
+<span class="material-symbols-outlined text-[14px]" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Card 2: Service Approaching (Amber Warning) -->
+<article class="bg-surface-container-lowest rounded-xl p-3.5 border border-outline-variant/30 flex gap-3 transition-all relative">
+<!-- Leading Icon Container -->
+<div class="flex-shrink-0">
+<div class="w-10 h-10 rounded-xl bg-[#FEF3C7] text-[#D97706] flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]" data-icon="build" data-weight="fill" style="font-variation-settings: 'FILL' 1;">build</span>
+</div>
+</div>
+<!-- Content Body -->
+<div class="flex-1 min-w-0">
+<div class="flex items-start justify-between gap-2">
+<h3 class="text-sm font-semibold text-[#0F172A] leading-snug">Servis oli mesin mendekat</h3>
+<span class="w-2 h-2 rounded-full bg-primary-container flex-shrink-0 mt-1.5" title="Belum dibaca"></span>
+</div>
+<p class="text-xs text-[#334155] mt-1 leading-relaxed">
+              Sisa <span class="font-semibold text-[#D97706]">418 km</span> sebelum batas ganti oli 25.000 km tercapai.
+            </p>
+<div class="mt-2.5 flex items-center justify-between pt-0.5">
+<span class="text-[11px] font-medium text-[#64748B]">06:40 WIB</span>
+<button class="text-xs font-semibold text-primary hover:underline inline-flex items-center gap-0.5" type="button">
+<span class="">Jadwalkan Servis</span>
+<span class="material-symbols-outlined text-[13px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</article>
+</section>
+<!-- Section: Sebelumnya -->
+<section class="flex flex-col gap-2.5 pt-2">
+<div class="flex items-center justify-between pt-1">
+<h2 class="text-xs font-bold uppercase tracking-wider text-[#64748B]">Sebelumnya</h2>
+<span class="text-[11px] font-medium text-[#64748B]">Tersimpan lokal</span>
+</div>
+<!-- Card 3: Trip Completed (Green Success - Read) -->
+<article class="bg-surface-container-lowest rounded-xl p-3.5 border border-outline-variant/30 flex gap-3 transition-all opacity-95">
+<!-- Leading Icon Container -->
+<div class="flex-shrink-0">
+<div class="w-10 h-10 rounded-xl bg-[#DCFCE7] text-[#15803D] flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]" data-icon="check_circle" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<!-- Content Body -->
+<div class="flex-1 min-w-0">
+<div class="flex items-start justify-between gap-2">
+<h3 class="text-sm font-semibold text-[#0F172A] leading-snug">Perjalanan selesai</h3>
+</div>
+<p class="text-xs text-[#64748B] mt-1 leading-relaxed">
+              Kediaman Tebet → Kantor Sentral Senayan II (12,4 km tercatat, 42 menit).
+            </p>
+<div class="mt-2 flex items-center justify-between pt-0.5">
+<span class="text-[11px] font-medium text-[#64748B]">Kemarin, 07:15 WIB</span>
+<span class="inline-flex items-center gap-1 text-[11px] font-medium text-[#15803D]">
+<span class="material-symbols-outlined text-[13px]" data-icon="task_alt">task_alt</span>
+                Tersinkron
+              </span>
+</div>
+</div>
+</article>
+<!-- Card 4: Profile Saved (Slate Utility - Read) -->
+<article class="bg-surface-container-lowest rounded-xl p-3.5 border border-outline-variant/30 flex gap-3 transition-all opacity-95">
+<!-- Leading Icon Container -->
+<div class="flex-shrink-0">
+<div class="w-10 h-10 rounded-xl bg-[#F1F5F9] text-[#475569] flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]" data-icon="person" data-weight="fill" style="font-variation-settings: 'FILL' 1;">person</span>
+</div>
+</div>
+<!-- Content Body -->
+<div class="flex-1 min-w-0">
+<div class="flex items-start justify-between gap-2">
+<h3 class="text-sm font-semibold text-[#0F172A] leading-snug">Profil tersimpan</h3>
+</div>
+<p class="text-xs text-[#64748B] mt-1 leading-relaxed">
+              Data profil Dimas Prasetyo dan kendaraan Honda Vario 160 tersimpan offline di perangkat.
+            </p>
+<div class="mt-2 flex items-center justify-between pt-0.5">
+<span class="text-[11px] font-medium text-[#64748B]">Kemarin, 06:10 WIB</span>
+<span class="text-[11px] text-[#64748B]">Database SQLite v2</span>
+</div>
+</div>
+</article>
+</section>
+<!-- Offline Utility Notice Footer -->
+<footer class="mt-3 bg-surface-container-low/60 rounded-xl p-3 border border-outline-variant/20 flex items-start gap-2.5">
+<span class="material-symbols-outlined text-[#64748B] text-[18px] mt-0.5 flex-shrink-0" data-icon="cloud_off">cloud_off</span>
+<div class="text-[11px] text-[#64748B] leading-normal">
+          Semua notifikasi dihasilkan secara lokal dari data sensor odometer &amp; pengingat servis offline.
+        </div>
+</footer>
+</main>
+</div>
+
+
+</body></html>

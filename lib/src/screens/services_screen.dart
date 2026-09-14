@@ -68,7 +68,9 @@ class _ServicesScreenState extends State<ServicesScreen> {
         return byStatus != 0 ? byStatus : a.name.compareTo(b.name);
       });
     }
-    final due = items.where((item) => _status(item) == ServiceStatus.due).length;
+    final due = items
+        .where((item) => _status(item) == ServiceStatus.due)
+        .length;
     final soon = items
         .where((item) => _status(item) == ServiceStatus.dueSoon)
         .length;
@@ -442,8 +444,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                           text: 'Terakhir: ',
                           children: [
                             TextSpan(
-                              text:
-                                  '${_km(service.lastServicedOdometerKm)} km',
+                              text: '${_km(service.lastServicedOdometerKm)} km',
                               style: const TextStyle(
                                 fontWeight: FontWeight.w700,
                               ),
@@ -505,10 +506,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                 status == ServiceStatus.due
                     ? TextButton.icon(
                         onPressed: openDetail,
-                        icon: const Icon(
-                          Icons.check_circle_outline,
-                          size: 16,
-                        ),
+                        icon: const Icon(Icons.check_circle_outline, size: 16),
                         label: const Text('Servis'),
                         style: TextButton.styleFrom(
                           foregroundColor: _red,
@@ -520,10 +518,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                           ),
                         ),
                       )
-                    : Icon(
-                        Icons.chevron_right_rounded,
-                        color: colors.outline,
-                      ),
+                    : Icon(Icons.chevron_right_rounded, color: colors.outline),
               ],
             ),
           ),
@@ -555,11 +550,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
     ),
     child: Text(
       text,
-      style: TextStyle(
-        color: color,
-        fontSize: 9,
-        fontWeight: FontWeight.w700,
-      ),
+      style: TextStyle(color: color, fontSize: 9, fontWeight: FontWeight.w700),
     ),
   );
 
@@ -632,7 +623,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
       builder: (sheetContext) => StatefulBuilder(
         builder: (context, setSheetState) {
           final interval = double.tryParse(intervalController.text);
-          final valid = nameController.text.trim().isNotEmpty &&
+          final valid =
+              nameController.text.trim().isNotEmpty &&
               interval != null &&
               interval > 0;
           void refresh() => setSheetState(() {});
@@ -710,11 +702,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                             ),
                           ],
                           const SizedBox(height: 16),
-                          _editorFields(
-                            context,
-                            interval,
-                            refresh,
-                          ),
+                          _editorFields(context, interval, refresh),
                         ],
                       ),
                     ),
@@ -879,9 +867,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                   )
                 : null,
             icon: const Icon(Icons.check_rounded),
-            label: Text(
-              editing ? 'Simpan Perubahan' : 'Simpan Jadwal Servis',
-            ),
+            label: Text(editing ? 'Simpan Perubahan' : 'Simpan Jadwal Servis'),
           ),
           const SizedBox(height: 7),
           const Row(
@@ -963,9 +949,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           border: Border.all(
-            color: Theme.of(
-              context,
-            ).colorScheme.outlineVariant.withValues(alpha: .75),
+            color: Theme.of(context).colorScheme.outlineVariant
+                .withValues(alpha: .75),
           ),
           borderRadius: BorderRadius.circular(18),
           boxShadow: const [
@@ -985,7 +970,12 @@ class _ServicesScreenState extends State<ServicesScreen> {
       TextSpan(
         text: text,
         children: required
-            ? const [TextSpan(text: ' *', style: TextStyle(color: _red))]
+            ? const [
+                TextSpan(
+                  text: ' *',
+                  style: TextStyle(color: _red),
+                ),
+              ]
             : const [],
       ),
       style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
@@ -1145,10 +1135,10 @@ class _ServicesScreenState extends State<ServicesScreen> {
     }
   }
 
-  String _km(double value) => value
-      .round()
-      .toString()
-      .replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (_) => '.');
+  String _km(double value) => value.round().toString().replaceAllMapped(
+    RegExp(r'\B(?=(\d{3})+(?!\d))'),
+    (_) => '.',
+  );
 }
 
 class ServiceDetailScreen extends StatefulWidget {

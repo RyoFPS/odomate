@@ -1,0 +1,397 @@
+<!DOCTYPE html><html lang="id" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>OdoMate History - Riwayat Perjalanan</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "secondary-fixed-dim": "#b7c8e1",
+            "primary-container": "#2563eb",
+            "surface-container-highest": "#e1e2ed",
+            "surface-container-lowest": "#ffffff",
+            "inverse-surface": "#2e3039",
+            "secondary-fixed": "#d3e4fe",
+            "on-surface-variant": "#434655",
+            "inverse-primary": "#b4c5ff",
+            "surface-container": "#ededf9",
+            "surface-bright": "#faf8ff",
+            "on-tertiary-fixed-variant": "#005323",
+            "secondary-container": "#d0e1fb",
+            "tertiary-fixed": "#95f8a7",
+            "surface-variant": "#e1e2ed",
+            "primary": "#004ac6",
+            "on-primary": "#ffffff",
+            "surface-container-low": "#f3f3fe",
+            "error-container": "#ffdad6",
+            "secondary": "#505f76",
+            "on-error-container": "#93000a",
+            "surface-dim": "#d9d9e5",
+            "on-tertiary": "#ffffff",
+            "primary-fixed-dim": "#b4c5ff",
+            "surface": "#faf8ff",
+            "inverse-on-surface": "#f0f0fb",
+            "on-surface": "#191b23",
+            "outline": "#737686",
+            "on-secondary-fixed": "#0b1c30",
+            "on-tertiary-container": "#c4ffc9",
+            "on-primary-container": "#eeefff",
+            "error": "#ba1a1a",
+            "tertiary": "#00632b",
+            "on-secondary-fixed-variant": "#38485d",
+            "surface-tint": "#0053db",
+            "on-tertiary-fixed": "#00210a",
+            "background": "#faf8ff",
+            "tertiary-container": "#117e3b",
+            "on-secondary": "#ffffff",
+            "primary-fixed": "#dbe1ff",
+            "tertiary-fixed-dim": "#79db8d",
+            "surface-container-high": "#e7e7f3",
+            "on-secondary-container": "#54647a",
+            "outline-variant": "#c3c6d7",
+            "on-primary-fixed-variant": "#003ea8",
+            "on-primary-fixed": "#00174b",
+            "on-error": "#ffffff",
+            "on-background": "#191b23"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "2xl": "1rem",
+            "full": "9999px"
+          },
+          "fontFamily": {
+            "headline": ["Inter", "sans-serif"],
+            "display": ["Inter", "sans-serif"],
+            "body": ["Inter", "sans-serif"],
+            "label": ["Inter", "sans-serif"]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #F8FAFC;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .material-symbols-outlined.fill {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    /* Hide scrollbar for chrome, safari and opera */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    /* Hide scrollbar for IE, Edge and Firefox */
+    .no-scrollbar {
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-[#F8FAFC] text-[#0F172A] antialiased min-h-screen flex justify-center selection:bg-blue-100 selection:text-blue-900" style="font-family: Poppins, sans-serif;">
+<!-- Mobile Screen Canvas Wrapper -->
+<div class="w-full max-w-[390px] min-h-screen bg-[#F8FAFC] relative flex flex-col shadow-sm">
+<!-- 1. Top App Bar (Shared Components Anchor + Functional Header) -->
+<header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md px-4 h-16 w-full flex items-center justify-between border-b border-[#E2E8F0] transition-colors">
+<div class="flex items-center">
+
+<div>
+<div class="flex items-center gap-1.5">
+<h1 class="font-bold text-[16px] text-[#0F172A] tracking-tight leading-tight">Riwayat Perjalanan</h1>
+
+</div>
+<p class="text-[11px] text-[#64748B] font-medium leading-none mt-0.5">Log rute &amp; jarak tempuh</p>
+</div>
+</div>
+<div class="flex items-center gap-1">
+<button aria-label="Pencarian" class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-[#F1F5F9] text-[#64748B] active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[20px]" data-icon="search">search</span>
+</button>
+<button aria-label="Filter lanjutan" class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-[#F1F5F9] text-[#64748B] active:scale-95 transition-transform relative">
+<span class="material-symbols-outlined text-[20px]" data-icon="tune">tune</span>
+<span class="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-[#2563EB]"></span>
+</button>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 px-4 pt-3 pb-28 flex flex-col gap-4">
+<!-- 2. Segmented Period Filter -->
+<div class="w-full overflow-x-auto no-scrollbar py-0.5">
+<div class="flex items-center gap-1.5 min-w-max">
+<button class="px-3.5 py-1.5 text-xs font-medium rounded-xl border border-[#E2E8F0] bg-white text-[#64748B] active:scale-95 transition-all">
+            Semua
+          </button>
+<button class="px-3.5 py-1.5 text-xs font-medium rounded-xl border border-[#E2E8F0] bg-white text-[#64748B] active:scale-95 transition-all">
+            Hari ini
+          </button>
+<button class="px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-[#EFF6FF] border border-[#BFDBFE] text-[#2563EB] shadow-xs active:scale-95 transition-all flex items-center gap-1">
+<span class="">7 hari terakhir</span>
+</button>
+<button class="px-3.5 py-1.5 text-xs font-medium rounded-xl border border-[#E2E8F0] bg-white text-[#64748B] active:scale-95 transition-all">
+            Bulan ini
+          </button>
+</div>
+</div>
+<!-- 3. Period Summary Card -->
+<section class="bg-white rounded-2xl border border-[#E2E8F0] p-4 flex flex-col gap-3.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5 text-[#64748B]">
+<span class="material-symbols-outlined text-[16px]" data-icon="calendar_month">calendar_month</span>
+<span class="text-xs font-medium">Ringkasan 7 Hari Terakhir</span>
+</div>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#F1F5F9] text-[#475569] text-[11px] font-semibold">
+<span class="material-symbols-outlined text-[13px] text-[#2563EB]" data-icon="two_wheeler">two_wheeler</span>
+            Honda Vario 160
+          </span>
+</div>
+<!-- Metrics Grid -->
+<div class="grid grid-cols-12 gap-3 pt-1">
+<!-- Total Distance Big Block -->
+<div class="col-span-6 bg-[#F8FAFC] border border-[#F1F5F9] rounded-xl p-3 flex flex-col justify-between">
+<span class="text-[11px] font-medium text-[#64748B]">Total Jarak</span>
+<div class="mt-1">
+<span class="text-2xl font-extrabold tracking-tight text-[#0F172A]">142,6</span>
+<span class="text-xs font-semibold text-[#64748B] ml-0.5">km</span>
+</div>
+<div class="mt-2 flex items-center gap-1 text-[10px] text-[#15803D] font-medium">
+<span class="material-symbols-outlined text-[12px]" data-icon="trending_up">trending_up</span>
+<span class="">+18% vs minggu lalu</span>
+</div>
+</div>
+<!-- Total Trips & Efficiency Secondary Blocks -->
+<div class="col-span-6 flex flex-col gap-2">
+<div class="bg-[#F8FAFC] border border-[#F1F5F9] rounded-xl px-3 py-2 flex items-center justify-between">
+<div>
+<span class="block text-[10px] text-[#64748B] font-medium">Frekuensi</span>
+<span class="text-base font-bold text-[#0F172A]">14 <span class="text-xs font-normal text-[#64748B]">rit</span></span>
+</div>
+<div class="w-7 h-7 rounded-lg bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]" data-icon="route">route</span>
+</div>
+</div>
+<div class="bg-[#F8FAFC] border border-[#F1F5F9] rounded-xl px-3 py-2 flex items-center justify-between">
+<div>
+<span class="block text-[10px] text-[#64748B] font-medium">Rata-rata Harian</span>
+<span class="text-base font-bold text-[#0F172A]">20,3 <span class="text-xs font-normal text-[#64748B]">km</span></span>
+</div>
+<div class="w-7 h-7 rounded-lg bg-[#ECFDF5] text-[#15803D] flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]" data-icon="local_gas_station">local_gas_station</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Sparkline indicator & quick insight -->
+<div class="pt-2 border-t border-[#F1F5F9] flex items-center justify-between text-[11px] text-[#64748B]">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-[#2563EB]"></span>
+<span class="">Efisiensi BBM rata-rata: <strong class="text-[#0F172A]">44,2 km/L</strong></span>
+</div>
+<div aria-label="Visualisasi per hari" class="flex items-end gap-1 h-3.5">
+<span class="w-1 bg-[#CBD5E1] rounded-t-sm h-1.5"></span>
+<span class="w-1 bg-[#CBD5E1] rounded-t-sm h-2.5"></span>
+<span class="w-1 bg-[#CBD5E1] rounded-t-sm h-2"></span>
+<span class="w-1 bg-[#2563EB] rounded-t-sm h-3.5"></span>
+<span class="w-1 bg-[#CBD5E1] rounded-t-sm h-3"></span>
+<span class="w-1 bg-[#CBD5E1] rounded-t-sm h-2"></span>
+<span class="w-1 bg-[#2563EB] rounded-t-sm h-3.5"></span>
+</div>
+</div>
+</section>
+<!-- 4. Vertical Ride History Section -->
+<section class="flex flex-col gap-2.5">
+<div class="flex items-center justify-between px-0.5 pt-1">
+<div class="flex items-center gap-2">
+<h2 class="text-sm font-bold text-[#0F172A] tracking-tight">Perjalanan Terbaru</h2>
+<span class="px-2 py-0.5 text-[11px] font-semibold bg-[#E2E8F0] text-[#334155] rounded-full">4 entri</span>
+</div>
+<button class="text-xs font-semibold text-[#2563EB] hover:underline">Ekspor Log</button>
+</div>
+<!-- RIDE CARD 1: ACTIVE / ONGOING RIDE -->
+<div class="bg-white rounded-2xl border-2 border-[#16A34A]/30 p-3.5 flex flex-col gap-2.5 relative overflow-hidden transition-all active:scale-[0.99] cursor-pointer">
+<!-- Top subtle ongoing banner -->
+<div class="flex items-center justify-between">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#DCFCE7] text-[#15803D] text-[11px] font-semibold">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#16A34A] opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-[#15803D]"></span>
+</span>
+<span class="">Sedang Berjalan</span>
+</div>
+<span class="text-[11px] font-medium text-[#64748B]">Hari ini, 07:45 WIB</span>
+</div>
+<!-- Trip title & locations -->
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-start gap-3">
+<div class="w-10 h-10 rounded-xl bg-[#DCFCE7] text-[#15803D] flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[22px] fill" data-icon="two_wheeler">two_wheeler</span>
+</div>
+<div>
+<h3 class="text-[13px] font-bold text-[#0F172A] leading-tight">Komuter Pagi: Tebet → Senayan</h3>
+<div class="flex items-center gap-1 text-[11px] text-[#64748B] mt-1">
+<span class="material-symbols-outlined text-[14px] text-[#16A34A]" data-icon="navigation">navigation</span>
+<span class="">Honda Vario 160 • Live GPS Siaga</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-[#94A3B8] text-[20px] self-center" data-icon="chevron_right">chevron_right</span>
+</div>
+<!-- Dynamic Realtime Metrics Banner -->
+<div class="bg-[#F0FDF4] border border-[#BBF7D0] rounded-xl px-3 py-2 flex items-center justify-between text-xs">
+<div class="flex items-center gap-1.5 text-[#15803D] font-bold">
+<span class="material-symbols-outlined text-[16px]" data-icon="speed">speed</span>
+<span class="">6,2 km tercatat</span>
+</div>
+<div class="flex items-center gap-1 text-[#15803D] font-medium text-[11px]">
+<span class="material-symbols-outlined text-[14px]" data-icon="schedule">schedule</span>
+<span class="">18 menit berlangsung</span>
+</div>
+</div>
+</div>
+<!-- RIDE CARD 2: COMPLETED TODAY (Reimbursement tag) -->
+<div class="bg-white rounded-2xl border border-[#E2E8F0] p-3.5 flex flex-col gap-2.5 transition-all active:scale-[0.99] cursor-pointer">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="px-2 py-0.5 rounded-full bg-[#F1F5F9] text-[#475569] text-[10px] font-semibold">Selesai</span>
+<span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-[#EFF6FF] text-[#2563EB] text-[10px] font-bold">
+<span class="material-symbols-outlined text-[11px]" data-icon="receipt_long">receipt_long</span>
+                Klaim Kantor
+              </span>
+</div>
+<span class="text-[11px] font-medium text-[#64748B]">Hari ini, 06:33 WIB</span>
+</div>
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-start gap-3">
+<div class="w-10 h-10 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-[#2563EB] flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[20px]" data-icon="route">route</span>
+</div>
+<div class="flex flex-col">
+<h3 class="text-[13px] font-bold text-[#0F172A] leading-snug">Kediaman Tebet → Kantor Sentral Senayan II</h3>
+<div class="flex items-center gap-3 text-[11px] text-[#64748B] mt-1.5 flex-wrap">
+<span class="font-bold text-[#0F172A] text-xs">12,4 km</span>
+<span class="text-[#CBD5E1]">•</span>
+<span class="">42 menit</span>
+<span class="text-[#CBD5E1]">•</span>
+<span class="">Avg 34 km/h</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-[#94A3B8] text-[20px] self-center" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+<!-- RIDE CARD 3: COMPLETED YESTERDAY -->
+<div class="bg-white rounded-2xl border border-[#E2E8F0] p-3.5 flex flex-col gap-2.5 transition-all active:scale-[0.99] cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="px-2 py-0.5 rounded-full bg-[#F1F5F9] text-[#475569] text-[10px] font-semibold">Selesai</span>
+<span class="text-[11px] font-medium text-[#64748B]">Kemarin, 17:15 WIB</span>
+</div>
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-start gap-3">
+<div class="w-10 h-10 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-[#0F172A] flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[20px]" data-icon="home_pin">home_pin</span>
+</div>
+<div class="flex flex-col">
+<h3 class="text-[13px] font-bold text-[#0F172A] leading-snug">Kantor Sentral Senayan II → Tebet Timur Dalam</h3>
+<div class="flex items-center gap-3 text-[11px] text-[#64748B] mt-1.5">
+<span class="font-bold text-[#0F172A] text-xs">13,1 km</span>
+<span class="text-[#CBD5E1]">•</span>
+<span class="">48 menit</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-[#94A3B8] text-[20px] self-center" data-icon="chevron_right">chevron_right</span>
+</div>
+<!-- Note preview pill -->
+<div class="mt-0.5 bg-[#F8FAFC] border border-[#F1F5F9] rounded-lg px-2.5 py-1.5 flex items-center gap-2 text-[11px] text-[#64748B]">
+<span class="material-symbols-outlined text-[13px] text-[#D97706]" data-icon="rainy">rainy</span>
+<span class="truncate">Hujan gerimis via Jl. Gatot Subroto</span>
+</div>
+</div>
+<!-- RIDE CARD 4: PAST WEEKEND RIDE -->
+<div class="bg-white rounded-2xl border border-[#E2E8F0] p-3.5 flex flex-col gap-2.5 transition-all active:scale-[0.99] cursor-pointer">
+<div class="flex items-center justify-between">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#FEF3C7] text-[#92400E] text-[10px] font-semibold">
+<span class="material-symbols-outlined text-[11px]" data-icon="sports_motorsports">sports_motorsports</span>
+              Touring / Rekreasi
+            </span>
+<span class="text-[11px] font-medium text-[#64748B]">Minggu, 12 Mei • 08:20 WIB</span>
+</div>
+<div class="flex items-start justify-between gap-2">
+<div class="flex items-start gap-3">
+<div class="w-10 h-10 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-[#0F172A] flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[20px]" data-icon="explore">explore</span>
+</div>
+<div class="flex flex-col">
+<h3 class="text-[13px] font-bold text-[#0F172A] leading-snug">Tebet → BSD City (Sunmori Santai)</h3>
+<div class="flex items-center gap-3 text-[11px] text-[#64748B] mt-1.5">
+<span class="font-bold text-[#0F172A] text-xs">32,8 km</span>
+<span class="text-[#CBD5E1]">•</span>
+<span class="">1j 15m</span>
+<span class="text-[#CBD5E1]">•</span>
+<span class="">Efisiensi 46 km/L</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-[#94A3B8] text-[20px] self-center" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+</section>
+<!-- Offline Synced indicator badge -->
+<div class="mt-2 py-2 flex items-center justify-center gap-1.5 text-xs text-[#64748B]">
+<span class="material-symbols-outlined text-[14px] text-[#15803D]" data-icon="cloud_done">cloud_done</span>
+<span class="">Semua data tersimpan offline &amp; tersinkronisasi</span>
+</div>
+</main>
+<!-- 5. Bottom Navigation Bar (Mandatory Shell - Trips Active) -->
+<nav aria-label="Navigasi Utama" class="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around px-2 h-16 w-full max-w-[390px] mx-auto bg-white/95 backdrop-blur-md shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">
+<!-- Tab 1: Dashboard (Inactive) -->
+<a class="flex flex-col items-center justify-center text-[#64748B] font-normal hover:text-[#004ac6] transition-colors duration-150 active:scale-95 w-16" href="#">
+<span class="material-symbols-outlined text-[22px]" data-icon="speed">speed</span>
+<span class="text-[11px] font-medium mt-0.5">Dashboard</span>
+</a>
+<!-- Tab 2: Trips (ACTIVE - Screen Intent Exact Match) -->
+<a class="flex flex-col items-center justify-center text-[#2563EB] font-semibold transition-colors duration-150 active:scale-95 w-16 relative" href="#">
+<span class="material-symbols-outlined text-[22px] fill" data-icon="route">route</span>
+<span class="text-[11px] font-semibold mt-0.5">Trips</span>
+<span class="w-1.5 h-1.5 rounded-full bg-[#2563EB] absolute -bottom-1"></span>
+</a>
+<!-- Elevated Floating Action for Quick Odometer / Start Ride -->
+<div class="relative -top-3 flex flex-col items-center">
+<button aria-label="Mulai Perjalanan Baru" class="w-11 h-11 rounded-full bg-[#2563EB] text-white flex items-center justify-center shadow-lg shadow-blue-500/30 active:scale-95 transition-transform"><span class="material-symbols-outlined text-[24px]" data-icon="two_wheeler">two_wheeler</span></button>
+</div>
+<!-- Tab 3: Service (Inactive) -->
+<a class="flex flex-col items-center justify-center text-[#64748B] font-normal hover:text-[#004ac6] transition-colors duration-150 active:scale-95 w-16" href="#">
+<span class="material-symbols-outlined text-[22px]" data-icon="build">build</span>
+<span class="text-[11px] font-medium mt-0.5">Service</span>
+</a>
+<!-- Tab 4: Settings (Inactive) -->
+<a class="flex flex-col items-center justify-center text-[#64748B] font-normal hover:text-[#004ac6] transition-colors duration-150 active:scale-95 w-16" href="#">
+<span class="material-symbols-outlined text-[22px]" data-icon="settings">settings</span>
+<span class="text-[11px] font-medium mt-0.5">Settings</span>
+</a>
+</nav>
+<div id="filter-bottom-sheet" class="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/60 backdrop-blur-sm max-w-[390px] mx-auto transition-opacity"><div class="bg-white w-full rounded-t-3xl p-5 shadow-2xl flex flex-col gap-4 border-t border-slate-100"><div class="w-12 h-1.5 bg-slate-300 rounded-full mx-auto"></div><div class="flex items-center justify-between pb-1 border-b border-slate-100"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-[20px] text-blue-600">tune</span><h3 class="font-bold text-base text-slate-800 tracking-tight">Filter Riwayat Perjalanan</h3></div><button aria-label="Tutup Filter" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 active:scale-95 transition-all"><span class="material-symbols-outlined text-[18px]">close</span></button></div><div class="flex flex-col gap-2"><label class="text-xs font-semibold text-slate-700">Rentang Waktu</label><div class="flex flex-wrap gap-2"><button class="px-3 py-1.5 text-xs font-medium rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-blue-300 transition-colors">Semua</button><button class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-blue-50 border border-blue-200 text-blue-600">7 Hari Terakhir</button><button class="px-3 py-1.5 text-xs font-medium rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-blue-300 transition-colors">30 Hari Terakhir</button><button class="px-3 py-1.5 text-xs font-medium rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-blue-300 transition-colors flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">calendar_today</span>Kustom Tanggal</button></div></div><div class="flex flex-col gap-2"><label class="text-xs font-semibold text-slate-700">Kategori / Label Perjalanan</label><div class="flex flex-wrap gap-2"><button class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-blue-600 text-white shadow-xs">Semua</button><button class="px-3 py-1.5 text-xs font-medium rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-blue-300 transition-colors flex items-center gap-1"><span class="material-symbols-outlined text-[13px] text-emerald-600">commute</span>Komuter / Kantor</button><button class="px-3 py-1.5 text-xs font-medium rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-blue-300 transition-colors flex items-center gap-1"><span class="material-symbols-outlined text-[13px] text-blue-600">receipt_long</span>Klaim Reimbursement</button><button class="px-3 py-1.5 text-xs font-medium rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-blue-300 transition-colors flex items-center gap-1"><span class="material-symbols-outlined text-[13px] text-amber-600">sports_motorsports</span>Touring / Santai</button><button class="px-3 py-1.5 text-xs font-medium rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-blue-300 transition-colors">Urusan Pribadi</button></div></div><div class="flex flex-col gap-2"><label class="text-xs font-semibold text-slate-700">Urutan Log</label><div class="grid grid-cols-3 gap-2"><button class="py-2 px-2 text-center text-xs font-semibold rounded-xl bg-blue-50 border border-blue-300 text-blue-600">Terbaru</button><button class="py-2 px-2 text-center text-xs font-medium rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-blue-300 transition-colors">Terlama</button><button class="py-2 px-2 text-center text-xs font-medium rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:border-blue-300 transition-colors">Jarak Terjauh</button></div></div><div class="flex items-center gap-3 pt-2"><button class="px-4 py-3 rounded-xl border border-slate-200 text-slate-600 font-medium text-xs hover:bg-slate-50 active:scale-95 transition-all">Reset Filter</button><button class="flex-1 py-3 px-4 rounded-xl bg-[#2563EB] text-white font-semibold text-xs shadow-md shadow-blue-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"><span class="material-symbols-outlined text-[16px]">check</span>Terapkan Filter</button></div></div></div></div>
+
+
+
+
+
+
+</body></html>

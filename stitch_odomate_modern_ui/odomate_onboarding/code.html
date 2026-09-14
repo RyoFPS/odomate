@@ -1,0 +1,189 @@
+<!DOCTYPE html><html lang="id" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>OdoMate - Onboarding</title>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "outline-variant": "#c3c6d7",
+            "tertiary-container": "#117e3b",
+            "surface-container": "#ededf9",
+            "on-surface-variant": "#434655",
+            "inverse-surface": "#2e3039",
+            "primary-fixed-dim": "#b4c5ff",
+            "on-tertiary-container": "#c4ffc9",
+            "secondary-fixed": "#d3e4fe",
+            "primary-container": "#2563eb",
+            "tertiary-fixed": "#95f8a7",
+            "surface-container-high": "#e7e7f3",
+            "outline": "#737686",
+            "on-tertiary-fixed": "#00210a",
+            "secondary-fixed-dim": "#b7c8e1",
+            "on-secondary-container": "#54647a",
+            "on-secondary": "#ffffff",
+            "on-background": "#191b23",
+            "on-secondary-fixed": "#0b1c30",
+            "secondary": "#505f76",
+            "on-primary-container": "#eeefff",
+            "surface-variant": "#e1e2ed",
+            "surface-tint": "#0053db",
+            "surface-bright": "#faf8ff",
+            "inverse-on-surface": "#f0f0fb",
+            "on-primary-fixed": "#00174b",
+            "tertiary": "#00632b",
+            "error-container": "#ffdad6",
+            "on-secondary-fixed-variant": "#38485d",
+            "on-primary-fixed-variant": "#003ea8",
+            "primary": "#004ac6",
+            "on-error": "#ffffff",
+            "surface-container-low": "#f3f3fe",
+            "on-primary": "#ffffff",
+            "error": "#ba1a1a",
+            "on-surface": "#191b23",
+            "secondary-container": "#d0e1fb",
+            "on-error-container": "#93000a",
+            "surface-container-lowest": "#ffffff",
+            "on-tertiary-fixed-variant": "#005323",
+            "surface": "#faf8ff",
+            "inverse-primary": "#b4c5ff",
+            "background": "#faf8ff",
+            "on-tertiary": "#ffffff",
+            "surface-dim": "#d9d9e5",
+            "tertiary-fixed-dim": "#79db8d",
+            "surface-container-highest": "#e1e2ed",
+            "primary-fixed": "#dbe1ff"
+          },
+          borderRadius: {
+            DEFAULT: "0.25rem",
+            lg: "0.5rem",
+            xl: "0.75rem",
+            "2xl": "1rem",
+            full: "9999px"
+          },
+          fontFamily: {
+            headline: ["Inter", "sans-serif"],
+            display: ["Inter", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Inter", "sans-serif"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;display=swap" rel="stylesheet"></head>
+
+<!-- Mobile Container strictly 390px styled viewport -->
+<body style="font-family: Poppins, sans-serif;"><div class="w-full max-w-[390px] min-h-screen bg-[#F8FAFC] flex flex-col justify-between p-4 sm:p-5 relative pb-8">
+<!-- Top Bar & Progress Section -->
+<div class="flex flex-col gap-4 pt-1">
+<!-- Top Bar: Logo & Micro Pill Badge -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center text-on-primary shadow-sm"><img src="https://lh3.googleusercontent.com/aida/AEtjO1V34Duewl6XmWjfLPkiF-NvVIbIcuhfvxT3QO_eVdhnGAv8cuo3hwPKbWEQQF157FkfbRl4ANsF7_E0VJDFciBq_Kx6N6VdTUcbHrwy89PzKmDlyBjVufGe8q_CnG3pG_LcKdZre6-dgyrpyIvujNvc-TUujnNuXlFup6ohRKR7dvRHqITWq67CrIdetWgh7krRm1v3Fxmggyr-xFd-f91jwPii-eKcxzS0bRU9yQQqogd2egUruiNB" alt="OdoMate Logo" class="w-6 h-6 object-contain"></div>
+<span class="font-headline font-bold text-lg tracking-tight text-on-surface">OdoMate</span>
+</div>
+
+</div>
+<!-- Step Indicator & Progress Bar -->
+
+<!-- Hero Heading -->
+<div class="pt-1">
+<h1 class="font-headline font-bold text-2xl tracking-tight text-on-surface">
+          Selamat datang di OdoMate
+        </h1>
+<p class="text-sm text-secondary leading-relaxed mt-1">
+          Catat perjalanan dan rawat kendaraanmu dengan mudah.
+        </p>
+</div>
+<!-- Main Form Card -->
+<form class="mt-2 bg-white border border-slate-200/80 rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col gap-4" id="setup-form" onsubmit="event.preventDefault();">
+<!-- Field 1: Nama kamu -->
+<div class="space-y-1.5">
+<label class="block text-xs font-semibold uppercase tracking-wider text-secondary" for="owner-name">
+            Nama kamu
+          </label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-secondary text-[20px] pointer-events-none" data-icon="person">person</span>
+<input class="w-full h-12 pl-10 pr-3 rounded-xl bg-slate-50/80 border border-slate-200 text-sm text-on-surface placeholder:text-outline focus:bg-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" id="owner-name" name="owner_name" placeholder="Contoh: Dimas Prasetyo" required="" type="text" value="">
+</div>
+<p class="text-[11px] text-secondary">Nama panggilan Anda di aplikasi</p>
+</div>
+<!-- Field 2: Nama motor -->
+<div class="space-y-1.5">
+<label class="block text-xs font-semibold uppercase tracking-wider text-secondary" for="bike-name">
+            Nama motor
+          </label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-secondary text-[20px] pointer-events-none" data-icon="two_wheeler">two_wheeler</span>
+<input class="w-full h-12 pl-10 pr-3 rounded-xl bg-slate-50/80 border border-slate-200 text-sm text-on-surface placeholder:text-outline focus:bg-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" id="bike-name" name="bike_name" placeholder="Contoh: Honda Vario 160" required="" type="text" value="">
+</div>
+<p class="text-[11px] text-secondary">Merk &amp; tipe motor utama</p>
+</div>
+<!-- Field 3: Plat nomor -->
+<div class="space-y-1.5">
+<label class="block text-xs font-semibold uppercase tracking-wider text-secondary" for="plate-number">
+            Plat nomor
+          </label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-secondary text-[20px] pointer-events-none" data-icon="badge">badge</span>
+<input class="w-full h-12 pl-10 pr-3 rounded-xl bg-slate-50/80 border border-slate-200 text-sm font-semibold tracking-wider uppercase text-on-surface placeholder:text-outline placeholder:font-normal focus:bg-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" id="plate-number" name="plate_number" placeholder="Contoh: B 1234 ABC" required="" type="text" value="">
+</div>
+</div>
+<!-- Field 4: Odometer saat ini -->
+<div class="space-y-1.5">
+<label class="block text-xs font-semibold uppercase tracking-wider text-secondary" for="odometer-input">
+            Odometer saat ini (km)
+          </label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-secondary text-[20px] pointer-events-none" data-icon="speed">speed</span>
+<input class="w-full h-12 pl-10 pr-14 rounded-xl bg-slate-50/80 border border-slate-200 text-sm font-semibold text-on-surface placeholder:text-outline focus:bg-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" id="odometer-input" name="odometer_input" placeholder="Contoh: 15400" required="" type="number" value="">
+<div class="absolute right-2.5 px-2 py-1 rounded-md bg-slate-100 border border-slate-200 text-[11px] font-bold text-secondary pointer-events-none">
+              km
+            </div>
+</div>
+<p class="text-[11px] text-secondary">Angka kilometer di speedometer motor kamu saat ini</p>
+</div>
+</form>
+</div>
+<!-- Bottom Action & Offline Trust Badge -->
+<div class="pt-6 flex flex-col gap-3">
+<!-- Primary Action Button -->
+<button class="w-full h-[50px] bg-primary-container hover:bg-primary active:scale-[0.99] text-on-primary font-semibold text-base rounded-xl shadow-sm transition-all duration-150 flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" onclick="this.classList.add('scale-[0.98]'); setTimeout(() =&gt; this.classList.remove('scale-[0.98]'), 150);" type="button">
+<span class="">Mulai menggunakan OdoMate</span>
+<span class="material-symbols-outlined text-[20px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+<!-- Offline & Privacy Note -->
+<div class="flex items-center justify-center gap-1.5 text-center">
+<span class="material-symbols-outlined text-secondary text-[16px]" data-icon="shield">shield</span>
+<span class="text-xs font-medium text-secondary">
+          Data tersimpan di perangkat ini (Offline-first &amp; Aman)
+        </span>
+</div>
+</div>
+</div>
+
+
+
+
+
+
+
+
+</body></html>

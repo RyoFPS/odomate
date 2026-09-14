@@ -1,0 +1,277 @@
+<!DOCTYPE html><html lang="id" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Profil Rider - OdoMate</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-primary-fixed-variant": "#003ea8",
+            "surface-dim": "#d9d9e5",
+            "secondary-container": "#d0e1fb",
+            "background": "#faf8ff",
+            "surface-container-high": "#e7e7f3",
+            "primary": "#004ac6",
+            "surface-variant": "#e1e2ed",
+            "outline": "#737686",
+            "on-error-container": "#93000a",
+            "error": "#ba1a1a",
+            "outline-variant": "#c3c6d7",
+            "surface-container": "#ededf9",
+            "secondary": "#505f76",
+            "inverse-on-surface": "#f0f0fb",
+            "primary-fixed": "#dbe1ff",
+            "on-secondary-fixed-variant": "#38485d",
+            "inverse-primary": "#b4c5ff",
+            "secondary-fixed-dim": "#b7c8e1",
+            "on-secondary-container": "#54647a",
+            "on-error": "#ffffff",
+            "surface-container-low": "#f3f3fe",
+            "surface-bright": "#faf8ff",
+            "surface": "#faf8ff",
+            "surface-tint": "#0053db",
+            "on-primary-fixed": "#00174b",
+            "secondary-fixed": "#d3e4fe",
+            "on-primary-container": "#eeefff",
+            "on-surface": "#191b23",
+            "tertiary-container": "#117e3b",
+            "on-tertiary-fixed-variant": "#005323",
+            "on-secondary": "#ffffff",
+            "primary-fixed-dim": "#b4c5ff",
+            "on-primary": "#ffffff",
+            "inverse-surface": "#2e3039",
+            "error-container": "#ffdad6",
+            "surface-container-highest": "#e1e2ed",
+            "tertiary-fixed": "#95f8a7",
+            "on-tertiary": "#ffffff",
+            "tertiary-fixed-dim": "#79db8d",
+            "primary-container": "#2563eb",
+            "on-surface-variant": "#434655",
+            "surface-container-lowest": "#ffffff",
+            "tertiary": "#00632b",
+            "on-background": "#191b23",
+            "on-tertiary-fixed": "#00210a",
+            "on-secondary-fixed": "#0b1c30",
+            "on-tertiary-container": "#c4ffc9"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "2xl": "1rem",
+            "full": "9999px"
+          },
+          "fontFamily": {
+            "headline": ["Inter", "sans-serif"],
+            "display": ["Inter", "sans-serif"],
+            "body": ["Inter", "sans-serif"],
+            "label": ["Inter", "sans-serif"]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .material-symbols-outlined.fill-icon {
+      font-variation-settings: 'FILL' 1;
+    }
+    body {
+      background-color: #F8FAFC;
+      color: #0F172A;
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-surface antialiased text-on-surface flex justify-center min-h-screen" style="background-color: rgb(248, 250, 252); font-family: Poppins, sans-serif;">
+<!-- Main Device Canvas (max-w-[390px]) -->
+<div class="w-full max-w-[390px] min-h-screen flex flex-col bg-surface-container-low shadow-sm relative pb-28" style="background-color: rgb(248, 250, 252); font-family: Poppins, sans-serif;">
+<!-- TopAppBar (from Shared Components JSON & Design System) -->
+<header class="flex justify-between items-center w-full max-w-[390px] mx-auto px-4 py-3 sticky top-0 z-40 bg-surface dark:bg-surface border-b border-outline-variant/40" style="background-color: rgb(255, 255, 255); border-bottom: 1px solid rgb(226, 232, 240);">
+<div class="flex items-center gap-2">
+
+<h1 class="font-headline text-lg font-bold tracking-tight text-on-surface">Profile</h1>
+</div>
+<button aria-label="Settings" class="w-10 h-10 rounded-xl flex items-center justify-center text-secondary active:scale-95 transition-transform hover:bg-surface-container">
+<span class="material-symbols-outlined text-2xl" data-icon="settings">settings</span>
+</button>
+</header>
+<!-- Page Content Container with 16px page gutters -->
+<main class="flex-1 px-4 pt-4 flex flex-col gap-4">
+<!-- 1. Centered Avatar Profile Section -->
+<section class="bg-surface-container-lowest rounded-2xl border border-outline-variant/40 p-5 flex flex-col items-center text-center" style="background-color: rgb(255, 255, 255); border: 1px solid rgb(226, 232, 240);">
+<!-- Avatar Wrapper -->
+<div class="relative w-24 h-24 mb-3">
+<img alt="Avatar Dimas Prasetyo" class="w-24 h-24 rounded-full object-cover border-2 border-surface shadow-sm ring-1 ring-outline-variant/30" src="https://lh3.googleusercontent.com/aida/AEtjO1Xwte756zjM42tN4MBfbQk0Hv_E8qqcxGGs6NjfvjgvF-DSN-IiLOvF1uWTR7oaq48T4OkYKdYAov8YOLzyfuA5o8fHxQE1U3slc_GwueRZPivRS4T7jwYwLjS0QHSZ9UvqtsW42KxMpZ6P6BVgkqhudcJD9LPHoPP3oSTYItjUeNUydTaX1RrpqwCpAVCAplSsnLVooGkwm3zO5QJAh54bJ3bT0_sVbTB3CVWSvnRVW9upH9OmrHK4">
+<button aria-label="Ubah Foto Profil" class="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary-container text-white flex items-center justify-center border-2 border-surface-container-lowest shadow-sm active:scale-90 transition-transform" type="button">
+<span class="material-symbols-outlined text-base" data-icon="photo_camera">photo_camera</span>
+</button>
+</div>
+<!-- User Information -->
+<div class="flex flex-col items-center">
+<h2 class="text-xl font-bold tracking-tight text-on-surface mb-1">Dimas Prasetyo</h2>
+<div class="flex items-center gap-2">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-secondary-container text-on-secondary-fixed-variant">
+              Rider Harian
+            </span>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-tertiary-fixed text-on-tertiary-fixed-variant border border-tertiary-fixed-dim/50">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>
+              Tersinkronisasi
+            </span>
+</div>
+</div>
+</section>
+<!-- 2. Compact Editable Profile Card -->
+<section class="bg-surface-container-lowest rounded-2xl border border-outline-variant/40 p-4" style="background-color: rgb(255, 255, 255); border: 1px solid rgb(226, 232, 240);">
+<div class="flex items-center justify-between mb-3.5 pb-2 border-b border-outline-variant/20">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="badge">badge</span>
+<h3 class="font-bold text-sm text-on-surface">Informasi Pribadi</h3>
+</div>
+<span class="text-xs font-medium text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-xs" data-icon="lock">lock</span>
+            Lokal
+          </span>
+</div>
+<form class="space-y-3" onsubmit="event.preventDefault();">
+<!-- Field: Nama Lengkap -->
+<div>
+<label class="block text-xs font-medium text-secondary mb-1" for="fullName">Nama Lengkap</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-outline">
+<span class="material-symbols-outlined text-lg" data-icon="person">person</span>
+</div>
+<input class="block w-full pl-9 pr-3 py-2.5 text-sm font-medium text-on-surface bg-surface rounded-xl border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition min-h-[44px]" id="fullName" name="fullName" type="text" value="Dimas Prasetyo">
+</div>
+</div>
+<!-- Field: WhatsApp / Kontak -->
+<div>
+<label class="block text-xs font-medium text-secondary mb-1" for="phoneNumber">Nomor Kontak / WhatsApp</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-outline">
+<span class="material-symbols-outlined text-lg" data-icon="call">call</span>
+</div>
+<input class="block w-full pl-9 pr-3 py-2.5 text-sm font-medium text-on-surface bg-surface rounded-xl border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition min-h-[44px]" id="phoneNumber" name="phoneNumber" type="tel" value="+62 812-3456-7890">
+</div>
+</div>
+<!-- Field: Email -->
+<div>
+<label class="block text-xs font-medium text-secondary mb-1" for="emailAddress">Email</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-outline">
+<span class="material-symbols-outlined text-lg" data-icon="mail">mail</span>
+</div>
+<input class="block w-full pl-9 pr-3 py-2.5 text-sm font-medium text-on-surface bg-surface rounded-xl border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition min-h-[44px]" id="emailAddress" name="emailAddress" type="email" value="dimas.prasetyo@odomete.id">
+</div>
+</div>
+</form>
+</section>
+<!-- 3. Identitas Kendaraan Utama Card -->
+<section class="bg-surface-container-lowest rounded-2xl border border-outline-variant/40 p-4" style="background-color: rgb(255, 255, 255); border: 1px solid rgb(226, 232, 240);">
+<!-- Header -->
+<div class="flex items-center justify-between mb-3 pb-2 border-b border-outline-variant/20">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="two_wheeler">two_wheeler</span>
+<span class="text-xs font-semibold uppercase tracking-wider text-secondary">Motor Utama Aktif</span>
+</div>
+<span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary-fixed text-on-primary-fixed border border-primary-fixed-dim/40">
+            Honda Vario 160
+          </span>
+</div>
+<!-- License Plate & Current Odometer Bento Cluster -->
+<div class="grid grid-cols-2 gap-2.5 mb-3">
+<!-- Plate Card -->
+<div class="bg-surface rounded-xl p-3 border border-outline-variant/40 flex flex-col justify-between">
+<span class="text-[11px] font-medium text-secondary">Nomor Pelat</span>
+<div class="mt-1 inline-flex items-center justify-center bg-on-surface text-surface-bright font-bold tracking-wider text-xs px-2.5 py-1 rounded-md border border-outline shadow-inner self-start">
+              B 4920 SXX
+            </div>
+<span class="text-[10px] text-secondary mt-1">Samsat DKI Jakarta</span>
+</div>
+<!-- Current Odometer Card -->
+<div class="bg-surface rounded-xl p-3 border border-outline-variant/40 flex flex-col justify-between">
+<span class="text-[11px] font-medium text-secondary">Odometer Terkini</span>
+<div class="mt-0.5">
+<span class="text-lg font-extrabold text-on-surface tracking-tight">24.582</span>
+<span class="text-xs font-semibold text-secondary ml-0.5">km</span>
+</div>
+<span class="text-[10px] text-tertiary font-medium flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-xs" data-icon="schedule">schedule</span>
+              Hari ini, 07:15 WIB
+            </span>
+</div>
+</div>
+<!-- Metric Details Pill Bar -->
+<div class="flex items-center justify-between bg-surface-container-low rounded-xl px-3 py-2 border border-outline-variant/30 text-xs">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-base" data-icon="local_gas_station">local_gas_station</span>
+<span class="text-secondary font-medium">Konsumsi Rata-rata:</span>
+<strong class="text-on-surface font-semibold">44,2 km/L</strong>
+</div>
+<div class="h-3.5 w-px bg-outline-variant/50"></div>
+<div class="flex items-center gap-1 text-secondary">
+<span class="">Tahun:</span>
+<strong class="text-on-surface font-semibold">2023</strong>
+</div>
+</div>
+</section>
+<!-- 4. Primary Action Button -->
+<div class="pt-1">
+<button class="w-full h-12 bg-primary-container text-white font-semibold rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-transform duration-150" type="button">
+<span class="material-symbols-outlined text-xl" data-icon="save">save</span>
+<span class="">Simpan Perubahan</span>
+</button>
+</div>
+<!-- 5. Local Backup Offline-First Indicator -->
+<div class="flex items-center justify-center gap-1.5 text-center text-xs text-secondary py-1 mb-2">
+<span class="material-symbols-outlined text-tertiary text-base" data-icon="verified_user">verified_user</span>
+<span class="">Data profil tersimpan aman di perangkat (Offline-first)</span>
+</div>
+</main>
+<!-- BottomNavBar (from Shared Components JSON - 4 destinations, Profile Active) -->
+<nav class="fixed bottom-0 left-0 right-0 w-full max-w-[390px] mx-auto z-50 flex justify-around items-center px-2 py-2 bg-surface-container-lowest border-t border-outline-variant/40" style="background-color: rgb(255, 255, 255); border-top: 1px solid rgb(226, 232, 240);">
+  <!-- Tab 1: Dashboard -->
+  <button class="flex flex-col items-center justify-center gap-1 text-secondary font-medium py-1 px-2.5 active:scale-95 transition-transform duration-150" type="button">
+    <span class="material-symbols-outlined text-2xl" data-icon="speed">speed</span>
+    <span class="font-label text-[11px]">Dashboard</span>
+  </button>
+  <!-- Tab 2: Trips -->
+  <button class="flex flex-col items-center justify-center gap-1 text-secondary font-medium py-1 px-2.5 active:scale-95 transition-transform duration-150" type="button">
+    <span class="material-symbols-outlined text-2xl" data-icon="route">route</span>
+    <span class="font-label text-[11px]">Trips</span>
+  </button>
+  <!-- Center Floating Action Button -->
+  <div class="relative -top-5 flex flex-col items-center">
+    <button aria-label="Catat Odometer / Motor" class="w-12 h-12 rounded-full bg-primary-container text-white flex items-center justify-center shadow-lg border-2 border-surface-container-lowest active:scale-95 transition-transform duration-150" type="button">
+      <span class="material-symbols-outlined text-2xl" data-icon="two_wheeler">two_wheeler</span>
+    </button>
+  </div>
+  <!-- Tab 3: Service -->
+  <button class="flex flex-col items-center justify-center gap-1 text-secondary font-medium py-1 px-2.5 active:scale-95 transition-transform duration-150" type="button">
+    <span class="material-symbols-outlined text-2xl" data-icon="build">build</span>
+    <span class="font-label text-[11px]">Service</span>
+  </button>
+  <!-- Tab 4: Profile (Active) -->
+  <button class="flex flex-col items-center justify-center gap-1 text-primary font-semibold py-1 px-2.5 active:scale-95 transition-transform duration-150" type="button">
+    <span class="material-symbols-outlined text-2xl fill-icon" data-icon="person" style="font-variation-settings: &quot;FILL&quot; 1;">person</span>
+    <span class="font-label text-[11px]">Profile</span>
+  </button>
+</nav>
+</div>
+
+
+
+
+
+
+</body></html>

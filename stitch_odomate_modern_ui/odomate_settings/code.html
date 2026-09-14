@@ -1,0 +1,333 @@
+<!DOCTYPE html><html lang="id"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Pengaturan - OdoMate</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Inter Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-primary-fixed-variant": "#003ea8",
+            "surface-dim": "#d9d9e5",
+            "secondary-container": "#d0e1fb",
+            "background": "#faf8ff",
+            "surface-container-high": "#e7e7f3",
+            "primary": "#004ac6",
+            "surface-variant": "#e1e2ed",
+            "outline": "#737686",
+            "on-error-container": "#93000a",
+            "error": "#ba1a1a",
+            "outline-variant": "#c3c6d7",
+            "surface-container": "#ededf9",
+            "secondary": "#505f76",
+            "inverse-on-surface": "#f0f0fb",
+            "primary-fixed": "#dbe1ff",
+            "on-secondary-fixed-variant": "#38485d",
+            "inverse-primary": "#b4c5ff",
+            "secondary-fixed-dim": "#b7c8e1",
+            "on-secondary-container": "#54647a",
+            "on-error": "#ffffff",
+            "surface-container-low": "#f3f3fe",
+            "surface-bright": "#faf8ff",
+            "surface": "#faf8ff",
+            "surface-tint": "#0053db",
+            "on-primary-fixed": "#00174b",
+            "secondary-fixed": "#d3e4fe",
+            "on-primary-container": "#eeefff",
+            "on-surface": "#191b23",
+            "tertiary-container": "#117e3b",
+            "on-tertiary-fixed-variant": "#005323",
+            "on-secondary": "#ffffff",
+            "primary-fixed-dim": "#b4c5ff",
+            "on-primary": "#ffffff",
+            "inverse-surface": "#2e3039",
+            "error-container": "#ffdad6",
+            "surface-container-highest": "#e1e2ed",
+            "tertiary-fixed": "#95f8a7",
+            "on-tertiary": "#ffffff",
+            "tertiary-fixed-dim": "#79db8d",
+            "primary-container": "#2563eb",
+            "on-surface-variant": "#434655",
+            "surface-container-lowest": "#ffffff",
+            "tertiary": "#00632b",
+            "on-background": "#191b23",
+            "on-tertiary-fixed": "#00210a",
+            "on-secondary-fixed": "#0b1c30",
+            "on-tertiary-container": "#c4ffc9"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "2xl": "1rem",
+            "full": "9999px"
+          },
+          "fontFamily": {
+            "headline": ["Inter", "sans-serif"],
+            "display": ["Inter", "sans-serif"],
+            "body": ["Inter", "sans-serif"],
+            "label": ["Inter", "sans-serif"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    /* Hide scrollbars gracefully */
+    body::-webkit-scrollbar {
+      display: none;
+    }
+    body {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-slate-50 text-on-surface font-body antialiased min-h-screen flex justify-center selection:bg-primary-container selection:text-white" style="font-family: Poppins, sans-serif;">
+<!-- Mobile Viewport Container (Max 390px) -->
+<div class="w-full max-w-[390px] min-h-screen bg-slate-50 flex flex-col pb-10">
+<!-- TopAppBar Header (Suppresses bottom nav per destination rule) -->
+<header class="sticky top-0 z-40 bg-slate-50/95 backdrop-blur-md px-4 py-3 flex items-center justify-between border-b border-slate-200">
+<div class="flex items-center gap-2">
+<button aria-label="Kembali ke Profil" class="w-11 h-11 flex items-center justify-center -ml-1 text-slate-700 hover:text-primary active:scale-95 transition rounded-full hover:bg-slate-200/60" type="button">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</button>
+<div>
+<h1 class="font-headline text-lg font-bold text-slate-900 tracking-tight leading-tight">Pengaturan</h1>
+<p class="text-[11px] font-medium text-slate-500">Konfigurasi OdoMate Motor</p>
+</div>
+</div>
+<!-- Right Status Badge (Offline Ready) -->
+<div class="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-full">
+<span class="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
+<span class="text-[11px] font-semibold">Offline Aktif</span>
+</div>
+</header>
+<!-- Main Content Canvas (16px gutters) -->
+<main class="px-4 pt-4 flex flex-col gap-4">
+<!-- SECTION 1: Tampilan & Tema -->
+<section class="bg-surface-container-lowest rounded-2xl p-4 border border-slate-200 shadow-sm">
+<div class="flex items-center gap-2.5 mb-1.5">
+<div class="w-8 h-8 rounded-lg bg-blue-50 text-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">palette</span>
+</div>
+<h2 class="font-headline text-sm font-bold text-slate-900">Tema Tampilan</h2>
+</div>
+<p class="text-xs text-slate-500 leading-relaxed mb-3.5">
+          Pilih mode kenyamanan layar saat berkendara siang atau malam.
+        </p>
+<!-- Segmented Control (3-way, min 44px touch target) -->
+<div class="bg-slate-100 p-1 rounded-xl flex items-center gap-1">
+<!-- Terang (Selected) -->
+<button class="flex-1 min-h-[44px] flex items-center justify-center gap-1.5 rounded-lg bg-white shadow-sm border border-slate-200/80 text-primary-container font-semibold text-xs transition active:scale-[0.98]" type="button">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">light_mode</span>
+<span class="">Terang</span>
+</button>
+<!-- Gelap -->
+<button class="flex-1 min-h-[44px] flex items-center justify-center gap-1.5 rounded-lg text-slate-600 font-medium text-xs hover:text-slate-900 transition active:scale-[0.98]" type="button">
+<span class="material-symbols-outlined text-[18px]">dark_mode</span>
+<span class="">Gelap</span>
+</button>
+<!-- Otomatis -->
+<button class="flex-1 min-h-[44px] flex items-center justify-center gap-1 rounded-lg text-slate-600 font-medium text-xs hover:text-slate-900 transition active:scale-[0.98]" type="button">
+<span class="material-symbols-outlined text-[18px]">brightness_auto</span>
+<span class="">Sistem</span>
+</button>
+</div>
+</section>
+<!-- SECTION 2: Bahasa & Regional -->
+<section class="bg-surface-container-lowest rounded-2xl p-4 border border-slate-200 shadow-sm">
+<div class="flex items-center gap-2.5 mb-1.5">
+<div class="w-8 h-8 rounded-lg bg-blue-50 text-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">translate</span>
+</div>
+<div>
+<h2 class="font-headline text-sm font-bold text-slate-900">Bahasa &amp; Satuan</h2>
+</div>
+</div>
+<p class="text-xs text-slate-500 leading-relaxed mb-3">
+          Tentukan preferensi bahasa antarmuka dan penghitungan jarak.
+        </p>
+<!-- Language Selector List -->
+<div class="space-y-1.5 mb-4">
+<!-- Bahasa Indonesia (Active) -->
+<button class="w-full min-h-[44px] px-3 py-2 rounded-xl border border-primary-container bg-blue-50/40 flex items-center justify-between text-left transition active:scale-[0.99]" type="button">
+<div class="flex items-center gap-2.5">
+<span class="text-base leading-none">🇮🇩</span>
+<div>
+<div class="text-xs font-semibold text-slate-900">Bahasa Indonesia</div>
+<div class="text-[10px] text-slate-500">Bawaan perangkat</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary-container text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</button>
+<!-- English US (Unselected) -->
+<button class="w-full min-h-[44px] px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 flex items-center justify-between text-left transition active:scale-[0.99]" type="button">
+<div class="flex items-center gap-2.5">
+<span class="text-base leading-none">🇺🇸</span>
+<div>
+<div class="text-xs font-medium text-slate-700">English (US)</div>
+<div class="text-[10px] text-slate-400">United States</div>
+</div>
+</div>
+<span class="w-4 h-4 rounded-full border-2 border-slate-300"></span>
+</button>
+<button class="w-full min-h-[44px] px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 flex items-center justify-between text-left transition active:scale-[0.99]" type="button"><div class="flex items-center gap-2.5"><span class="text-base leading-none">🇯🇵</span><div><div class="text-xs font-medium text-slate-700">日本語 (Japanese)</div><div class="text-[10px] text-slate-400">日本 (Jepang)</div></div></div><span class="w-4 h-4 rounded-full border-2 border-slate-300"></span></button></div>
+<!-- Format Jarak (Segmented) -->
+<div class="pt-3 border-t border-slate-100">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-semibold text-slate-800">Format Metrik Jarak</span>
+<span class="text-[11px] font-medium text-primary-container">Aktif: km</span>
+</div>
+<div class="bg-slate-100 p-1 rounded-xl flex items-center gap-1">
+<button class="flex-1 min-h-[40px] flex items-center justify-center gap-1.5 rounded-lg bg-white shadow-sm border border-slate-200/80 text-primary-container font-semibold text-xs" type="button">
+<span class="material-symbols-outlined text-[16px]">speed</span>
+<span class="">Kilometer (km)</span>
+</button>
+<button class="flex-1 min-h-[40px] flex items-center justify-center gap-1.5 rounded-lg text-slate-600 font-medium text-xs hover:text-slate-900" type="button">
+<span class="material-symbols-outlined text-[16px]">pin_drop</span>
+<span class="">Miles (mi)</span>
+</button>
+</div>
+</div>
+</section>
+<!-- SECTION 3: Preferensi Pencatatan & Odometer -->
+<section class="bg-surface-container-lowest rounded-2xl p-4 border border-slate-200 shadow-sm">
+<div class="flex items-center gap-2.5 mb-1.5">
+<div class="w-8 h-8 rounded-lg bg-blue-50 text-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">two_wheeler</span>
+</div>
+<h2 class="font-headline text-sm font-bold text-slate-900">Pencatatan &amp; Odometer</h2>
+</div>
+<p class="text-xs text-slate-500 leading-relaxed mb-3">
+          Otomatisasi rekaman perjalanan dan jadwal ganti oli/servis berkala.
+        </p>
+<div class="divide-y divide-slate-100">
+<!-- Toggle 1: Auto-track GPS -->
+<label class="min-h-[48px] py-2 flex items-center justify-between cursor-pointer group">
+<div class="pr-3">
+<span class="text-xs font-semibold text-slate-800 group-hover:text-primary-container transition">Auto-track via GPS</span>
+<p class="text-[11px] text-slate-500">Mulai catat otomatis saat deteksi kecepatan &gt; 15 km/jam</p>
+</div>
+<div class="relative inline-flex items-center">
+<input checked="" class="sr-only peer" type="checkbox">
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+</div>
+</label>
+<!-- Toggle 2: Pemberitahuan Jadwal Servis -->
+<label class="min-h-[48px] py-2.5 flex items-center justify-between cursor-pointer group">
+<div class="pr-3">
+<span class="text-xs font-semibold text-slate-800 group-hover:text-primary-container transition">Pemberitahuan Jadwal Servis</span>
+<p class="text-[11px] text-slate-500">Pengingat ganti oli &amp; CVT sebelum jatuh tempo</p>
+</div>
+<div class="relative inline-flex items-center">
+<input checked="" class="sr-only peer" type="checkbox">
+<div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+</div>
+</label>
+<!-- Row: Interval Pengingat Servis -->
+<div class="min-h-[48px] py-2.5 flex items-center justify-between">
+<div>
+<span class="text-xs font-semibold text-slate-800">Interval Pengingat Servis</span>
+<p class="text-[11px] text-slate-500">Berdasarkan akumulasi odometer</p>
+</div>
+<button class="min-h-[36px] px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-bold flex items-center gap-1 transition" type="button">
+<span class="">2.000 km</span>
+<span class="material-symbols-outlined text-[16px] text-slate-500">expand_more</span>
+</button>
+</div>
+</div>
+</section>
+<!-- SECTION 4: Data & Penyimpanan Offline -->
+<section class="bg-surface-container-lowest rounded-2xl p-4 border border-slate-200 shadow-sm">
+<div class="flex items-center gap-2.5 mb-1.5">
+<div class="w-8 h-8 rounded-lg bg-blue-50 text-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">save</span>
+</div>
+<h2 class="font-headline text-sm font-bold text-slate-900">Data &amp; Penyimpanan Offline</h2>
+</div>
+<p class="text-xs text-slate-500 leading-relaxed mb-3">
+          Seluruh log tersimpan lokal di HP tanpa perlu koneksi internet terus menerus.
+        </p>
+<!-- Capacity Metric Pill -->
+<div class="p-3 bg-slate-50 border border-slate-200 rounded-xl mb-3 flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-slate-600 text-[22px]">database</span>
+<div>
+<div class="text-[11px] text-slate-500 font-medium">Kapasitas Penyimpanan Log</div>
+<div class="text-xs font-bold text-slate-900">14.2 MB / Offline siap</div>
+</div>
+</div>
+<span class="text-[11px] font-semibold text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded-md">Optimal</span>
+</div>
+<!-- Action Rows (>= 44px touch targets) -->
+<div class="space-y-1.5">
+<!-- Ekspor Data -->
+<button class="w-full min-h-[44px] px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 flex items-center justify-between text-left transition active:scale-[0.99]" type="button">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-slate-600 text-[20px]">file_download</span>
+<span class="text-xs font-semibold text-slate-800">Ekspor Data Cadangan (.CSV / .JSON)</span>
+</div>
+<span class="material-symbols-outlined text-slate-400 text-[18px]">chevron_right</span>
+</button>
+<!-- Sinkronkan Ulang Cloud -->
+<button class="w-full min-h-[44px] px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 flex items-center justify-between text-left transition active:scale-[0.99]" type="button">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary-container text-[20px]">cloud_sync</span>
+<div>
+<span class="text-xs font-semibold text-slate-800">Sinkronkan Ulang Cloud</span>
+<div class="text-[10px] text-slate-400">Terakhir disinkronkan: Hari ini, 08:42 WIB</div>
+</div>
+</div>
+<span class="text-xs font-bold text-primary-container">Sinkron</span>
+</button>
+</div>
+</section>
+<!-- SECTION 5: App Version & Footer Info -->
+<footer class="text-center pt-2 pb-6 px-4">
+<div class="inline-flex items-center gap-2 px-3 py-1 bg-slate-200/50 rounded-full mb-2">
+<span class="material-symbols-outlined text-[14px] text-slate-600">verified</span>
+<span class="text-[11px] font-semibold text-slate-700">OdoMate v2.4.1 (Build 2024.1)</span>
+</div>
+<p class="text-[11px] text-slate-400 font-medium">
+          Dibuat untuk pengendara roda dua • Aman &amp; Offline-First
+        </p>
+</footer>
+</main>
+</div>
+<script>
+    // Lightweight interactivity for segmented buttons and switches
+    document.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', function() {
+        // Simple visual feedback without breaking state
+        this.classList.add('opacity-90');
+        setTimeout(() => this.classList.remove('opacity-90'), 150);
+      });
+    });
+  </script>
+
+
+
+
+</body></html>
