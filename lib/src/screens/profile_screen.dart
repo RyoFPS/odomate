@@ -34,6 +34,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Vehicle? vehicle;
   final userName = TextEditingController();
   final plate = TextEditingController();
+
+  // Tiga controller untuk sheet "Perbarui Nomor Plat". Umurnya sengaja mengikuti
+  // halaman ini, sama seperti `userName`/`plate` — bukan mengikuti sheet-nya.
+  //
+  // Sheet-nya sendiri masih hidup selama animasi keluar (~200ms) sesudah
+  // `await showModalBottomSheet` selesai: selama itu field-nya masih membangun
+  // ulang dan mencabut fokus. Keduanya menyentuh controller, jadi membuangnya
+  // tepat setelah `await` membuat Flutter melempar "A TextEditingController was
+  // used after being disposed" (dan setelah itu pohon widget-nya rusak:
+  // `_dependents.isEmpty`, "Tried to build dirty widget in the wrong build
+  // scope"). Isinya di-set ulang setiap sheet dibuka, jadi tidak ada sisa
+  // ketikan dari pembukaan sebelumnya.
+  final plateRegion = TextEditingController();
+  final plateNumber = TextEditingController();
+  final plateSuffix = TextEditingController();
   String? photoPath;
   bool saving = false;
 
@@ -47,6 +62,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void dispose() {
     userName.dispose();
     plate.dispose();
+    plateRegion.dispose();
+    plateNumber.dispose();
+    plateSuffix.dispose();
     super.dispose();
   }
 
@@ -132,15 +150,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _showPlateSheet() async {
     final current = plate.text.trim().toUpperCase().split(RegExp(r'\s+'));
-    final region = TextEditingController(
-      text: current.elementAtOrNull(0) ?? '',
-    );
-    final number = TextEditingController(
-      text: current.elementAtOrNull(1) ?? '',
-    );
-    final suffix = TextEditingController(
-      text: current.elementAtOrNull(2) ?? '',
-    );
+    plateRegion.text = current.elementAtOrNull(0) ?? '';
+    plateNumber.text = current.elementAtOrNull(1) ?? '';
+    plateSuffix.text = current.elementAtOrNull(2) ?? '';
     final result = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
@@ -189,7 +201,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Expanded(
                         flex: 2,
                         child: _plateInput(
-                          controller: region,
+                          controller: plateRegion,
                           label: 'Kode',
                           maxLength: 2,
                           keyboardType: TextInputType.text,
@@ -199,7 +211,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Expanded(
                         flex: 4,
                         child: _plateInput(
-                          controller: number,
+                          controller: plateNumber,
                           label: 'Angka',
                           maxLength: 4,
                           keyboardType: TextInputType.number,
@@ -210,7 +222,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Expanded(
                         flex: 3,
                         child: _plateInput(
-                          controller: suffix,
+                          controller: plateSuffix,
                           label: 'Seri',
                           maxLength: 3,
                           keyboardType: TextInputType.text,
@@ -224,12 +236,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: FilledButton.icon(
                       onPressed: () {
                         final values = [
-                          region.text.trim().toUpperCase(),
-                          number.text.trim(),
-                          suffix.text.trim().toUpperCase(),
+                          plateRegion.text.trim().toUpperCase(),
+                          plateNumber.text.trim(),
+                          plateSuffix.text.trim().toUpperCase(),
                         ].where((value) => value.isNotEmpty).toList();
-                        if (region.text.trim().isEmpty ||
-                            number.text.trim().isEmpty) {
+                        if (plateRegion.text.trim().isEmpty ||
+                            plateNumber.text.trim().isEmpty) {
                           return;
                         }
                         Navigator.pop(sheetContext, values.join(' '));
@@ -245,9 +257,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
     );
-    region.dispose();
-    number.dispose();
-    suffix.dispose();
     if (result != null && mounted) {
       setState(() => plate.text = result);
       await _save();

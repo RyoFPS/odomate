@@ -47,6 +47,12 @@ Widget _app() => MaterialApp(
 Finder _cellOf(String label) =>
     find.ancestor(of: find.text(label), matching: find.byType(Container)).first;
 
+/// Field di dalam sheet, bukan di halaman di belakangnya: halaman juga punya
+/// `TextField` ("Nama user"), dan `find.byType(TextField).first` mengambil yang itu.
+Finder _sheetField() => find
+    .descendant(of: find.byType(BottomSheet), matching: find.byType(TextField))
+    .first;
+
 void main() {
   testWidgets('profile uses the Stitch rider avatar when no photo is saved', (
     tester,
@@ -137,4 +143,57 @@ void main() {
 
     expect(find.byType(OdometerCorrectionSheet), findsOneWidget);
   });
+
+  testWidgets('sheet plat ditutup tanpa memakai controller yang sudah dibuang', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_app());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Plat nomor'));
+    await tester.pumpAndSettle();
+
+    // Field-nya harus benar-benar memegang fokus dulu: `clearComposing` di
+    // `EditableText` (editable_text.dart:4155) hanya jalan di cabang "kehilangan
+    // fokus", jadi tanpa fokus di sini bugnya tidak akan muncul.
+    await tester.tap(_sheetField());
+    await tester.pumpAndSettle();
+
+    // Tutup lewat barrier, bukan lewat tombol simpan: yang dipicu di sini persis
+    // yang bikin crash — begitu animasi route berbalik arah, `ModalRoute` mencabut
+    // fokus dari isi sheet (`routes.dart:1154`, `canRequestFocus = false`), dan
+    // pencabutan itu terjadi ~200ms setelah `await showModalBottomSheet` selesai.
+    await tester.tapAt(const Offset(20, 20));
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.takeException(),
+      isNull,
+      reason: 'controller dibuang sementara TextField-nya masih hidup',
+    );
+  });
+
+  testWidgets(
+    'sheet odometer ditutup tanpa memakai controller yang sudah dibuang',
+    (tester) async {
+      await tester.pumpWidget(_app());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Odometer saat ini'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(_sheetField());
+      await tester.pumpAndSettle();
+
+      await tester.tapAt(const Offset(20, 20));
+      await tester.pumpAndSettle();
+
+      expect(
+        tester.takeException(),
+        isNull,
+        reason:
+            'sheet ini memiliki controller-nya sendiri, jadi tidak terpengaruh',
+      );
+    },
+  );
 }
