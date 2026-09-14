@@ -157,7 +157,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: AppBar(
         title: Text(
           l10n.t('profile'),
-          style: const TextStyle(fontWeight: FontWeight.w700),
+          // Desain: `text-lg font-bold tracking-tight` = 18px w700.
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.45,
+          ),
         ),
         shape: Border(bottom: BorderSide(color: colors.outlineVariant)),
         actions: [
@@ -224,8 +229,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Text(
                   name.isEmpty ? l10n.t('user_name') : name,
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.titleLarge
-                      ?.copyWith(fontWeight: FontWeight.w800),
+                  // Desain: `text-xl font-bold tracking-tight` = 20px w700. Bukan
+                  // titleLarge (22px) dan bukan w800 — w800 di desain selalu angka.
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.5,
+                  ),
                 ),
               ],
             ),
@@ -332,8 +342,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             const SizedBox(height: 4),
                             Text(
                               '${(vehicle?.odometerKm ?? 0).toStringAsFixed(1)} km',
+                              // Desain: `text-lg font-extrabold` = 18px w800. Ini
+                              // angka, jadi w800 memang benar di sini.
                               style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(fontWeight: FontWeight.w800),
+                                  ?.copyWith(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w800,
+                                  ),
                             ),
                           ],
                         ),

@@ -782,7 +782,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
           children: [
             const Text(
               'Riwayat Servis',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+              // Judul sheet: teks, bukan angka, jadi w700 seperti `font-bold`.
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 12),
             if (logs.isEmpty)

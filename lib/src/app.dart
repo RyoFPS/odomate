@@ -173,6 +173,22 @@ class _OdoMateAppState extends State<OdoMateApp> {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
+        // Tanpa ini, judul AppBar yang cuma mengeset weight akan mewarisi
+        // titleLarge Material 3 — 22px — dan 22px tidak dipakai di satu pun layar
+        // desain. Ukuran header di desain selalu ditulis eksplisit per layar
+        // (16 di notifikasi/history, 18 di profile/settings/tambah servis, 20 di
+        // servis/ride detail, 24 di onboarding). Nilai di sini adalah jaring
+        // pengaman untuk layar yang tidak menulis ukurannya sendiri; layar yang
+        // desainnya beda tetap mengeset fontSize-nya masing-masing.
+        // family-nya harus ditulis ulang karena textTheme.apply() tidak sampai
+        // ke titleTextStyle.
+        titleTextStyle: TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 18,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.45, // tracking-tight dari desain
+          color: dark ? const Color(0xFFF8FAFC) : const Color(0xFF0F172A),
+        ),
       ),
       cardTheme: CardThemeData(
         color: dark ? const Color(0xFF1E293B) : Colors.white,
