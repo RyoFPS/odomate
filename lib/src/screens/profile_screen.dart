@@ -473,58 +473,72 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                 ),
                 const SizedBox(height: 14),
+                // Dua kotak sejajar dengan bahasa yang sama: label kecil di
+                // dalam kotak, nilainya di bawahnya — persis pasangan "Nomor
+                // Pelat"/"Odometer Terkini" di desain. Sebelumnya yang kiri
+                // memakai field Material dengan label melayang dan ikon di
+                // dalamnya, sehingga kotaknya 9px lebih tinggi dan labelnya
+                // tidak sebaris dengan yang kanan.
+                //
+                // Keduanya juga bukan input lagi: menyentuh salah satu kotak
+                // membuka sheet-nya masing-masing (`_showPlateSheet` /
+                // `_correctOdometer`), jadi isinya murni tampilan.
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      child: TextField(
-                        controller: plate,
-                        readOnly: true,
+                      // Seluruh kotak jadi sasaran ketuk, bukan hanya chip-nya
+                      // yang cuma setinggi teksnya (~26px).
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
                         onTap: _showPlateSheet,
-                        textCapitalization: TextCapitalization.characters,
-                        textInputAction: TextInputAction.done,
-                        decoration: InputDecoration(
-                          labelText: l10n.t('plate'),
-                          prefixIcon: const Icon(Icons.pin_outlined),
+                        child: _bentoCell(
+                          context,
+                          label: l10n.t('plate'),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              // Desain: `bg-on-surface text-surface-bright` —
+                              // dibalik di tema gelap, dan `colors.surface`
+                              // memang kebalikan `onSurface` di kedua tema.
+                              color: colors.onSurface,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              plate.text,
+                              maxLines: 1,
+                              style: TextStyle(
+                                // Desain: `font-bold tracking-wider text-xs`.
+                                color: colors.surface,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.6,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
                         onTap: _correctOdometer,
-                        child: Container(
-                          constraints: const BoxConstraints(minHeight: 56),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: colors.surface,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: colors.outlineVariant),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                l10n.t('odometer'),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context).textTheme.labelSmall
-                                    ?.copyWith(color: colors.onSurfaceVariant),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '${(vehicle?.odometerKm ?? 0).toStringAsFixed(1)} km',
-                                // Desain: `text-lg font-extrabold` = 18px w800.
-                                style: Theme.of(context).textTheme.titleMedium
-                                    ?.copyWith(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                              ),
-                            ],
+                        child: _bentoCell(
+                          context,
+                          label: l10n.t('odometer'),
+                          child: Text(
+                            '${(vehicle?.odometerKm ?? 0).toStringAsFixed(1)} km',
+                            // Desain: `text-lg font-extrabold` = 18px w800. Ini
+                            // angka, jadi w800 memang benar di sini.
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                ),
                           ),
                         ),
                       ),
@@ -573,6 +587,57 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _card(BuildContext context, {required Widget child}) => Card(
     child: Padding(padding: const EdgeInsets.all(16), child: child),
   );
+
+  /// Satu sel "bento" dari desain: kotak berbingkai, label kecil di dalamnya di
+  /// bagian atas, nilainya di bawah.
+  ///
+  /// Tingginya dipaku ke satu angka yang dipakai **kedua** sel, bukan diserahkan
+  /// ke isinya. Dulu hanya kotak odometer yang punya batas tinggi sendiri (`56`,
+  /// disamakan dengan field di sebelahnya) dan isinya jadi 65 — tepi bawahnya
+  /// menonjol 9px. Menyamakan dua kotak lewat `IntrinsicHeight` juga tidak bisa
+  /// di sini: `InputDecorator` melaporkan tinggi intrinsik yang jauh lebih besar
+  /// dari yang benar-benar dirender (101 vs 71), jadi barisnya ikut melar.
+  ///
+  /// `minHeight` (bukan `height`) supaya teks yang diperbesar pengaturan
+  /// aksesibilitas menambah tinggi kotak, bukan meluber keluar.
+  Widget _bentoCell(
+    BuildContext context, {
+    required String label,
+    required Widget child,
+  }) {
+    final colors = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      constraints: const BoxConstraints(minHeight: 76),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colors.outlineVariant),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        // Desain: `flex flex-col justify-between` — label menempel atas, nilai
+        // menempel bawah, sisa ruang di antaranya.
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: colors.onSurfaceVariant,
+              // Desain: `text-[11px] font-medium`; `height` dipadatkan supaya
+              // barisnya tidak menambah tinggi kotak.
+              fontSize: 11,
+              height: 1.2,
+            ),
+          ),
+          const SizedBox(height: 6),
+          child,
+        ],
+      ),
+    );
+  }
 
   Widget _sectionHeader(
     BuildContext context, {
