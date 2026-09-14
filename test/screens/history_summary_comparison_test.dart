@@ -20,7 +20,19 @@ class _FakeRepository extends OdomateRepository {
   Future<List<Ride>> listRides() async => rides;
 
   @override
+  Future<List<Ride>> listRidesPage({
+    required int limit,
+    required int offset,
+  }) async => rides.skip(offset).take(limit).toList();
+
+  @override
   Future<List<ServiceLog>> listServiceLogs() async => const [];
+
+  @override
+  Future<List<ServiceLog>> listServiceLogsPage({
+    required int limit,
+    required int offset,
+  }) async => const [];
 
   @override
   Future<Vehicle?> loadVehicle() async => null;

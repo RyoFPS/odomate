@@ -5,6 +5,7 @@ import 'package:odomate/src/data/odomate_repository.dart';
 import 'package:odomate/src/domain/models.dart';
 import 'package:odomate/src/i18n/app_localizations.dart';
 import 'package:odomate/src/screens/history_screen.dart';
+import 'package:odomate/src/widgets/skeleton_loader.dart';
 
 class _FakeRepository extends OdomateRepository {
   final List<Ride> rides;
@@ -27,7 +28,25 @@ class _FakeRepository extends OdomateRepository {
   }
 
   @override
+  Future<List<Ride>> listRidesPage({
+    required int limit,
+    required int offset,
+  }) async {
+    final all = await listRides();
+    return all.skip(offset).take(limit).toList();
+  }
+
+  @override
   Future<List<ServiceLog>> listServiceLogs() async => const [];
+
+  @override
+  Future<List<ServiceLog>> listServiceLogsPage({
+    required int limit,
+    required int offset,
+  }) async {
+    final all = await listServiceLogs();
+    return all.skip(offset).take(limit).toList();
+  }
 
   @override
   Future<Vehicle?> loadVehicle() async => vehicle;
@@ -163,7 +182,7 @@ void main() {
       _app(_FakeRepository(delay: const Duration(milliseconds: 100))),
     );
     await tester.pump();
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(SkeletonLoader), findsOneWidget);
     await tester.pumpAndSettle();
     expect(find.text('Belum ada perjalanan.'), findsOneWidget);
 

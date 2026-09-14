@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -6,6 +8,7 @@ import '../domain/models.dart';
 import '../domain/ride_history.dart';
 import '../i18n/app_localizations.dart';
 import '../widgets/date_range_chips.dart';
+import '../widgets/skeleton_loader.dart';
 import 'ride_detail_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -23,7 +26,19 @@ class HistoryScreen extends StatefulWidget {
 }
 
 class _HistoryScreenState extends State<HistoryScreen> {
+  static const _pageSize = 30;
   late Future<_HistoryData> future;
+  final _scrollController = ScrollController();
+  final _loadedRides = <Ride>[];
+  final _loadedLogs = <ServiceLog>[];
+  int _rideOffset = 0;
+  int _logOffset = 0;
+  bool _hasMoreRides = true;
+  bool _hasMoreLogs = true;
+  bool _loadingMore = false;
+  Timer? _searchDebounce;
+  String _pendingQuery = '';
+  int _searchGeneration = 0;
   RideHistoryPeriod period = RideHistoryPeriod.all;
   _HistorySort sort = _HistorySort.newest;
   bool searching = false;
@@ -32,15 +47,105 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     future = _load();
   }
 
-  Future<_HistoryData> _load() async => _HistoryData(
-    rides: await widget.repository.listRides(),
-    logs: await widget.repository.listServiceLogs(),
-    vehicle: await widget.repository.loadVehicle(),
+  Future<_HistoryData> _load() async {
+    final vehicle = await widget.repository.loadVehicle();
+    final rides = await widget.repository.listRidesPage(
+      limit: _pageSize,
+      offset: 0,
+    );
+    final logs = await widget.repository.listServiceLogsPage(
+      limit: _pageSize,
+      offset: 0,
+    );
+    _loadedRides
+      ..clear()
+      ..addAll(rides);
+    _loadedLogs
+      ..clear()
+      ..addAll(logs);
+    _rideOffset = rides.length;
+    _logOffset = logs.length;
+    _hasMoreRides = rides.length == _pageSize;
+    _hasMoreLogs = logs.length == _pageSize;
+    return _historyData(vehicle: vehicle);
+  }
+
+  _HistoryData _historyData({Vehicle? vehicle}) => _HistoryData(
+    rides: _loadedRides,
+    logs: _loadedLogs,
+    vehicle: vehicle,
     now: widget.now(),
   );
+
+  void _onScroll() {
+    if (_scrollController.position.extentAfter < 400) _loadMore();
+  }
+
+  Future<void> _loadMore({bool rebuild = true}) async {
+    if (_loadingMore || (!_hasMoreRides && !_hasMoreLogs)) return;
+    _loadingMore = true;
+    try {
+      if (_hasMoreRides) {
+        final page = await widget.repository.listRidesPage(
+          limit: _pageSize,
+          offset: _rideOffset,
+        );
+        _loadedRides.addAll(
+          page.where((ride) => !_loadedRides.any((item) => item.id == ride.id)),
+        );
+        _rideOffset += page.length;
+        _hasMoreRides = page.length == _pageSize;
+      }
+      if (_hasMoreLogs) {
+        final page = await widget.repository.listServiceLogsPage(
+          limit: _pageSize,
+          offset: _logOffset,
+        );
+        _loadedLogs.addAll(
+          page.where((log) => !_loadedLogs.any((item) => item.id == log.id)),
+        );
+        _logOffset += page.length;
+        _hasMoreLogs = page.length == _pageSize;
+      }
+      if (rebuild && mounted) setState(() {});
+    } finally {
+      _loadingMore = false;
+    }
+  }
+
+  Future<void> _loadAllForSearch(int generation) async {
+    while ((_hasMoreRides || _hasMoreLogs) && generation == _searchGeneration) {
+      await _loadMore(rebuild: false);
+    }
+    if (mounted && generation == _searchGeneration) setState(() {});
+  }
+
+  void _onSearchChanged(String value) {
+    _pendingQuery = value;
+    _searchDebounce?.cancel();
+    final generation = ++_searchGeneration;
+    _searchDebounce = Timer(const Duration(milliseconds: 300), () {
+      query = _pendingQuery;
+      if (query.trim().isEmpty) {
+        if (mounted) setState(() {});
+        return;
+      }
+      _loadAllForSearch(generation);
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchDebounce?.cancel();
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +164,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   hintText: MaterialLocalizations.of(context).searchFieldLabel,
                   border: InputBorder.none,
                 ),
-                onChanged: (value) => setState(() => query = value),
+                onChanged: _onSearchChanged,
               )
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,7 +187,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
           IconButton(
             onPressed: () => setState(() {
               searching = !searching;
-              if (!searching) query = '';
+              if (!searching) {
+                _searchDebounce?.cancel();
+                _pendingQuery = '';
+                query = '';
+                _searchGeneration++;
+              }
             }),
             icon: Icon(searching ? Icons.close : Icons.search),
             tooltip: searching
@@ -103,10 +213,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
             return Center(child: Text(l10n.t('history_error')));
           }
           if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
+            return const SkeletonLoader();
           }
 
-          final data = snapshot.data!;
+          final data = _historyData(vehicle: snapshot.data!.vehicle);
           final rides = _rides(context, data, l10n);
           final logs = _logs(data.logs);
           final distance = rides.fold<double>(
@@ -114,6 +224,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             (total, ride) => total + ride.distanceKm,
           );
           return ListView(
+            controller: _scrollController,
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
             children: [
               _periodSelector(context, l10n),
@@ -188,6 +299,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   ),
                 ),
               const SizedBox(height: 20),
+              if (_loadingMore)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: SkeletonLoader.inline(),
+                ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -745,6 +861,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
+      backgroundColor: Colors.white,
       builder: (sheetContext) => StatefulBuilder(
         builder: (context, updateSheet) {
           final l10n = AppLocalizations.of(context);

@@ -6,6 +6,7 @@ import '../domain/ride_statistics.dart';
 import '../domain/service_schedule.dart';
 import '../i18n/app_localizations.dart';
 import '../widgets/date_range_chips.dart';
+import '../widgets/skeleton_loader.dart';
 
 class StatisticsScreen extends StatefulWidget {
   final OdomateRepository repository;
@@ -58,7 +59,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             return Center(child: Text(l10n.t('statistics_error')));
           }
           if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
+            return const SkeletonLoader(rows: 2);
           }
           final data = snapshot.data!;
           final stats = calculateRideStatistics(data.rides, data.now, period);

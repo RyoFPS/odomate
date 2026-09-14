@@ -4,6 +4,7 @@ import '../data/odomate_repository.dart';
 import '../domain/models.dart';
 import '../domain/service_schedule.dart';
 import '../i18n/app_localizations.dart';
+import '../widgets/skeleton_loader.dart';
 import 'services_screen.dart';
 
 /// Aksen warna kartu, mengikuti empat varian kartu di desain Stitch: biru untuk
@@ -147,7 +148,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         future: future,
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
+            return const SkeletonLoader(rows: 3);
           }
           final visible = snapshot.data!
               .where((entry) => filter == 'all' || entry.kind == filter)
