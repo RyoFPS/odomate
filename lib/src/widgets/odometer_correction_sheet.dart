@@ -73,8 +73,8 @@ class _OdometerCorrectionSheetState extends State<OdometerCorrectionSheet> {
 
     return Container(
       decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        color: Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.fromLTRB(
         20,

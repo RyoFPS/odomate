@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../data/odomate_repository.dart';
 import '../domain/models.dart';
@@ -109,7 +110,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             (total, ride) => total + ride.distanceKm,
           );
           return ListView(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
             children: [
               _periodSelector(context, l10n),
               const SizedBox(height: 12),
@@ -118,20 +119,46 @@ class _HistoryScreenState extends State<HistoryScreen> {
               Row(
                 children: [
                   Text(
-                    l10n.t('history_rides'),
+                    l10n.t('recent_rides'),
                     style: theme.textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w800,
                     ),
                   ),
+                  const Spacer(),
                   if (rides.isNotEmpty) ...[
                     const SizedBox(width: 8),
-                    Chip(
-                      label: Text(
-                        '${rides.length} ${_copy(context, 'entries')}',
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE2E8F0),
+                        borderRadius: BorderRadius.circular(999),
                       ),
-                      visualDensity: VisualDensity.compact,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        child: Text(
+                          '${rides.length} ${_copy(context, 'entries')}',
+                          style: const TextStyle(
+                            color: Color(0xFF334155),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
                     ),
                   ],
+                  TextButton(
+                    onPressed: rides.isEmpty
+                        ? null
+                        : () => _exportLog(context, rides, l10n),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      minimumSize: const Size(0, 32),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text(l10n.t('export_log')),
+                  ),
                 ],
               ),
               if (rides.isNotEmpty) ...[
@@ -230,6 +257,30 @@ class _HistoryScreenState extends State<HistoryScreen> {
         onSelected: (index) =>
             setState(() => period = RideHistoryPeriod.values[index]),
       );
+
+  Future<void> _exportLog(
+    BuildContext context,
+    List<Ride> rides,
+    AppLocalizations l10n,
+  ) async {
+    final rows = [
+      '${l10n.t('started_at')},${l10n.t('ended_at')},${l10n.t('distance')}',
+      ...rides.map(
+        (ride) =>
+            '${ride.startedAt.toLocal()},${ride.endedAt?.toLocal() ?? '-'},${ride.distanceKm.toStringAsFixed(1)} km',
+      ),
+    ];
+    try {
+      await SharePlus.instance.share(
+        ShareParams(text: rows.join('\n'), subject: l10n.t('export_log')),
+      );
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.t('share_failed'))));
+      }
+    }
+  }
 
   Widget _summary(
     BuildContext context,
