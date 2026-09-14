@@ -8,6 +8,8 @@ import '../data/odomate_repository.dart';
 import '../domain/models.dart';
 import '../i18n/app_localizations.dart';
 import '../widgets/odometer_correction_sheet.dart';
+import '../widgets/profile_photo_cropper.dart';
+import '../widgets/photo_source_sheet.dart';
 import 'settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -112,26 +114,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _pickPhoto() async {
     final l10n = AppLocalizations.of(context);
-    final source = await showModalBottomSheet<ImageSource>(
-      context: context,
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.photo_library_outlined),
-              title: Text(l10n.t('gallery')),
-              onTap: () => Navigator.pop(context, ImageSource.gallery),
-            ),
-            ListTile(
-              leading: const Icon(Icons.camera_alt_outlined),
-              title: Text(l10n.t('camera')),
-              onTap: () => Navigator.pop(context, ImageSource.camera),
-            ),
-          ],
-        ),
-      ),
-    );
+    final source = await showPhotoSourceSheet(context);
     if (source == null) return;
     try {
       final photo = await ImagePicker().pickImage(
@@ -139,7 +122,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         imageQuality: 80,
       );
       if (photo != null && mounted) {
-        setState(() => photoPath = photo.path);
+        final croppedPath = await cropProfilePhoto(context, photo.path);
+        if (croppedPath != null && mounted) {
+          setState(() => photoPath = croppedPath);
+        }
       }
     } on MissingPluginException {
       if (mounted) _showMessage(l10n.t('restart_picker'));

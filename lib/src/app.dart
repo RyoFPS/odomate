@@ -47,8 +47,13 @@ class _OdoMateAppState extends State<OdoMateApp> {
   }
 
   Future<void> _load() async {
-    hasVehicle = await widget.repository.loadVehicle() != null;
+    // Vehicle loading and notification setup are independent. Start both
+    // before awaiting either so cold launch does not serialize local I/O and
+    // plugin initialization. Tracker restore stays after notifications
+    // because an active ride may publish a tracking notification.
+    final vehicleFuture = widget.repository.loadVehicle();
     await widget.notifications.initialize();
+    hasVehicle = await vehicleFuture != null;
     await widget.tracker.restore();
     if (mounted) setState(() => loading = false);
   }

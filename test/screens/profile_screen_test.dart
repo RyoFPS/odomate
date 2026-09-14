@@ -7,6 +7,7 @@ import 'package:odomate/src/domain/models.dart';
 import 'package:odomate/src/i18n/app_localizations.dart';
 import 'package:odomate/src/screens/profile_screen.dart';
 import 'package:odomate/src/widgets/odometer_correction_sheet.dart';
+import 'package:odomate/src/widgets/photo_source_sheet.dart';
 
 class _ProfileRepository extends OdomateRepository {
   @override
@@ -145,6 +146,23 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(OdometerCorrectionSheet), findsOneWidget);
+  });
+
+  testWidgets('mengetuk foto profil membuka sheet sumber foto bergaya app', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_app());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Tambah foto'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(PhotoSourceSheet), findsOneWidget);
+    expect(find.text('Galeri'), findsOneWidget);
+    expect(find.text('Kamera'), findsOneWidget);
+    expect(find.byIcon(Icons.photo_library_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.camera_alt_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.close), findsNothing);
   });
 
   testWidgets('sheet plat ditutup tanpa memakai controller yang sudah dibuang', (

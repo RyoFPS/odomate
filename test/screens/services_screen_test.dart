@@ -8,10 +8,15 @@ import 'package:odomate/src/screens/services_screen.dart';
 import 'package:odomate/src/widgets/odometer_correction_sheet.dart';
 
 class _FakeRepository extends OdomateRepository {
-  _FakeRepository({this.vehicle, this.services = const []});
+  _FakeRepository({
+    this.vehicle,
+    this.services = const [],
+    this.logs = const [],
+  });
 
   final Vehicle? vehicle;
   final List<ServiceItem> services;
+  final List<ServiceLog> logs;
   final List<double> savedOdometers = [];
 
   @override
@@ -19,6 +24,9 @@ class _FakeRepository extends OdomateRepository {
 
   @override
   Future<List<ServiceItem>> listServices() async => services;
+
+  @override
+  Future<List<ServiceLog>> listServiceLogs() async => logs;
 
   @override
   Future<int> saveService(ServiceItem item) async => item.id ?? 0;
@@ -150,9 +158,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final scheme = Theme.of(
-      tester.element(find.byType(ServicesScreen)),
-    ).colorScheme;
+    final scheme = Theme.of(tester.element(find.byType(ServicesScreen)))
+        .colorScheme;
     final line = tester.widget<Text>(find.text('Sisa 5.418 km'));
 
     // Teks desain: `text-secondary font-medium` untuk item yang masih aman.
@@ -161,60 +168,61 @@ void main() {
     expect(line.style?.fontWeight, FontWeight.w500);
   });
 
-  testWidgets('an overdue item is rose, carries the error icon, and offers Servis', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      _app(
-        _FakeRepository(vehicle: _vehicle, services: const [_overdueService]),
-      ),
-    );
-    await tester.pumpAndSettle();
+  testWidgets(
+    'an overdue item is rose, carries the error icon, and offers Servis',
+    (tester) async {
+      await tester.pumpWidget(
+        _app(
+          _FakeRepository(vehicle: _vehicle, services: const [_overdueService]),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    // `text-rose-600 font-semibold` + ikon `error` 14 hanya untuk yang lewat.
-    final line = tester.widget<Text>(find.text('Lewat 82 km'));
-    expect(line.style?.color, const Color(0xFFE11D48));
-    expect(line.style?.fontWeight, FontWeight.w600);
-    expect(find.byIcon(Icons.error_outline_rounded), findsOneWidget);
+      // `text-rose-600 font-semibold` + ikon `error` 14 hanya untuk yang lewat.
+      final line = tester.widget<Text>(find.text('Lewat 82 km'));
+      expect(line.style?.color, const Color(0xFFE11D48));
+      expect(line.style?.fontWeight, FontWeight.w600);
+      expect(find.byIcon(Icons.error_outline_rounded), findsOneWidget);
 
-    // Badge `bg-rose-100 text-rose-700` 10px, dan tombol Servis bergaris.
-    // Dicari lewat key karena "Jatuh Tempo" juga jadi label kotak metrik di
-    // kartu ringkasan.
-    final badge = tester.widget<Text>(
-      find.descendant(
-        of: find.byKey(const ValueKey('service-card-status-badge')),
-        matching: find.text('Jatuh Tempo'),
-      ),
-    );
-    expect(badge.style?.fontSize, 10);
-    expect(badge.style?.color, const Color(0xFFBE123C));
-    expect(badge.style?.fontWeight, FontWeight.w700);
-    expect(
-      find.byKey(const ValueKey('service-card-mark-serviced')),
-      findsOneWidget,
-    );
-  });
+      // Badge `bg-rose-100 text-rose-700` 10px, dan tombol Servis bergaris.
+      // Dicari lewat key karena "Jatuh Tempo" juga jadi label kotak metrik di
+      // kartu ringkasan.
+      final badge = tester.widget<Text>(
+        find.descendant(
+          of: find.byKey(const ValueKey('service-card-status-badge')),
+          matching: find.text('Jatuh Tempo'),
+        ),
+      );
+      expect(badge.style?.fontSize, 10);
+      expect(badge.style?.color, const Color(0xFFBE123C));
+      expect(badge.style?.fontWeight, FontWeight.w700);
+      expect(
+        find.byKey(const ValueKey('service-card-mark-serviced')),
+        findsOneWidget,
+      );
+    },
+  );
 
-  testWidgets('the due metric tile labels itself a shade lighter than its count', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      _app(
-        _FakeRepository(vehicle: _vehicle, services: const [_overdueService]),
-      ),
-    );
-    await tester.pumpAndSettle();
+  testWidgets(
+    'the due metric tile labels itself a shade lighter than its count',
+    (tester) async {
+      await tester.pumpWidget(
+        _app(
+          _FakeRepository(vehicle: _vehicle, services: const [_overdueService]),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    final scheme = Theme.of(
-      tester.element(find.byType(ServicesScreen)),
-    ).colorScheme;
-    // Desain: angka `text-rose-700`, label `text-rose-600`. Labelnya juga tidak
-    // boleh tertukar dengan badge kartu, yang 10px tapi ber-weight 700.
-    final label = tester.widget<Text>(find.text('Jatuh Tempo').first);
-    expect(label.style?.color, const Color(0xFFE11D48));
-    expect(label.style?.fontWeight, FontWeight.w600);
-    expect(label.style?.color, isNot(scheme.onSurface));
-  });
+      final scheme = Theme.of(tester.element(find.byType(ServicesScreen)))
+          .colorScheme;
+      // Desain: angka `text-rose-700`, label `text-rose-600`. Labelnya juga tidak
+      // boleh tertukar dengan badge kartu, yang 10px tapi ber-weight 700.
+      final label = tester.widget<Text>(find.text('Jatuh Tempo').first);
+      expect(label.style?.color, const Color(0xFFE11D48));
+      expect(label.style?.fontWeight, FontWeight.w600);
+      expect(label.style?.color, isNot(scheme.onSurface));
+    },
+  );
 
   testWidgets('a safe item has no status line icon and no Servis button', (
     tester,
@@ -225,7 +233,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byIcon(Icons.error_outline_rounded), findsNothing);
-    expect(find.byKey(const ValueKey('service-card-mark-serviced')), findsNothing);
+    expect(
+      find.byKey(const ValueKey('service-card-mark-serviced')),
+      findsNothing,
+    );
     expect(find.byIcon(Icons.chevron_right_rounded), findsOneWidget);
   });
 
@@ -253,11 +264,38 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final scheme = Theme.of(
-      tester.element(find.byType(ServicesScreen)),
-    ).colorScheme;
+    final scheme = Theme.of(tester.element(find.byType(ServicesScreen)))
+        .colorScheme;
     final chip = tester.widget<Text>(find.text('2 item'));
     expect(chip.style?.color, scheme.secondary);
     expect(chip.style?.fontSize, 12);
+  });
+
+  testWidgets('service detail uses the modern status and history layout', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ServiceDetailScreen(
+          repository: _FakeRepository(
+            vehicle: _vehicle,
+            logs: [
+              ServiceLog(
+                serviceItemId: _safeService.id!,
+                servicedAt: DateTime(2026, 9, 1),
+                odometerKm: 24000,
+              ),
+            ],
+          ),
+          service: _safeService,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Status perawatan'), findsOneWidget);
+    expect(find.text('Target berikutnya'), findsOneWidget);
+    expect(find.text('Tandai sudah servis'), findsOneWidget);
+    expect(find.text('Riwayat servis'), findsOneWidget);
   });
 }

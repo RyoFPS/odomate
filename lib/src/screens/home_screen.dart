@@ -703,6 +703,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       context,
                       l10n.t('ride_count'),
                       '$sevenDayRideCount',
+                      Icons.route_outlined,
                     ),
                   ),
                   Expanded(
@@ -710,6 +711,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       context,
                       l10n.t('average_distance'),
                       '${_km(averageRide)} km',
+                      Icons.straighten_outlined,
                     ),
                   ),
                 ],
@@ -748,18 +750,30 @@ class _HomeScreenState extends State<HomeScreen> {
     BuildContext context,
     String label,
     String value,
+    IconData icon,
   ) {
     final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: theme.textTheme.labelSmall?.copyWith(
-            color: theme.colorScheme.secondary,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Icon(icon, size: 14, color: colors.primary),
+            const SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.end,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: colors.secondary,
+                ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 3),
         Text(

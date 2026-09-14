@@ -11,6 +11,7 @@ const serviceBlue = Color(0xFF2563EB);
 const serviceRed = Color(0xFFBE123C);
 const serviceAmber = Color(0xFFB45309);
 const serviceGreen = Color(0xFF047857);
+const serviceBlack = Color(0xFF000000);
 
 /// Tint per status servis. `serviceRed`, `serviceAmber`, dan `serviceGreen`
 /// kebetulan sudah sama persis dengan shade -700 yang dipakai desain untuk
@@ -118,7 +119,11 @@ class ServicePreset {
   /// sengaja dibiarkan kosong untuk diisi pengguna daripada diisi karangan.
   final double? intervalKm;
 
-  const ServicePreset(this.name, this.icon, this.tint, this.soft, [
+  const ServicePreset(
+    this.name,
+    this.icon,
+    this.tint,
+    this.soft, [
     this.intervalKm,
   ]);
 }

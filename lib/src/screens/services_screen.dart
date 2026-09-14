@@ -4,13 +4,16 @@ import '../data/odomate_repository.dart';
 import '../domain/models.dart';
 import '../domain/service_schedule.dart';
 import '../i18n/app_localizations.dart';
+import '../widgets/app_header.dart';
 import '../widgets/odometer_correction_sheet.dart';
+import '../widgets/status_badge.dart';
 import 'service_editor_screen.dart';
 import 'service_style.dart';
 
 const _blue = serviceBlue;
 const _red = serviceRed;
 const _green = serviceGreen;
+const _black = serviceBlack;
 
 class ServicesScreen extends StatefulWidget {
   final OdomateRepository repository;
@@ -433,7 +436,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
       padding: const EdgeInsets.all(28),
       child: Column(
         children: [
-          const Icon(Icons.build_circle_outlined, size: 40, color: _blue),
+          const Icon(Icons.build_circle_outlined, size: 40, color: _black),
           const SizedBox(height: 10),
           Text(l10n.t('empty_services'), textAlign: TextAlign.center),
           const SizedBox(height: 12),
@@ -935,6 +938,12 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     final remaining =
         service.lastServicedOdometerKm + service.intervalKm - odometer;
     final status = ServiceSchedule.status(odometer, service);
+    final tone = serviceTone(status, Theme.of(context).colorScheme);
+    final target = service.lastServicedOdometerKm + service.intervalKm;
+    final progress = service.intervalKm == 0
+        ? 0.0
+        : ((odometer - service.lastServicedOdometerKm) / service.intervalKm)
+              .clamp(0.0, 1.0);
     final statusText = status == ServiceStatus.due
         ? 'Jatuh tempo'
         : status == ServiceStatus.dueSoon
@@ -942,69 +951,260 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         : 'Aman';
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: const Text('Detail servis'),
+      appBar: const AppHeader(
+        title: 'Detail servis',
+        titleStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(16, 18, 16, 32),
         children: [
-          Text(service.name, style: Theme.of(context).textTheme.headlineSmall),
-          if (service.description.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(service.description),
-          ],
-          const SizedBox(height: 20),
-          Card(
-            color: Colors.white,
-            child: ListTile(
-              title: const Text('Status'),
-              subtitle: Text(statusText),
-              trailing: Text('${remaining.toStringAsFixed(0)} km'),
-            ),
-          ),
-          Card(
-            color: Colors.white,
-            child: ListTile(
-              title: const Text('Interval'),
-              subtitle: Text('${service.intervalKm.toStringAsFixed(0)} km'),
-            ),
-          ),
-          Card(
-            color: Colors.white,
-            child: ListTile(
-              title: const Text('Terakhir diservis'),
-              subtitle: Text(
-                logs.isEmpty
-                    ? 'Belum ada catatan'
-                    : _date(logs.first.servicedAt),
+          _hero(context, tone, statusText, remaining),
+          const SizedBox(height: 14),
+          _progressCard(context, tone, progress, remaining, target),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: _detailTile(
+                  context,
+                  Icons.repeat_rounded,
+                  'Interval servis',
+                  '${serviceKm(service.intervalKm)} km',
+                ),
               ),
-            ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _detailTile(
+                  context,
+                  Icons.history_rounded,
+                  'Terakhir servis',
+                  logs.isEmpty ? 'Belum ada' : _date(logs.first.servicedAt),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 18),
           FilledButton.icon(
             onPressed: _markServiced,
-            icon: const Icon(Icons.check),
-            label: const Text('Tandai selesai'),
+            icon: const Icon(Icons.check_circle_outline),
+            label: const Text('Tandai sudah servis'),
           ),
           const SizedBox(height: 24),
-          Text('Riwayat servis', style: Theme.of(context).textTheme.titleLarge),
-          if (logs.isEmpty)
-            const Padding(
-              padding: EdgeInsets.only(top: 12),
-              child: Text('Belum ada riwayat servis.'),
-            ),
-          ...logs.map(
-            (log) => ListTile(
-              leading: const Icon(Icons.event_available),
-              title: Text(_date(log.servicedAt)),
-              subtitle: Text('${log.odometerKm.toStringAsFixed(1)} km'),
-            ),
+          Row(
+            children: [
+              Text(
+                'Riwayat servis',
+                style: Theme.of(context).textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(width: 8),
+              _historyCount(context),
+            ],
           ),
+          const SizedBox(height: 10),
+          if (logs.isEmpty) _emptyHistory(context),
+          ...logs.map((log) => _historyCard(context, log)),
         ],
       ),
     );
   }
+
+  Widget _hero(
+    BuildContext context,
+    ServiceTone tone,
+    String status,
+    double remaining,
+  ) => Card(
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: tone.soft,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: tone.softBorder),
+            ),
+            child: Icon(serviceIcon(service.name), color: tone.icon),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  service.name,
+                  style: Theme.of(context).textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w800),
+                ),
+                if (service.description.isNotEmpty) ...[
+                  const SizedBox(height: 3),
+                  Text(
+                    service.description,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 10),
+                StatusBadge(
+                  label: status,
+                  foregroundColor: tone.chipText,
+                  backgroundColor: tone.chipBg,
+                  icon: Icons.circle,
+                ),
+              ],
+            ),
+          ),
+          Text(
+            remaining < 0 ? 'Lewat' : 'Sisa',
+            style: TextStyle(color: tone.line, fontWeight: FontWeight.w700),
+          ),
+        ],
+      ),
+    ),
+  );
+
+  Widget _progressCard(
+    BuildContext context,
+    ServiceTone tone,
+    double progress,
+    double remaining,
+    double target,
+  ) => Card(
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Status perawatan',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(99),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 8,
+              color: tone.icon,
+              backgroundColor: tone.soft,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  remaining < 0
+                      ? 'Lewat ${serviceKm(-remaining)} km'
+                      : 'Sisa ${serviceKm(remaining)} km',
+                  style: TextStyle(
+                    color: tone.line,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              Text(
+                'Target berikutnya',
+                style: Theme.of(context).textTheme.labelSmall
+                    ?.copyWith(color: Theme.of(context).colorScheme.secondary),
+              ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              '${serviceKm(target)} km',
+              style: Theme.of(context).textTheme.titleSmall
+                  ?.copyWith(fontWeight: FontWeight.w800),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+
+  Widget _detailTile(
+    BuildContext context,
+    IconData icon,
+    String label,
+    String value,
+  ) => Container(
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: Theme.of(context).cardTheme.color,
+      borderRadius: BorderRadius.circular(14),
+      border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
+        const SizedBox(height: 8),
+        Text(label, style: Theme.of(context).textTheme.labelSmall),
+        const SizedBox(height: 3),
+        Text(
+          value,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.titleSmall
+              ?.copyWith(fontWeight: FontWeight.w800),
+        ),
+      ],
+    ),
+  );
+
+  Widget _historyCount(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surfaceContainer,
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Text(
+      '${logs.length} entri',
+      style: Theme.of(context).textTheme.labelSmall,
+    ),
+  );
+
+  Widget _emptyHistory(BuildContext context) => Card(
+    child: const Padding(
+      padding: EdgeInsets.all(18),
+      child: Text('Belum ada riwayat servis.'),
+    ),
+  );
+
+  Widget _historyCard(BuildContext context, ServiceLog log) => Card(
+    margin: const EdgeInsets.only(bottom: 10),
+    child: ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+      leading: Container(
+        width: 38,
+        height: 38,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.primaryContainer
+              .withValues(alpha: .28),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(
+          Icons.event_available_outlined,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+      ),
+      title: Text(
+        _date(log.servicedAt),
+        style: const TextStyle(fontWeight: FontWeight.w700),
+      ),
+      subtitle: Text('${serviceKm(log.odometerKm)} km'),
+      trailing: const Icon(Icons.chevron_right_rounded),
+    ),
+  );
 }
 
 String _date(DateTime value) =>

@@ -4,6 +4,9 @@ import 'package:share_plus/share_plus.dart';
 import '../domain/models.dart';
 import '../domain/ride_history.dart';
 import '../i18n/app_localizations.dart';
+import '../widgets/app_header.dart';
+import '../widgets/metric_tile.dart';
+import '../widgets/status_badge.dart';
 
 class RideDetailScreen extends StatelessWidget {
   final Ride ride;
@@ -30,16 +33,12 @@ class RideDetailScreen extends StatelessWidget {
         : null;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          l10n.t('ride_detail'),
-          // Desain: `text-xl font-bold` = 20px w700, bukan 18px bawaan
-          // appBarTheme.
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.5,
-          ),
+      appBar: AppHeader(
+        title: l10n.t('ride_detail'),
+        titleStyle: const TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.5,
         ),
         actions: [
           IconButton(
@@ -160,8 +159,7 @@ class RideDetailScreen extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: _detailMetric(
-                    context,
+                  child: MetricTile(
                     key: const ValueKey('ride-average-speed'),
                     icon: Icons.speed_outlined,
                     label: l10n.t('average_speed'),
@@ -172,8 +170,7 @@ class RideDetailScreen extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: _detailMetric(
-                    context,
+                  child: MetricTile(
                     key: const ValueKey('ride-estimate'),
                     icon: Icons.local_gas_station_outlined,
                     label: l10n.t('estimate'),
@@ -182,8 +179,7 @@ class RideDetailScreen extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: _detailMetric(
-                    context,
+                  child: MetricTile(
                     key: const ValueKey('ride-final-odometer'),
                     icon: Icons.speed,
                     label: l10n.t('final_odometer'),
@@ -194,53 +190,6 @@ class RideDetailScreen extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _detailMetric(
-    BuildContext context, {
-    required Key key,
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
-    final theme = Theme.of(context);
-    return Container(
-      key: key,
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: theme.colorScheme.outlineVariant),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: 14, color: theme.colorScheme.primary),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: theme.textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -609,29 +558,11 @@ class RideDetailScreen extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final color = active ? colors.primary : colors.tertiary;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: .12),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.circle, size: 7, color: color),
-            const SizedBox(width: 6),
-            Text(
-              active ? l10n.t('active_status') : l10n.t('completed_status'),
-              style: TextStyle(
-                color: color,
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return StatusBadge(
+      label: active ? l10n.t('active_status') : l10n.t('completed_status'),
+      foregroundColor: color,
+      backgroundColor: color.withValues(alpha: .12),
+      icon: Icons.circle,
     );
   }
 

@@ -135,6 +135,8 @@ void main() {
       300,
       scrollable: find.byType(Scrollable).first,
     );
+    expect(find.byIcon(Icons.route_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.straighten_outlined), findsOneWidget);
     await tester.tap(
       find.ancestor(
         of: find.text('Statistik perjalanan').first,

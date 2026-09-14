@@ -17,6 +17,7 @@ dependencies:
   path: ^1.9.1
   sqflite: ^2.4.3
   share_plus: ^13.3.0
+  image_cropper: ^12.2.1
 
 dev_dependencies:
   flutter_test:
