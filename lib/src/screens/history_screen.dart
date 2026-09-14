@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../data/odomate_repository.dart';
 import '../domain/models.dart';
+import '../widgets/loading_skeleton.dart';
 
 class HistoryScreen extends StatelessWidget {
   final OdomateRepository repository;
@@ -14,7 +15,7 @@ class HistoryScreen extends StatelessWidget {
       future: _load(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
+          return const LoadingSkeleton();
         }
         final data = snapshot.data!;
         return ListView(

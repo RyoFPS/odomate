@@ -11,6 +11,7 @@ import 'screens/profile_screen.dart';
 import 'screens/services_screen.dart';
 import 'screens/setup_screen.dart';
 import 'tracking/ride_tracker.dart';
+import 'widgets/loading_skeleton.dart';
 
 class OdoMateApp extends StatefulWidget {
   final OdomateRepository repository;
@@ -71,7 +72,7 @@ class _OdoMateAppState extends State<OdoMateApp> {
     ),
     debugShowCheckedModeBanner: false,
     home: loading
-        ? const Scaffold(body: Center(child: CircularProgressIndicator()))
+        ? const Scaffold(body: LoadingSkeleton())
         : hasVehicle
         ? MainNavigation(
             tracker: widget.tracker,
