@@ -419,6 +419,10 @@ class RideDetailScreen extends StatelessWidget {
                   bottom: 12,
                   child: FilledButton.tonalIcon(
                     onPressed: null,
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(96, 40),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                    ),
                     icon: const Icon(Icons.fullscreen, size: 14),
                     label: Text(l10n.t('zoom_map')),
                   ),
