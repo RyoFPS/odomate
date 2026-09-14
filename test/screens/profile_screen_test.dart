@@ -74,6 +74,9 @@ void main() {
       find.byKey(const ValueKey('profile-avatar-fallback')),
       findsOneWidget,
     );
+    final avatar = tester.widget<Image>(find.byType(Image).first);
+    expect((avatar.image as ResizeImage).width, 192);
+    expect((avatar.image as ResizeImage).height, 192);
   });
 
   testWidgets('sel plat dan sel odometer sama besar dan sebaris', (

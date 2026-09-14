@@ -141,11 +141,31 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     radius: 19,
                     backgroundColor: colors.primaryContainer,
-                    backgroundImage: vehicle?.photoPath == null
-                        ? const AssetImage(
-                            'stitch_odomate_modern_ui/odomate_rider_avatar_updated_full/screen.png',
-                          )
-                        : FileImage(File(vehicle!.photoPath!)),
+                    child: ClipOval(
+                      child: Image(
+                        image: ResizeImage.resizeIfNeeded(
+                          76,
+                          76,
+                          vehicle?.photoPath == null
+                              ? const AssetImage(
+                                  'stitch_odomate_modern_ui/odomate_rider_avatar_updated_full/screen.png',
+                                )
+                              : FileImage(File(vehicle!.photoPath!)),
+                        ),
+                        fit: BoxFit.cover,
+                        width: 38,
+                        height: 38,
+                        errorBuilder: (context, error, stackTrace) =>
+                            Image.asset(
+                              'stitch_odomate_modern_ui/odomate_rider_avatar_updated_full/screen.png',
+                              cacheWidth: 76,
+                              cacheHeight: 76,
+                              fit: BoxFit.cover,
+                              width: 38,
+                              height: 38,
+                            ),
+                      ),
+                    ),
                   ),
                 ),
                 Positioned(

@@ -153,6 +153,9 @@ void main() {
       find.byKey(const ValueKey('home-profile-avatar-fallback')),
       findsOneWidget,
     );
+    final avatar = tester.widget<Image>(find.byType(Image).first);
+    expect((avatar.image as ResizeImage).width, 76);
+    expect((avatar.image as ResizeImage).height, 76);
   });
 
   testWidgets('Home history card opens the upgraded History screen', (

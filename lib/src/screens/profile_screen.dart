@@ -381,11 +381,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       radius: 48,
                       backgroundColor: colors.primaryContainer,
-                      backgroundImage: photoPath == null
-                          ? const AssetImage(
-                              'stitch_odomate_modern_ui/odomate_rider_avatar_updated_full/screen.png',
-                            )
-                          : FileImage(File(photoPath!)),
+                      child: ClipOval(
+                        child: Image(
+                          image: ResizeImage.resizeIfNeeded(
+                            192,
+                            192,
+                            photoPath == null
+                                ? const AssetImage(
+                                    'stitch_odomate_modern_ui/odomate_rider_avatar_updated_full/screen.png',
+                                  )
+                                : FileImage(File(photoPath!)),
+                          ),
+                          fit: BoxFit.cover,
+                          width: 96,
+                          height: 96,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Image.asset(
+                                'stitch_odomate_modern_ui/odomate_rider_avatar_updated_full/screen.png',
+                                cacheWidth: 192,
+                                cacheHeight: 192,
+                                fit: BoxFit.cover,
+                                width: 96,
+                                height: 96,
+                              ),
+                        ),
+                      ),
                     ),
                     Positioned(
                       right: -4,
