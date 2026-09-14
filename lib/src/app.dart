@@ -173,6 +173,14 @@ class _OdoMateAppState extends State<OdoMateApp> {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
+        toolbarHeight: 64,
+        titleSpacing: 16,
+        shape: Border(
+          bottom: BorderSide(
+            color: dark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+            width: 1,
+          ),
+        ),
         // Tanpa ini, judul AppBar yang cuma mengeset weight akan mewarisi
         // titleLarge Material 3 — 22px — dan 22px tidak dipakai di satu pun layar
         // desain. Ukuran header di desain selalu ditulis eksplisit per layar
@@ -193,6 +201,8 @@ class _OdoMateAppState extends State<OdoMateApp> {
       cardTheme: CardThemeData(
         color: dark ? const Color(0xFF1E293B) : Colors.white,
         elevation: 0,
+        shadowColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),

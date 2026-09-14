@@ -44,11 +44,13 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
+        leadingWidth: 40,
         leading: IconButton(
           tooltip: MaterialLocalizations.of(context).backButtonTooltip,
           icon: const Icon(Icons.arrow_back),
           onPressed: widget.onBack ?? () => Navigator.of(context).maybePop(),
         ),
+        titleSpacing: 0,
         title: Text(l10n.t('statistics')),
       ),
       body: FutureBuilder<_StatisticsData>(

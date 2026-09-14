@@ -175,11 +175,12 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         backgroundColor: Colors.white,
+        leadingWidth: 40,
         leading: IconButton(
           onPressed: () => Navigator.of(context).pop(),
           icon: const Icon(Icons.arrow_back_rounded, size: 22),
         ),
-        titleSpacing: 10,
+        titleSpacing: 0,
         title: Text(
           editing ? 'Edit Servis' : 'Tambah Servis',
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
@@ -858,15 +859,8 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
     required Widget child,
     EdgeInsetsGeometry padding = const EdgeInsets.all(16),
   }) {
-    final colors = Theme.of(context).colorScheme;
-    return Container(
-      padding: padding,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: colors.outlineVariant),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: child,
+    return Card(
+      child: Padding(padding: padding, child: child),
     );
   }
 

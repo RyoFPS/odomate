@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import '../data/odomate_repository.dart';
 import '../domain/models.dart';
 import '../i18n/app_localizations.dart';
+import '../widgets/odometer_correction_sheet.dart';
 import 'settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -127,6 +128,173 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } catch (_) {
       if (mounted) _showMessage(l10n.t('restart_picker'));
     }
+  }
+
+  Future<void> _showPlateSheet() async {
+    final current = plate.text.trim().toUpperCase().split(RegExp(r'\s+'));
+    final region = TextEditingController(
+      text: current.elementAtOrNull(0) ?? '',
+    );
+    final number = TextEditingController(
+      text: current.elementAtOrNull(1) ?? '',
+    );
+    final suffix = TextEditingController(
+      text: current.elementAtOrNull(2) ?? '',
+    );
+    final result = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.viewInsetsOf(sheetContext).bottom,
+        ),
+        child: Material(
+          color: Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 36,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                        borderRadius: BorderRadius.circular(99),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  const Text(
+                    'Perbarui Nomor Plat',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Masukkan nomor plat kendaraan',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.secondary,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: _plateInput(
+                          controller: region,
+                          label: 'Kode',
+                          maxLength: 2,
+                          keyboardType: TextInputType.text,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        flex: 4,
+                        child: _plateInput(
+                          controller: number,
+                          label: 'Angka',
+                          maxLength: 4,
+                          keyboardType: TextInputType.number,
+                          digitsOnly: true,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        flex: 3,
+                        child: _plateInput(
+                          controller: suffix,
+                          label: 'Seri',
+                          maxLength: 3,
+                          keyboardType: TextInputType.text,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: () {
+                        final values = [
+                          region.text.trim().toUpperCase(),
+                          number.text.trim(),
+                          suffix.text.trim().toUpperCase(),
+                        ].where((value) => value.isNotEmpty).toList();
+                        if (region.text.trim().isEmpty ||
+                            number.text.trim().isEmpty) {
+                          return;
+                        }
+                        Navigator.pop(sheetContext, values.join(' '));
+                      },
+                      icon: const Icon(Icons.check_rounded),
+                      label: const Text('Simpan Nomor Plat'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    region.dispose();
+    number.dispose();
+    suffix.dispose();
+    if (result != null && mounted) {
+      setState(() => plate.text = result);
+      await _save();
+    }
+  }
+
+  Future<void> _correctOdometer() async {
+    final value = await showModalBottomSheet<double>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => OdometerCorrectionSheet(
+        initialValue: vehicle?.odometerKm ?? 0,
+        vehicle: vehicle,
+      ),
+    );
+    if (value == null || value < 0) return;
+    await widget.repository.updateOdometer(value);
+    await _load();
+  }
+
+  Widget _plateInput({
+    required TextEditingController controller,
+    required String label,
+    required int maxLength,
+    required TextInputType keyboardType,
+    bool digitsOnly = false,
+  }) {
+    return TextField(
+      controller: controller,
+      textAlign: TextAlign.center,
+      textCapitalization: TextCapitalization.characters,
+      keyboardType: keyboardType,
+      maxLength: maxLength,
+      inputFormatters: [
+        if (digitsOnly)
+          FilteringTextInputFormatter.digitsOnly
+        else
+          FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z]')),
+      ],
+      decoration: InputDecoration(
+        labelText: label,
+        counterText: '',
+        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      ),
+    );
   }
 
   Future<void> _save() async {
@@ -308,6 +476,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Expanded(
                       child: TextField(
                         controller: plate,
+                        readOnly: true,
+                        onTap: _showPlateSheet,
                         textCapitalization: TextCapitalization.characters,
                         textInputAction: TextInputAction.done,
                         decoration: InputDecoration(
@@ -318,39 +488,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(width: 10),
                     Expanded(
-                      child: Container(
-                        constraints: const BoxConstraints(minHeight: 56),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: colors.surface,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: colors.outlineVariant),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              l10n.t('odometer'),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.labelSmall
-                                  ?.copyWith(color: colors.onSurfaceVariant),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${(vehicle?.odometerKm ?? 0).toStringAsFixed(1)} km',
-                              // Desain: `text-lg font-extrabold` = 18px w800. Ini
-                              // angka, jadi w800 memang benar di sini.
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                            ),
-                          ],
+                      child: GestureDetector(
+                        onTap: _correctOdometer,
+                        child: Container(
+                          constraints: const BoxConstraints(minHeight: 56),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: colors.surface,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: colors.outlineVariant),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                l10n.t('odometer'),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.labelSmall
+                                    ?.copyWith(color: colors.onSurfaceVariant),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${(vehicle?.odometerKm ?? 0).toStringAsFixed(1)} km',
+                                // Desain: `text-lg font-extrabold` = 18px w800.
+                                style: Theme.of(context).textTheme.titleMedium
+                                    ?.copyWith(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),

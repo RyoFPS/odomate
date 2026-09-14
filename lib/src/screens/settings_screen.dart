@@ -41,7 +41,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 72,
+        toolbarHeight: 64,
+        leadingWidth: 40,
         leading: IconButton(
           onPressed: () => Navigator.of(context).maybePop(),
           icon: const Icon(Icons.arrow_back),
@@ -75,10 +76,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Center(child: _offlineBadge(colors)),
           ),
         ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Divider(height: 1, color: colors.outlineVariant),
-        ),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
@@ -92,33 +89,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
               'Choose a comfortable display for daytime or night riding.',
               '昼夜の走行に合う表示モードを選択します。',
             ),
-            child: SegmentedButton<ThemeMode>(
-              expandedInsets: EdgeInsets.zero,
-              showSelectedIcon: false,
-              style: _segmentedStyle(colors, 44),
-              segments: [
-                ButtonSegment(
-                  value: ThemeMode.light,
-                  icon: const Icon(Icons.light_mode_outlined),
-                  label: Text(l10n.t('light')),
-                ),
-                ButtonSegment(
-                  value: ThemeMode.dark,
-                  icon: const Icon(Icons.dark_mode_outlined),
-                  label: Text(l10n.t('dark')),
-                ),
-                ButtonSegment(
-                  value: ThemeMode.system,
-                  icon: const Icon(Icons.brightness_auto_outlined),
-                  label: Text(_copy('Sistem', 'System', 'システム')),
-                ),
-              ],
-              selected: {_themeMode},
-              onSelectionChanged: (values) {
-                final mode = values.first;
-                setState(() => _themeMode = mode);
-                widget.onThemeChanged(mode);
-              },
+            child: _segmentedTrack(
+              colors,
+              SegmentedButton<ThemeMode>(
+                expandedInsets: EdgeInsets.zero,
+                showSelectedIcon: false,
+                style: _segmentedStyle(colors, 44),
+                segments: [
+                  ButtonSegment(
+                    value: ThemeMode.light,
+                    icon: const Icon(Icons.light_mode_outlined),
+                    label: Text(l10n.t('light')),
+                  ),
+                  ButtonSegment(
+                    value: ThemeMode.dark,
+                    icon: const Icon(Icons.dark_mode_outlined),
+                    label: Text(l10n.t('dark')),
+                  ),
+                  ButtonSegment(
+                    value: ThemeMode.system,
+                    icon: const Icon(Icons.brightness_auto_outlined),
+                    label: Text(_copy('Sistem', 'System', 'システム')),
+                  ),
+                ],
+                selected: {_themeMode},
+                onSelectionChanged: (values) {
+                  final mode = values.first;
+                  setState(() => _themeMode = mode);
+                  widget.onThemeChanged(mode);
+                },
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -188,27 +188,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                SegmentedButton<bool>(
-                  expandedInsets: EdgeInsets.zero,
-                  showSelectedIcon: false,
-                  style: _segmentedStyle(colors, 40),
-                  segments: [
-                    ButtonSegment(
-                      value: true,
-                      icon: const Icon(Icons.speed_outlined),
-                      label: Text(
-                        _copy('Kilometer (km)', 'Kilometers (km)', 'キロ (km)'),
+                _segmentedTrack(
+                  colors,
+                  SegmentedButton<bool>(
+                    expandedInsets: EdgeInsets.zero,
+                    showSelectedIcon: false,
+                    style: _segmentedStyle(colors, 40),
+                    segments: [
+                      ButtonSegment(
+                        value: true,
+                        icon: const Icon(Icons.speed_outlined),
+                        label: Text(
+                          _copy('Kilometer (km)', 'Kilometers (km)', 'キロ (km)'),
+                        ),
                       ),
-                    ),
-                    ButtonSegment(
-                      value: false,
-                      icon: const Icon(Icons.pin_drop_outlined),
-                      label: Text(_copy('Mil (mi)', 'Miles (mi)', 'マイル (mi)')),
-                    ),
-                  ],
-                  selected: {_usesKilometers},
-                  onSelectionChanged: (values) =>
-                      setState(() => _usesKilometers = values.first),
+                      ButtonSegment(
+                        value: false,
+                        icon: const Icon(Icons.pin_drop_outlined),
+                        label: Text(
+                          _copy('Mil (mi)', 'Miles (mi)', 'マイル (mi)'),
+                        ),
+                      ),
+                    ],
+                    selected: {_usesKilometers},
+                    onSelectionChanged: (values) =>
+                        setState(() => _usesKilometers = values.first),
+                  ),
                 ),
               ],
             ),
@@ -288,10 +293,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
   ButtonStyle _segmentedStyle(ColorScheme colors, double height) => ButtonStyle(
     minimumSize: WidgetStatePropertyAll(Size(0, height)),
     padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 6)),
+    backgroundColor: WidgetStateProperty.resolveWith(
+      (states) => states.contains(WidgetState.selected)
+          ? Colors.white
+          : Colors.transparent,
+    ),
+    foregroundColor: WidgetStateProperty.resolveWith(
+      (states) => states.contains(WidgetState.selected)
+          ? colors.primary
+          : colors.onSurface,
+    ),
+    elevation: WidgetStateProperty.resolveWith(
+      (states) => states.contains(WidgetState.selected) ? 2 : 0,
+    ),
+    shadowColor: WidgetStatePropertyAll(Colors.black.withValues(alpha: .12)),
+    shape: WidgetStatePropertyAll(
+      RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    ),
     textStyle: const WidgetStatePropertyAll(
       TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
     ),
-    side: WidgetStatePropertyAll(BorderSide(color: colors.outlineVariant)),
+    side: const WidgetStatePropertyAll(BorderSide(color: Colors.transparent)),
+  );
+
+  Widget _segmentedTrack(ColorScheme colors, Widget child) => Container(
+    padding: const EdgeInsets.all(4),
+    decoration: BoxDecoration(
+      color: colors.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: child,
   );
 
   Widget _offlineBadge(ColorScheme colors) => Container(
