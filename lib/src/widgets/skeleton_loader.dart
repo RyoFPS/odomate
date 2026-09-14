@@ -13,6 +13,7 @@ class SkeletonLoader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme.surfaceContainerHighest;
+    final surface = Theme.of(context).colorScheme.surface;
     if (inline) {
       return Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -37,22 +38,26 @@ class SkeletonLoader extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        _card(color, height: 150),
+        _card(color, surface: surface, height: 150),
         const SizedBox(height: 18),
         _box(color, width: 150, height: 20),
         const SizedBox(height: 10),
         for (var index = 0; index < rows; index++) ...[
-          _card(color, height: 110),
+          _card(color, surface: surface, height: 110),
           if (index < rows - 1) const SizedBox(height: 10),
         ],
       ],
     );
   }
 
-  static Widget _card(Color color, {required double height}) => Container(
+  static Widget _card(
+    Color color, {
+    required Color surface,
+    required double height,
+  }) => Container(
     height: height,
     decoration: BoxDecoration(
-      color: Colors.white,
+      color: surface,
       borderRadius: BorderRadius.circular(16),
       border: Border.all(color: color),
     ),
