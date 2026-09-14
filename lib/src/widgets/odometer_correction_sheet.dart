@@ -107,8 +107,12 @@ class _OdometerCorrectionSheetState extends State<OdometerCorrectionSheet> {
                     children: [
                       Text(
                         l10n.t('edit_odometer'),
+                        // Judul sheet: teks, bukan angka, jadi w700 — dan 18px
+                        // supaya sama dengan judul sheet lain ('Riwayat Servis').
+                        // titleLarge bawaan 22px, angka yang tidak dipakai desain.
                         style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w800,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                       Text(

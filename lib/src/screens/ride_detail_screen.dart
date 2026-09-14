@@ -36,7 +36,13 @@ class RideDetailScreen extends StatelessWidget {
         titleSpacing: 0,
         title: Text(
           l10n.t('ride_detail'),
-          style: const TextStyle(fontWeight: FontWeight.w700),
+          // Desain: `text-xl font-bold` = 20px w700, bukan 18px bawaan
+          // appBarTheme.
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.5,
+          ),
         ),
         actions: [
           IconButton(
@@ -459,8 +465,9 @@ class RideDetailScreen extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   l10n.t('trip_notes'),
+                  // Judul seksi: desain `text-sm font-bold` = w700.
                   style: theme.textTheme.labelLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const Spacer(),

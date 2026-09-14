@@ -150,8 +150,10 @@ class _SetupScreenState extends State<SetupScreen> {
               const SizedBox(height: 28),
               Text(
                 l10n.t('welcome_odomate'),
+                // Judul onboarding: desain memakai `text-2xl font-bold` = w700,
+                // bukan extrabold.
                 style: theme.textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   letterSpacing: -0.8,
                 ),
               ),

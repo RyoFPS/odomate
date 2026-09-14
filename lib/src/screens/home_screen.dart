@@ -526,8 +526,10 @@ class _HomeScreenState extends State<HomeScreen> {
             Text.rich(
               TextSpan(
                 text: value,
+                // Angka statistik: desain memakai `text-2xl font-bold` (w700),
+                // bukan extrabold — w800 di desain hanya untuk angka utama.
                 style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                 ),
                 children: [
                   TextSpan(
@@ -606,8 +608,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(width: 8),
                 Text(
                   l10n.t('service_schedule'),
+                  // Judul seksi: `text-base font-bold` di desain = w700.
                   style: Theme.of(context).textTheme.titleSmall
-                      ?.copyWith(fontWeight: FontWeight.w800),
+                      ?.copyWith(fontWeight: FontWeight.w700),
                 ),
                 const Spacer(),
                 TextButton(
