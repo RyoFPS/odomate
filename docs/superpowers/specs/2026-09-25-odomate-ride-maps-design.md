@@ -20,17 +20,20 @@ fields, not coordinates. The ride detail route section is a themed
 
 ### Data flow
 
-1. The tracker accepts a GPS point using the existing accuracy and distance
+1. The first accurate GPS fix is stored as the route start marker without
+   adding distance. Later points use the existing accuracy and distance
    filtering rules.
-2. The accepted point is written to local storage for the active ride.
+2. The start marker and every later accepted point are written to local
+   storage for the active ride.
 3. The tracker publishes the current ride plus route points through the
    existing notifier flow.
 4. Home renders the current points while tracking.
 5. Ride Detail loads points by ride id and renders them as a polyline with
    start and finish markers.
 
-Only accepted points are stored. This reuses the current 5-meter location
-filter and avoids persisting every raw GPS callback.
+Only the initial accurate fix and later accepted points are stored. This
+reuses the current 5-meter location filter and avoids persisting every raw GPS
+callback.
 
 ### Persistence
 
@@ -92,8 +95,9 @@ route path.
 Automated tests should cover:
 
 - point insert/load/delete by ride;
-- accepted tracker points are persisted;
-- rejected inaccurate/no-distance points are not persisted;
+- the first accurate GPS point is persisted as the route start;
+- accepted tracker points are persisted, while inaccurate or too-close points
+  are not;
 - active ride restore includes its route points;
 - duplicate ride does not copy points;
 - detail shows the empty state when a ride has no points.
