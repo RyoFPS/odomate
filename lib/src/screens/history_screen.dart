@@ -41,6 +41,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   int _searchGeneration = 0;
   RideHistoryPeriod period = RideHistoryPeriod.all;
   _HistorySort sort = _HistorySort.newest;
+  _HistoryType historyType = _HistoryType.all;
   bool searching = false;
   String query = '';
 
@@ -229,53 +230,55 @@ class _HistoryScreenState extends State<HistoryScreen> {
             children: [
               _periodSelector(context, l10n),
               const SizedBox(height: 12),
-              _summary(context, data, rides.length, distance),
-              const SizedBox(height: 18),
-              Row(
-                children: [
-                  Text(
-                    l10n.t('recent_rides'),
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const Spacer(),
-                  if (rides.isNotEmpty) ...[
-                    const SizedBox(width: 8),
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE2E8F0),
-                        borderRadius: BorderRadius.circular(999),
+              if (historyType != _HistoryType.services) ...[
+                _summary(context, data, rides.length, distance),
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    Text(
+                      l10n.t('recent_rides'),
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3,
+                    ),
+                    const Spacer(),
+                    if (rides.isNotEmpty) ...[
+                      const SizedBox(width: 8),
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(999),
                         ),
-                        child: Text(
-                          '${rides.length} ${_copy(context, 'entries')}',
-                          style: const TextStyle(
-                            color: Color(0xFF334155),
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          child: Text(
+                            '${rides.length} ${_copy(context, 'entries')}',
+                            style: TextStyle(
+                              color: theme.colorScheme.onSurfaceVariant,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ),
+                    ],
+                    TextButton(
+                      onPressed: rides.isEmpty
+                          ? null
+                          : () => _exportLog(context, rides, l10n),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        minimumSize: const Size(0, 32),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(l10n.t('export_log')),
                     ),
                   ],
-                  TextButton(
-                    onPressed: rides.isEmpty
-                        ? null
-                        : () => _exportLog(context, rides, l10n),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      minimumSize: const Size(0, 32),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: Text(l10n.t('export_log')),
-                  ),
-                ],
-              ),
+                ),
+              ],
               if (rides.isNotEmpty) ...[
                 const SizedBox(height: 4),
                 ...rides.map((ride) => _rideCard(context, ride, l10n)),
@@ -295,7 +298,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(24),
-                    child: Center(child: Text(l10n.t('history_empty'))),
+                    child: Center(
+                      child: Text(
+                        historyType == _HistoryType.services
+                            ? _copy(context, 'serviceHistoryEmpty')
+                            : l10n.t('history_empty'),
+                      ),
+                    ),
                   ),
                 ),
               const SizedBox(height: 20),
@@ -336,6 +345,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     _HistoryData data,
     AppLocalizations l10n,
   ) {
+    if (historyType == _HistoryType.services) return const [];
     final needle = query.trim().toLowerCase();
     final rides = filterRides(data.rides, data.now, period).where((ride) {
       if (needle.isEmpty) return true;
@@ -355,6 +365,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   List<ServiceLog> _logs(List<ServiceLog> logs) {
+    if (historyType == _HistoryType.rides) return const [];
     final needle = query.trim().toLowerCase();
     final visible = logs.where((log) {
       if (needle.isEmpty) return true;
@@ -423,25 +434,27 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   child: Text(
                     '${_copy(context, 'summary')} ${_periodLabel(l10n, period)}',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: const Color(0xFF334155),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
                 if (data.vehicle?.name.isNotEmpty ?? false)
                   Chip(
-                    backgroundColor: const Color(0xFFEFF6FF),
+                    backgroundColor: Theme.of(context)
+                        .colorScheme
+                        .primaryContainer,
                     side: BorderSide.none,
                     padding: const EdgeInsets.symmetric(horizontal: 5),
                     avatar: Icon(
                       Icons.two_wheeler,
                       size: 14,
-                      color: const Color(0xFF2563EB),
+                      color: Theme.of(context).colorScheme.onPrimary,
                     ),
                     label: Text(
                       data.vehicle!.name,
-                      style: const TextStyle(
-                        color: Color(0xFF1D4ED8),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimary,
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                       ),
@@ -506,13 +519,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 Icon(
                   Icons.show_chart,
                   size: 14,
-                  color: const Color(0xFF16A34A),
+                  color: Theme.of(context).colorScheme.tertiary,
                 ),
                 const SizedBox(width: 6),
                 Text(
                   '${_copy(context, 'fuelEfficiency')}: —',
-                  style: Theme.of(context).textTheme.bodySmall
-                      ?.copyWith(color: const Color(0xFF475569)),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
                 const Spacer(),
                 ...List.generate(
@@ -523,7 +537,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       width: 4,
                       height: 6 + index * 3,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF2563EB)
+                        color: Theme.of(context).colorScheme.primary
                             .withValues(alpha: .25 + index * .15),
                         borderRadius: BorderRadius.circular(3),
                       ),
@@ -651,14 +665,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             TextSpan(
                               text: ' $suffix',
                               style: theme.textTheme.bodySmall?.copyWith(
-                                color: const Color(0xFF64748B),
+                                color: theme.colorScheme.onSurfaceVariant,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
                   ),
                   style: theme.textTheme.titleMedium?.copyWith(
-                    color: const Color(0xFF0F172A),
+                    color: theme.colorScheme.onSurface,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -717,14 +731,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           TextSpan(
                             text: ' $suffix',
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: const Color(0xFF64748B),
+                              color: theme.colorScheme.onSurfaceVariant,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
                 ),
                 style: theme.textTheme.titleLarge?.copyWith(
-                  color: const Color(0xFF0F172A),
+                  color: theme.colorScheme.onSurface,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -749,9 +763,40 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
       child: InkWell(
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute<void>(builder: (_) => RideDetailScreen(ride: ride)),
-        ),
+        onTap: () async {
+          final deleted = await Navigator.of(context).push<bool>(
+            MaterialPageRoute<bool>(
+              builder: (_) =>
+                  RideDetailScreen(ride: ride, repository: widget.repository),
+            ),
+          );
+          if (!context.mounted || deleted != true) return;
+          setState(() => future = _load());
+          final colors = Theme.of(context).colorScheme;
+          final messenger = ScaffoldMessenger.of(context);
+          messenger
+            ..clearMaterialBanners()
+            ..showMaterialBanner(
+              MaterialBanner(
+                backgroundColor: colors.tertiaryContainer,
+                leading: Icon(
+                  Icons.check_circle_outline,
+                  color: colors.tertiary,
+                ),
+                content: Text(
+                  AppLocalizations.of(context).t('delete_trip_success'),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: messenger.hideCurrentMaterialBanner,
+                    child: Text(
+                      MaterialLocalizations.of(context).closeButtonLabel,
+                    ),
+                  ),
+                ],
+              ),
+            );
+        },
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(14),
@@ -857,11 +902,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Future<void> _showFilters() async {
     var draftPeriod = period;
     var draftSort = sort;
+    var draftType = historyType;
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       builder: (sheetContext) => StatefulBuilder(
         builder: (context, updateSheet) {
           final l10n = AppLocalizations.of(context);
@@ -926,6 +972,36 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
+                  Text(
+                    _copy(context, 'historyType'),
+                    style: _filterLabelStyle(theme),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      for (var i = 0; i < _HistoryType.values.length; i++) ...[
+                        if (i > 0) const SizedBox(width: 8),
+                        Expanded(
+                          child: _filterChip(
+                            context,
+                            label: _historyTypeLabel(
+                              context,
+                              _HistoryType.values[i],
+                            ),
+                            selected: draftType == _HistoryType.values[i],
+                            onTap: () => updateSheet(
+                              () => draftType = _HistoryType.values[i],
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 8,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 16),
                   Text(_copy(context, 'sort'), style: _filterLabelStyle(theme)),
                   const SizedBox(height: 8),
                   // Desain memakai `grid grid-cols-3` untuk grup ini: ketiga
@@ -959,6 +1035,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         onPressed: () => updateSheet(() {
                           draftPeriod = RideHistoryPeriod.all;
                           draftSort = _HistorySort.newest;
+                          draftType = _HistoryType.all;
                         }),
                         // `OutlinedButton` tanpa tema bawaan berbentuk pill;
                         // desain memakai `px-4 py-3 rounded-xl`.
@@ -984,6 +1061,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             setState(() {
                               period = draftPeriod;
                               sort = draftSort;
+                              historyType = draftType;
                             });
                             Navigator.pop(sheetContext);
                           },
@@ -1111,6 +1189,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
         _HistorySort.distance => 'farthest',
       });
 
+  static String _historyTypeLabel(BuildContext context, _HistoryType value) =>
+      _copy(context, switch (value) {
+        _HistoryType.all => 'showAllHistory',
+        _HistoryType.rides => 'showRidesOnly',
+        _HistoryType.services => 'showServicesOnly',
+      });
+
   static String _copy(BuildContext context, String key) {
     const copy = {
       'id': {
@@ -1126,8 +1211,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
         'filter': 'Filter',
         'entries': 'entri',
         'offline': 'Semua data tersimpan secara offline',
-        'filterTitle': 'Filter Riwayat Perjalanan',
+        'filterTitle': 'Filter Riwayat',
         'dateRange': 'Rentang Waktu',
+        'historyType': 'Jenis Riwayat',
+        'showAllHistory': 'Tampilkan semua',
+        'showRidesOnly': 'Tampilkan perjalanan',
+        'showServicesOnly': 'Tampilkan service',
+        'serviceHistoryEmpty': 'Belum ada riwayat service.',
         'sort': 'Urutan Log',
         'newest': 'Terbaru',
         'oldest': 'Terlama',
@@ -1148,8 +1238,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
         'filter': 'Filter',
         'entries': 'entries',
         'offline': 'All data is stored offline',
-        'filterTitle': 'Filter Ride History',
+        'filterTitle': 'History Filter',
         'dateRange': 'Date Range',
+        'historyType': 'History Type',
+        'showAllHistory': 'Show all',
+        'showRidesOnly': 'Show rides',
+        'showServicesOnly': 'Show services',
+        'serviceHistoryEmpty': 'No service history yet.',
         'sort': 'Log Order',
         'newest': 'Newest',
         'oldest': 'Oldest',
@@ -1170,8 +1265,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
         'filter': 'フィルター',
         'entries': '件',
         'offline': 'すべてのデータはオフラインで保存されます',
-        'filterTitle': '走行履歴を絞り込む',
+        'filterTitle': '履歴フィルター',
         'dateRange': '期間',
+        'historyType': '履歴の種類',
+        'showAllHistory': 'すべて表示',
+        'showRidesOnly': '走行のみ表示',
+        'showServicesOnly': '整備のみ表示',
+        'serviceHistoryEmpty': '整備履歴はまだありません。',
         'sort': '並び順',
         'newest': '新しい順',
         'oldest': '古い順',
@@ -1197,6 +1297,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return '${local.day.toString().padLeft(2, '0')}/${local.month.toString().padLeft(2, '0')}/${local.year}';
   }
 }
+
+enum _HistoryType { all, rides, services }
 
 enum _HistorySort { newest, oldest, distance }
 

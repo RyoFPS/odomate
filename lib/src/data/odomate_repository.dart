@@ -29,8 +29,72 @@ class OdomateRepository {
 
   Future<int> createRide(Ride r) async => (await db).insert('rides', {
     'started_at': r.startedAt.toIso8601String(),
+    'ended_at': r.endedAt?.toIso8601String(),
     'distance_km': r.distanceKm,
+    'notes': r.notes,
+    'weather': r.weather,
   });
+  Future<int> duplicateRide(Ride r) {
+    final startedAt = DateTime.now();
+    final duration = r.endedAt?.difference(r.startedAt);
+    return createRide(
+      Ride(
+        startedAt: startedAt,
+        endedAt: duration == null ? null : startedAt.add(duration),
+        distanceKm: r.distanceKm,
+        notes: r.notes,
+        weather: r.weather,
+      ),
+    );
+  }
+
+  Future<void> updateRideDetails(
+    int id, {
+    required String notes,
+    required String weather,
+  }) async => (await db).update(
+    'rides',
+    {'notes': notes, 'weather': weather},
+    where: 'id = ?',
+    whereArgs: [id],
+  );
+  Future<void> updateRideDistance(int id, double distanceKm) async {
+    final d = await db;
+    await d.transaction((tx) async {
+      final rows = await tx.query(
+        'rides',
+        columns: ['distance_km'],
+        where: 'id = ?',
+        whereArgs: [id],
+        limit: 1,
+      );
+      if (rows.isEmpty) throw StateError('Ride not found');
+      final oldDistance = (rows.first['distance_km'] as num).toDouble();
+      await tx.update(
+        'rides',
+        {'distance_km': distanceKm},
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+      final vehicle = await tx.query('vehicle', limit: 1);
+      if (vehicle.isNotEmpty) {
+        await tx.update(
+          'vehicle',
+          {
+            'odometer_km':
+                (vehicle.first['odometer_km'] as num).toDouble() +
+                distanceKm -
+                oldDistance,
+          },
+          where: 'id = ?',
+          whereArgs: [vehicle.first['id']],
+        );
+      }
+    });
+  }
+
+  Future<void> deleteRide(int id) async =>
+      (await db).delete('rides', where: 'id = ?', whereArgs: [id]);
   Future<void> finishRide(int id, DateTime endedAt, double distanceKm) async =>
       (await db).transaction((tx) async {
         final ride = await tx.query(
@@ -252,6 +316,8 @@ class OdomateRepository {
         ? null
         : DateTime.parse(r['ended_at'] as String),
     distanceKm: (r['distance_km'] as num).toDouble(),
+    notes: r['notes'] as String? ?? '',
+    weather: r['weather'] as String? ?? '',
   );
   ServiceItem _service(Map<String, Object?> r) => ServiceItem(
     id: r['id'] as int,

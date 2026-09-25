@@ -57,6 +57,16 @@ class LocalDatabase {
         'ALTER TABLE rides ADD COLUMN odometer_applied_km REAL NOT NULL DEFAULT 0',
       );
     }
+    if (!rideColumns.contains('notes')) {
+      await db.execute(
+        "ALTER TABLE rides ADD COLUMN notes TEXT NOT NULL DEFAULT ''",
+      );
+    }
+    if (!rideColumns.contains('weather')) {
+      await db.execute(
+        "ALTER TABLE rides ADD COLUMN weather TEXT NOT NULL DEFAULT ''",
+      );
+    }
   }
 
   static Future<void> _create(Database db, int version) async {
@@ -64,7 +74,7 @@ class LocalDatabase {
       "CREATE TABLE vehicle (id INTEGER PRIMARY KEY, name TEXT NOT NULL, odometer_km REAL NOT NULL, user_name TEXT NOT NULL DEFAULT '', plate_number TEXT NOT NULL DEFAULT '', photo_path TEXT)",
     );
     await db.execute(
-      'CREATE TABLE rides (id INTEGER PRIMARY KEY, started_at TEXT NOT NULL, ended_at TEXT, distance_km REAL NOT NULL, odometer_applied_km REAL NOT NULL DEFAULT 0)',
+      "CREATE TABLE rides (id INTEGER PRIMARY KEY, started_at TEXT NOT NULL, ended_at TEXT, distance_km REAL NOT NULL, odometer_applied_km REAL NOT NULL DEFAULT 0, notes TEXT NOT NULL DEFAULT '', weather TEXT NOT NULL DEFAULT '')",
     );
     await db.execute(
       "CREATE TABLE service_items (id INTEGER PRIMARY KEY, name TEXT NOT NULL, description TEXT NOT NULL DEFAULT '', location TEXT NOT NULL DEFAULT '', cost REAL NOT NULL DEFAULT 0, remind INTEGER NOT NULL DEFAULT 1, interval_km REAL NOT NULL, last_serviced_km REAL NOT NULL)",

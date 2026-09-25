@@ -7,16 +7,7 @@ import '../domain/models.dart';
 /// `stitch_odomate_modern_ui/odomate_servis/code.html` dan
 /// `stitch_odomate_modern_ui/odomate_tambah_servis/code.html`, jadi keduanya
 /// tidak bisa lagi melenceng satu sama lain.
-const serviceBlue = Color(0xFF2563EB);
-const serviceRed = Color(0xFFBE123C);
-const serviceAmber = Color(0xFFB45309);
-const serviceGreen = Color(0xFF047857);
-const serviceBlack = Color(0xFF000000);
-
-/// Tint per status servis. `serviceRed`, `serviceAmber`, dan `serviceGreen`
-/// kebetulan sudah sama persis dengan shade -700 yang dipakai desain untuk
-/// angka metrik dan ikon, jadi yang perlu didefinisikan di sini hanya tint muda
-/// dan shade -600 / -800.
+/// Theme-aware status colors shared by the service list and detail screens.
 typedef ServiceTone = ({
   Color icon, // ikon di dalam kotak status
   Color soft, // latar kotak status
@@ -30,47 +21,61 @@ typedef ServiceTone = ({
   FontWeight chipWeight, // desain memakai font-bold khusus kartu jatuh tempo
 });
 
-ServiceTone serviceTone(ServiceStatus status, ColorScheme colors) =>
-    switch (status) {
-      ServiceStatus.due => (
-        icon: const Color(0xFFE11D48), // rose-600
-        soft: const Color(0xFFFFF1F2), // rose-50
-        softBorder: const Color(0xFFFFE4E6), // rose-100
-        card: const Color(0xFFFECDD3), // rose-200
-        chipBg: const Color(0xFFFFE4E6), // rose-100
-        chipText: serviceRed, // rose-700
-        line: const Color(0xFFE11D48), // rose-600
-        metricNumber: serviceRed, // rose-700
-        // Satu-satunya kotak metrik yang labelnya lebih muda dari angkanya:
-        // desain menulis `text-rose-600` untuk label "Jatuh Tempo".
-        metricLabel: const Color(0xFFE11D48), // rose-600
-        chipWeight: FontWeight.w700,
-      ),
-      ServiceStatus.dueSoon => (
-        icon: serviceAmber, // amber-700
-        soft: const Color(0xFFFFFBEB), // amber-50
-        softBorder: const Color(0xFFFEF3C7), // amber-100
-        card: const Color(0xFFFDE68A).withValues(alpha: .8), // amber-200/80
-        chipBg: const Color(0xFFFEF3C7), // amber-100
-        chipText: const Color(0xFF92400E), // amber-800
-        line: serviceAmber, // amber-700
-        metricNumber: serviceAmber, // amber-700
-        metricLabel: serviceAmber, // amber-700
-        chipWeight: FontWeight.w600,
-      ),
-      ServiceStatus.safe => (
-        icon: serviceGreen, // emerald-700
-        soft: const Color(0xFFECFDF5), // emerald-50
-        softBorder: const Color(0xFFD1FAE5), // emerald-100
-        card: colors.outlineVariant.withValues(alpha: .3), // outline-variant/30
-        chipBg: const Color(0xFFD1FAE5), // emerald-100
-        chipText: const Color(0xFF065F46), // emerald-800
-        line: colors.secondary, // text-secondary, bukan hijau
-        metricNumber: serviceGreen, // emerald-700
-        metricLabel: serviceGreen, // emerald-700
-        chipWeight: FontWeight.w600,
-      ),
-    };
+ServiceTone serviceTone(ServiceStatus status, ColorScheme colors) {
+  final dark = colors.brightness == Brightness.dark;
+  return switch (status) {
+    ServiceStatus.due => (
+      icon: dark ? colors.error : const Color(0xFFE11D48),
+      soft: dark ? colors.errorContainer : const Color(0xFFFFF1F2),
+      softBorder: dark
+          ? colors.error.withValues(alpha: .45)
+          : const Color(0xFFFFE4E6),
+      card: dark
+          ? colors.error.withValues(alpha: .65)
+          : const Color(0xFFFECDD3),
+      chipBg: dark ? colors.errorContainer : const Color(0xFFFFE4E6),
+      chipText: dark ? colors.onErrorContainer : const Color(0xFFBE123C),
+      line: dark ? colors.error : const Color(0xFFE11D48),
+      metricNumber: dark ? colors.error : const Color(0xFFBE123C),
+      metricLabel: dark ? colors.error : const Color(0xFFE11D48),
+      chipWeight: FontWeight.w700,
+    ),
+    ServiceStatus.dueSoon => (
+      icon: dark ? colors.secondary : const Color(0xFFB45309),
+      soft: dark ? colors.secondaryContainer : const Color(0xFFFFFBEB),
+      softBorder: dark
+          ? colors.secondary.withValues(alpha: .45)
+          : const Color(0xFFFEF3C7),
+      card: dark
+          ? colors.secondary.withValues(alpha: .65)
+          : const Color(0xFFFDE68A).withValues(alpha: .8),
+      chipBg: dark ? colors.secondaryContainer : const Color(0xFFFEF3C7),
+      chipText: dark ? colors.onSecondaryContainer : const Color(0xFF92400E),
+      line: dark ? colors.secondary : const Color(0xFFB45309),
+      metricNumber: dark ? colors.secondary : const Color(0xFFB45309),
+      metricLabel: dark ? colors.secondary : const Color(0xFFB45309),
+      chipWeight: FontWeight.w600,
+    ),
+    ServiceStatus.safe => (
+      icon: dark ? colors.tertiary : const Color(0xFF047857),
+      soft: dark
+          ? colors.tertiary.withValues(alpha: .18)
+          : const Color(0xFFECFDF5),
+      softBorder: dark
+          ? colors.tertiary.withValues(alpha: .45)
+          : const Color(0xFFD1FAE5),
+      card: colors.outlineVariant.withValues(alpha: .3), // outline-variant/30
+      chipBg: dark
+          ? colors.tertiary.withValues(alpha: .22)
+          : const Color(0xFFD1FAE5),
+      chipText: dark ? colors.tertiary : const Color(0xFF065F46),
+      line: colors.secondary,
+      metricNumber: dark ? colors.tertiary : const Color(0xFF047857),
+      metricLabel: dark ? colors.tertiary : const Color(0xFF047857),
+      chipWeight: FontWeight.w600,
+    ),
+  };
+}
 
 /// Desain menulis semua angka kilometer dengan pemisah ribuan titik
 /// (`24.582 km`), jadi tidak ada pemisah desimal.
@@ -105,12 +110,6 @@ class ServicePreset {
   final String name;
   final IconData icon;
 
-  /// Warna ikon, disalin dari shade -600 kotak emoji di desain.
-  final Color tint;
-
-  /// Latar kotak ikon (shade -100 di desain).
-  final Color soft;
-
   /// Interval yang disarankan saat preset ini dipilih.
   ///
   /// `null` untuk komponen yang intervalnya tidak tercatat di
@@ -119,66 +118,16 @@ class ServicePreset {
   /// sengaja dibiarkan kosong untuk diisi pengguna daripada diisi karangan.
   final double? intervalKm;
 
-  const ServicePreset(
-    this.name,
-    this.icon,
-    this.tint,
-    this.soft, [
-    this.intervalKm,
-  ]);
+  const ServicePreset(this.name, this.icon, [this.intervalKm]);
 }
 
 const servicePresets = <ServicePreset>[
-  ServicePreset(
-    'Ganti Oli Mesin',
-    Icons.oil_barrel_outlined,
-    Color(0xFFE11D48),
-    Color(0xFFFFE4E6),
-    2000,
-  ),
-  ServicePreset(
-    'Oli Gardan',
-    Icons.settings_suggest_outlined,
-    Color(0xFFD97706),
-    Color(0xFFFEF3C7),
-    8000,
-  ),
-  ServicePreset(
-    'Servis CVT & Roller',
-    Icons.autorenew_rounded,
-    Color(0xFF4F46E5),
-    Color(0xFFE0E7FF),
-  ),
-  ServicePreset(
-    'Filter Udara',
-    Icons.air_rounded,
-    Color(0xFFEA580C),
-    Color(0xFFFFEDD5),
-    12000,
-  ),
-  ServicePreset(
-    'Busi (Spark Plug)',
-    Icons.bolt_rounded,
-    Color(0xFF047857),
-    Color(0xFFD1FAE5),
-    8000,
-  ),
-  ServicePreset(
-    'Kampas Rem',
-    Icons.stop_circle_outlined,
-    Color(0xFF2563EB),
-    Color(0xFFDBEAFE),
-  ),
-  ServicePreset(
-    'Aki & Kelistrikan',
-    Icons.battery_charging_full_rounded,
-    Color(0xFF0D9488),
-    Color(0xFFCCFBF1),
-  ),
-  ServicePreset(
-    'Ban Depan / Belakang',
-    Icons.trip_origin_rounded,
-    Color(0xFF9333EA),
-    Color(0xFFF3E8FF),
-  ),
+  ServicePreset('Ganti Oli Mesin', Icons.oil_barrel_outlined, 2000),
+  ServicePreset('Oli Gardan', Icons.settings_suggest_outlined, 8000),
+  ServicePreset('Servis CVT & Roller', Icons.autorenew_rounded),
+  ServicePreset('Filter Udara', Icons.air_rounded, 12000),
+  ServicePreset('Busi (Spark Plug)', Icons.bolt_rounded, 8000),
+  ServicePreset('Kampas Rem', Icons.stop_circle_outlined),
+  ServicePreset('Aki & Kelistrikan', Icons.battery_charging_full_rounded),
+  ServicePreset('Ban Depan / Belakang', Icons.trip_origin_rounded),
 ];

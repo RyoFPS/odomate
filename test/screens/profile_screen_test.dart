@@ -162,6 +162,15 @@ void main() {
     expect(find.text('Kamera'), findsOneWidget);
     expect(find.byIcon(Icons.photo_library_outlined), findsOneWidget);
     expect(find.byIcon(Icons.camera_alt_outlined), findsOneWidget);
+    final colors = odomateTheme(Brightness.light).colorScheme;
+    expect(
+      tester.widget<Icon>(find.byIcon(Icons.photo_library_outlined)).color,
+      colors.onPrimary,
+    );
+    expect(
+      tester.widget<Icon>(find.byIcon(Icons.camera_alt_outlined)).color,
+      colors.onPrimary,
+    );
     expect(find.byIcon(Icons.close), findsNothing);
   });
 

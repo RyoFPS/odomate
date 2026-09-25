@@ -10,11 +10,6 @@ import '../widgets/status_badge.dart';
 import 'service_editor_screen.dart';
 import 'service_style.dart';
 
-const _blue = serviceBlue;
-const _red = serviceRed;
-const _green = serviceGreen;
-const _black = serviceBlack;
-
 class ServicesScreen extends StatefulWidget {
   final OdomateRepository repository;
   const ServicesScreen({super.key, required this.repository});
@@ -70,9 +65,9 @@ class _ServicesScreenState extends State<ServicesScreen> {
         .length;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         titleSpacing: 16,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -113,7 +108,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
               icon: const Icon(Icons.add_rounded, size: 22),
               tooltip: l10n.t('add_service'),
               style: IconButton.styleFrom(
-                backgroundColor: Colors.white,
+                backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
                 foregroundColor: Theme.of(context).colorScheme.primary,
                 minimumSize: const Size(36, 36),
                 maximumSize: const Size(36, 36),
@@ -178,7 +173,11 @@ class _ServicesScreenState extends State<ServicesScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.cloud_off_outlined, size: 17, color: _green),
+                Icon(
+                  Icons.cloud_off_outlined,
+                  size: 17,
+                  color: Theme.of(context).colorScheme.tertiary,
+                ),
                 const SizedBox(width: 7),
                 Flexible(
                   child: Text(
@@ -360,23 +359,30 @@ class _ServicesScreenState extends State<ServicesScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: _red.withValues(alpha: .06),
-                  border: Border.all(color: _red.withValues(alpha: .12)),
+                  color: Theme.of(context).colorScheme.errorContainer,
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.error
+                        .withValues(alpha: .45),
+                  ),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.only(top: 1),
-                      child: Icon(Icons.warning_rounded, color: _red, size: 18),
+                      child: Icon(
+                        Icons.warning_rounded,
+                        color: Theme.of(context).colorScheme.error,
+                        size: 18,
+                      ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         '${dueService.name} perlu segera diservis sebelum perjalanan berikutnya.',
-                        style: const TextStyle(
-                          color: _red,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                           height: 1.5,
@@ -436,7 +442,11 @@ class _ServicesScreenState extends State<ServicesScreen> {
       padding: const EdgeInsets.all(28),
       child: Column(
         children: [
-          const Icon(Icons.build_circle_outlined, size: 40, color: _black),
+          Icon(
+            Icons.build_circle_outlined,
+            size: 40,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
           const SizedBox(height: 10),
           Text(l10n.t('empty_services'), textAlign: TextAlign.center),
           const SizedBox(height: 12),
@@ -580,9 +590,9 @@ class _ServicesScreenState extends State<ServicesScreen> {
                             Row(
                               children: [
                                 if (status == ServiceStatus.due) ...[
-                                  const Icon(
+                                  Icon(
                                     Icons.error_outline_rounded,
-                                    color: Color(0xFFE11D48),
+                                    color: Theme.of(context).colorScheme.error,
                                     size: 14,
                                   ),
                                   const SizedBox(width: 4),
@@ -797,9 +807,13 @@ class _ServicesScreenState extends State<ServicesScreen> {
                     final log = logs[index];
                     return ListTile(
                       contentPadding: EdgeInsets.zero,
-                      leading: const CircleAvatar(
-                        backgroundColor: Color(0xFFEFF6FF),
-                        foregroundColor: _blue,
+                      leading: CircleAvatar(
+                        backgroundColor: Theme.of(context)
+                            .colorScheme
+                            .primaryContainer,
+                        foregroundColor: Theme.of(context)
+                            .colorScheme
+                            .onPrimary,
                         child: Icon(Icons.event_available_outlined),
                       ),
                       title: Text(names[log.serviceItemId] ?? 'Servis'),
@@ -821,10 +835,11 @@ class _ServicesScreenState extends State<ServicesScreen> {
   Future<void> _serviceActions(ServiceItem service) async {
     final action = await showModalBottomSheet<String>(
       context: context,
-      showDragHandle: true,
-      builder: (context) => SafeArea(
+      backgroundColor: Colors.transparent,
+      builder: (context) => _ServiceSheetFrame(
+        title: 'Opsi servis',
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          padding: const EdgeInsets.only(top: 4),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -834,10 +849,13 @@ class _ServicesScreenState extends State<ServicesScreen> {
                 onTap: () => Navigator.pop(context, 'edit'),
               ),
               ListTile(
-                leading: const Icon(Icons.delete_outline, color: _red),
-                title: const Text(
+                leading: Icon(
+                  Icons.delete_outline,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+                title: Text(
                   'Hapus servis',
-                  style: TextStyle(color: _red),
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
                 onTap: () => Navigator.pop(context, 'delete'),
               ),
@@ -851,28 +869,107 @@ class _ServicesScreenState extends State<ServicesScreen> {
   }
 
   Future<void> _confirmDelete(ServiceItem service) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showModalBottomSheet<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Hapus kategori servis?'),
-        content: Text('Apakah Anda yakin ingin menghapus ${service.name}?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Batal'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(backgroundColor: _red),
-            child: const Text('Hapus'),
-          ),
-        ],
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => _ServiceSheetFrame(
+        title: 'Hapus kategori servis?',
+        subtitle: 'Apakah Anda yakin ingin menghapus ${service.name}?',
+        child: Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => Navigator.pop(sheetContext, false),
+                child: const Text('Batal'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: FilledButton.icon(
+                onPressed: () => Navigator.pop(sheetContext, true),
+                style: FilledButton.styleFrom(
+                  backgroundColor: Theme.of(sheetContext).colorScheme.error,
+                ),
+                icon: const Icon(Icons.delete_outline),
+                label: const Text('Hapus'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
     if (confirmed == true && service.id != null) {
       await widget.repository.deleteService(service.id!);
       await _load();
     }
+  }
+}
+
+class _ServiceSheetFrame extends StatelessWidget {
+  final String title;
+  final String? subtitle;
+  final Widget child;
+
+  const _ServiceSheetFrame({
+    required this.title,
+    this.subtitle,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        10,
+        20,
+        MediaQuery.viewInsetsOf(context).bottom + 24,
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 48,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: colors.outlineVariant,
+                  borderRadius: BorderRadius.circular(99),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            if (subtitle != null) ...[
+              const SizedBox(height: 2),
+              Text(
+                subtitle!,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colors.secondary,
+                ),
+              ),
+            ],
+            const SizedBox(height: 16),
+            child,
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -950,7 +1047,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         ? 'Mendekat'
         : 'Aman';
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: const AppHeader(
         title: 'Detail servis',
         titleStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),

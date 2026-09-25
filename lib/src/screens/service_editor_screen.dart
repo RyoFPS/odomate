@@ -172,9 +172,9 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         leading: IconButton(
           onPressed: () => Navigator.of(context).pop(),
           // Ukuran ikonnya dibiarkan bawaan (24) — jaraknya ke judul datang dari
@@ -479,10 +479,14 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
                 width: 24,
                 height: 24,
                 decoration: BoxDecoration(
-                  color: preset.soft,
+                  color: colors.primaryContainer,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(preset.icon, size: 14, color: preset.tint),
+                child: Icon(
+                  preset.icon,
+                  size: 14,
+                  color: colors.onPrimary,
+                ),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -775,11 +779,11 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
                 Text.rich(
                   TextSpan(
                     text: 'Beri notifikasi saat sisa ',
-                    children: const [
+                    children: [
                       TextSpan(
                         text: '500 km',
                         style: TextStyle(
-                          color: Color(0xFFD97706),
+                          color: colors.secondary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -810,7 +814,7 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colors.surface,
         border: Border(top: BorderSide(color: colors.outlineVariant)),
       ),
       child: SafeArea(
@@ -834,9 +838,9 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
+                Icon(
                   Icons.verified_user_outlined,
-                  color: serviceGreen,
+                  color: colors.tertiary,
                   size: 14,
                 ),
                 const SizedBox(width: 5),
@@ -882,9 +886,9 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
                 text: text,
                 children: [
                   if (required)
-                    const TextSpan(
+                    TextSpan(
                       text: ' *',
-                      style: TextStyle(color: Color(0xFFF43F5E)),
+                      style: TextStyle(color: colors.error),
                     ),
                   if (optional)
                     TextSpan(

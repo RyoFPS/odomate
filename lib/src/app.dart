@@ -123,6 +123,9 @@ class _OdoMateAppState extends State<OdoMateApp> {
           surfaceContainerLow: dark
               ? const Color(0xFF172033)
               : const Color(0xFFF8FAFC),
+          surfaceContainerHighest: dark
+              ? const Color(0xFF334155)
+              : const Color(0xFFE2E8F0),
           outlineVariant: dark
               ? const Color(0xFF475569)
               : const Color(0xFFE2E8F0),
@@ -177,10 +180,10 @@ class _OdoMateAppState extends State<OdoMateApp> {
     return ThemeData(
       brightness: brightness,
       colorScheme: scheme,
-      scaffoldBackgroundColor: dark ? scheme.surface : const Color(0xFFF8FAFC),
+      scaffoldBackgroundColor: scheme.surface,
       textTheme: textTheme,
       appBarTheme: AppBarTheme(
-        backgroundColor: dark ? scheme.surface : Colors.white,
+        backgroundColor: scheme.surface,
         foregroundColor: dark
             ? const Color(0xFFF8FAFC)
             : const Color(0xFF0F172A),
@@ -289,7 +292,7 @@ class _SplashScreen extends StatelessWidget {
                 height: 112,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: colors.surfaceContainer,
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(

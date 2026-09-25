@@ -51,22 +51,29 @@ class Ride {
   final DateTime startedAt;
   final DateTime? endedAt;
   final double distanceKm;
+  final String notes, weather;
   const Ride({
     this.id,
     required this.startedAt,
     this.endedAt,
     this.distanceKm = 0,
+    this.notes = '',
+    this.weather = '',
   });
   Ride copyWith({
     int? id,
     DateTime? startedAt,
     DateTime? endedAt,
     double? distanceKm,
+    String? notes,
+    String? weather,
   }) => Ride(
     id: id ?? this.id,
     startedAt: startedAt ?? this.startedAt,
     endedAt: endedAt ?? this.endedAt,
     distanceKm: distanceKm ?? this.distanceKm,
+    notes: notes ?? this.notes,
+    weather: weather ?? this.weather,
   );
 }
 

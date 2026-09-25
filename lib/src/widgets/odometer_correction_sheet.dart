@@ -73,7 +73,7 @@ class _OdometerCorrectionSheetState extends State<OdometerCorrectionSheet> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colors.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.fromLTRB(
@@ -225,8 +225,8 @@ class _OdometerCorrectionSheetState extends State<OdometerCorrectionSheet> {
                       onPressed: () =>
                           _setValue((value ?? widget.initialValue) + amount),
                       style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFFF1F5F9),
-                        foregroundColor: const Color(0xFF0F172A),
+                        backgroundColor: colors.surfaceContainer,
+                        foregroundColor: colors.onSurface,
                         minimumSize: const Size(0, 32),
                         padding: EdgeInsets.zero,
                         shape: RoundedRectangleBorder(
@@ -246,7 +246,7 @@ class _OdometerCorrectionSheetState extends State<OdometerCorrectionSheet> {
                   child: FilledButton(
                     onPressed: () => _setValue(widget.initialValue),
                     style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFFFEF2F2),
+                      backgroundColor: colors.errorContainer,
                       foregroundColor: colors.error,
                       minimumSize: const Size(0, 32),
                       padding: EdgeInsets.zero,

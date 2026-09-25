@@ -148,7 +148,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           bottom: MediaQuery.viewInsetsOf(sheetContext).bottom,
         ),
         child: Material(
-          color: Colors.white,
+          color: Theme.of(sheetContext).colorScheme.surface,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           child: SafeArea(
             top: false,

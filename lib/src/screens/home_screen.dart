@@ -177,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     decoration: BoxDecoration(
                       color: colors.tertiary,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
+                      border: Border.all(color: colors.surface, width: 2),
                     ),
                   ),
                 ),
@@ -639,7 +639,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Icon(
                       Icons.insights_outlined,
                       size: 18,
-                      color: colors.primary,
+                      color: colors.onPrimary,
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -837,7 +837,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final accent = isDue
         ? colors.error
         : isSoon
-        ? const Color(0xFFD97706)
+        ? colors.secondary
         : colors.tertiary;
     final label = isDue
         ? 'Perlu Servis'

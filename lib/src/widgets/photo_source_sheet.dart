@@ -22,8 +22,8 @@ class PhotoSourceSheet extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: colors.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.fromLTRB(
@@ -101,7 +101,7 @@ class PhotoSourceSheet extends StatelessWidget {
                   color: colors.primaryContainer,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(icon, color: colors.primary),
+                child: Icon(icon, color: colors.onPrimary),
               ),
               const SizedBox(width: 12),
               Expanded(

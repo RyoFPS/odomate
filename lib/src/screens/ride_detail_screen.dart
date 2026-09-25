@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../data/odomate_repository.dart';
 import '../domain/models.dart';
 import '../domain/ride_history.dart';
 import '../i18n/app_localizations.dart';
@@ -8,10 +9,24 @@ import '../widgets/app_header.dart';
 import '../widgets/metric_tile.dart';
 import '../widgets/status_badge.dart';
 
-class RideDetailScreen extends StatelessWidget {
+class RideDetailScreen extends StatefulWidget {
   final Ride ride;
+  final OdomateRepository? repository;
 
-  const RideDetailScreen({super.key, required this.ride});
+  const RideDetailScreen({super.key, required this.ride, this.repository});
+
+  @override
+  State<RideDetailScreen> createState() => _RideDetailScreenState();
+}
+
+class _RideDetailScreenState extends State<RideDetailScreen> {
+  late Ride ride;
+
+  @override
+  void initState() {
+    super.initState();
+    ride = widget.ride;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -215,65 +230,60 @@ class RideDetailScreen extends StatelessWidget {
     String duration,
   ) => showModalBottomSheet<void>(
     context: context,
-    showDragHandle: true,
     isScrollControlled: true,
-    builder: (sheetContext) => SafeArea(
+    backgroundColor: Colors.transparent,
+    builder: (sheetContext) => _RideSheetFrame(
+      title: l10n.t('trip_options'),
+      subtitle: l10n.t('manage_trip_log'),
       child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.t('trip_options'),
-                style: Theme.of(sheetContext).textTheme.titleLarge
-                    ?.copyWith(fontWeight: FontWeight.w700),
-              ),
-              Text(
-                l10n.t('manage_trip_log'),
-                style: Theme.of(sheetContext).textTheme.bodySmall,
-              ),
-              const SizedBox(height: 12),
-              _optionTile(
-                sheetContext,
-                l10n,
-                Icons.edit_note,
-                l10n.t('edit_notes_weather'),
-                l10n.t('edit_notes_weather_subtitle'),
-              ),
-              _optionTile(
-                sheetContext,
-                l10n,
-                Icons.copy_outlined,
-                l10n.t('duplicate_trip'),
-                l10n.t('duplicate_trip_subtitle'),
-              ),
-              _optionTile(
-                sheetContext,
-                l10n,
-                Icons.straighten_outlined,
-                l10n.t('manual_distance'),
-                l10n.t('manual_distance_subtitle'),
-              ),
-              _optionTile(
-                sheetContext,
-                l10n,
-                Icons.download_outlined,
-                l10n.t('download_gpx'),
-                l10n.t('download_gpx_subtitle'),
-              ),
-              const Divider(height: 20),
-              _optionTile(
-                sheetContext,
-                l10n,
-                Icons.delete_outline,
-                l10n.t('delete_trip'),
-                l10n.t('delete_trip_subtitle'),
-                destructive: true,
-              ),
-            ],
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 4),
+            _optionTile(
+              sheetContext,
+              l10n,
+              Icons.edit_note,
+              l10n.t('edit_notes_weather'),
+              l10n.t('edit_notes_weather_subtitle'),
+              onTap: () => _editDetails(context, l10n),
+            ),
+            _optionTile(
+              sheetContext,
+              l10n,
+              Icons.copy_outlined,
+              l10n.t('duplicate_trip'),
+              l10n.t('duplicate_trip_subtitle'),
+              onTap: () => _duplicate(context, l10n),
+            ),
+            _optionTile(
+              sheetContext,
+              l10n,
+              Icons.straighten_outlined,
+              l10n.t('manual_distance'),
+              l10n.t('manual_distance_subtitle'),
+              onTap: () => _correctDistance(context, l10n),
+            ),
+            _optionTile(
+              sheetContext,
+              l10n,
+              Icons.download_outlined,
+              l10n.t('download_gpx'),
+              l10n.t('download_gpx_subtitle'),
+              onTap: () => _download(context, l10n),
+            ),
+            const Divider(height: 20),
+            _optionTile(
+              sheetContext,
+              l10n,
+              Icons.delete_outline,
+              l10n.t('delete_trip'),
+              l10n.t('delete_trip_subtitle'),
+              destructive: true,
+              onTap: () => _delete(context, l10n),
+            ),
+          ],
         ),
       ),
     ),
@@ -286,35 +296,191 @@ class RideDetailScreen extends StatelessWidget {
     String title,
     String subtitle, {
     bool destructive = false,
-  }) => ListTile(
-    contentPadding: EdgeInsets.zero,
-    leading: Icon(
-      icon,
-      color: destructive ? Colors.red : Theme.of(context).colorScheme.primary,
-    ),
-    title: Text(
-      title,
-      style: TextStyle(
-        fontWeight: FontWeight.w600,
-        color: destructive ? Colors.red : null,
+    required VoidCallback onTap,
+  }) => Material(
+    color: Colors.transparent,
+    child: ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(
+        icon,
+        color: destructive
+            ? Theme.of(context).colorScheme.error
+            : Theme.of(context).colorScheme.primary,
       ),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontWeight: FontWeight.w600,
+          color: destructive ? Theme.of(context).colorScheme.error : null,
+        ),
+      ),
+      subtitle: Text(subtitle),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: onTap,
     ),
-    subtitle: Text(subtitle),
-    trailing: const Icon(Icons.chevron_right),
-    onTap: () {
-      Navigator.pop(context);
-      _notAvailable(context, l10n, title);
-    },
   );
 
-  void _notAvailable(
+  Future<void> _editDetails(BuildContext context, AppLocalizations l10n) async {
+    Navigator.pop(context);
+    final result = await showModalBottomSheet<(String, String)>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _RideEditSheet(
+        title: l10n.t('edit_notes_weather'),
+        notesLabel: l10n.t('trip_notes'),
+        weatherLabel: l10n.t('weather'),
+        saveLabel: l10n.t('save'),
+        initialNotes: ride.notes,
+        initialWeather: ride.weather,
+      ),
+    );
+    if (result == null || widget.repository == null || ride.id == null) return;
+    try {
+      await widget.repository!.updateRideDetails(
+        ride.id!,
+        notes: result.$1,
+        weather: result.$2,
+      );
+      if (!mounted) return;
+      setState(
+        () => ride = ride.copyWith(notes: result.$1, weather: result.$2),
+      );
+      _feedback(l10n.t('edit_notes_weather'), success: true);
+    } catch (_) {
+      _feedback(l10n.t('edit_notes_weather'), success: false);
+    }
+  }
+
+  Future<void> _duplicate(BuildContext context, AppLocalizations l10n) async {
+    Navigator.pop(context);
+    if (widget.repository == null) {
+      return _feedback(l10n.t('duplicate_trip'), success: false);
+    }
+    try {
+      await widget.repository!.duplicateRide(ride);
+      _feedback(l10n.t('duplicate_trip'), success: true);
+    } catch (_) {
+      _feedback(l10n.t('duplicate_trip'), success: false);
+    }
+  }
+
+  Future<void> _correctDistance(
     BuildContext context,
     AppLocalizations l10n,
-    String action,
-  ) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$action${l10n.t('action_unavailable')}')),
+  ) async {
+    Navigator.pop(context);
+    final value = await showModalBottomSheet<double>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _RideDistanceSheet(
+        title: l10n.t('manual_distance'),
+        distanceLabel: l10n.t('distance'),
+        saveLabel: l10n.t('save'),
+        initialDistance: ride.distanceKm,
+      ),
     );
+    if (value == null ||
+        value < 0 ||
+        widget.repository == null ||
+        ride.id == null) {
+      return;
+    }
+    try {
+      await widget.repository!.updateRideDistance(ride.id!, value);
+      if (!mounted) return;
+      setState(() => ride = ride.copyWith(distanceKm: value));
+      _feedback(l10n.t('manual_distance'), success: true);
+    } catch (_) {
+      _feedback(l10n.t('manual_distance'), success: false);
+    }
+  }
+
+  Future<void> _download(BuildContext context, AppLocalizations l10n) async {
+    Navigator.pop(context);
+    try {
+      final text =
+          '${l10n.t('distance')}: ${ride.distanceKm.toStringAsFixed(1)} km\n'
+          '${l10n.t('trip_notes')}: ${ride.notes}\n'
+          '${l10n.t('weather')}: ${ride.weather}';
+      await SharePlus.instance.share(
+        ShareParams(text: text, subject: l10n.t('download_gpx')),
+      );
+      if (mounted) _feedback(l10n.t('download_gpx'), success: true);
+    } catch (_) {
+      _feedback(l10n.t('download_gpx'), success: false);
+    }
+  }
+
+  Future<void> _delete(BuildContext context, AppLocalizations l10n) async {
+    Navigator.pop(context);
+    if (widget.repository == null || ride.id == null) {
+      return _feedback(l10n.t('delete_trip'), success: false);
+    }
+    final confirmed = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => _RideSheetFrame(
+        title: l10n.t('delete_trip'),
+        subtitle: l10n.t('delete_trip_subtitle'),
+        child: Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => Navigator.pop(sheetContext, false),
+                child: Text(l10n.t('cancel')),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: FilledButton.icon(
+                onPressed: () => Navigator.pop(sheetContext, true),
+                icon: const Icon(Icons.delete_outline),
+                label: Text(l10n.t('delete_trip')),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      await widget.repository!.deleteRide(ride.id!);
+      if (context.mounted) Navigator.pop(context, true);
+    } catch (_) {
+      _feedback(l10n.t('delete_trip'), success: false);
+    }
+  }
+
+  void _feedback(String message, {required bool success}) {
+    if (!mounted) return;
+    final colors = Theme.of(context).colorScheme;
+    final messenger = ScaffoldMessenger.of(context);
+    messenger
+      ..clearMaterialBanners()
+      ..showMaterialBanner(
+        MaterialBanner(
+          backgroundColor: success
+              ? colors.tertiaryContainer
+              : colors.errorContainer,
+          leading: Icon(
+            success ? Icons.check_circle_outline : Icons.error_outline,
+            color: success ? colors.tertiary : colors.error,
+          ),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: messenger.hideCurrentMaterialBanner,
+              child: Text(MaterialLocalizations.of(context).closeButtonLabel),
+            ),
+          ],
+        ),
+      );
+    Future<void>.delayed(const Duration(seconds: 3), () {
+      if (mounted) messenger.hideCurrentMaterialBanner();
+    });
   }
 
   Widget _routePreview(BuildContext context, AppLocalizations l10n) {
@@ -334,13 +500,20 @@ class RideDetailScreen extends StatelessWidget {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                CustomPaint(painter: _RoutePreviewPainter(colors.primary)),
+                CustomPaint(
+                  painter: _RoutePreviewPainter(
+                    colors.primary,
+                    colors.surfaceContainerHighest,
+                    colors.surface,
+                    colors.tertiary,
+                  ),
+                ),
                 Positioned(
                   left: 12,
                   top: 12,
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: .92),
+                      color: colors.surface.withValues(alpha: .92),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Padding(
@@ -351,7 +524,7 @@ class RideDetailScreen extends StatelessWidget {
                           Icon(
                             Icons.gps_fixed,
                             size: 14,
-                            color: Color(0xFF2563EB),
+                            color: colors.primary,
                           ),
                           SizedBox(width: 5),
                           Text(l10n.t('gps_accurate')),
@@ -422,11 +595,7 @@ class RideDetailScreen extends StatelessWidget {
                 ),
                 const Spacer(),
                 TextButton.icon(
-                  onPressed: () => _notAvailable(
-                    context,
-                    l10n,
-                    l10n.t('edit_notes_weather'),
-                  ),
+                  onPressed: () => _editDetails(context, l10n),
                   icon: const Icon(Icons.edit_outlined, size: 15),
                   label: Text(l10n.t('edit')),
                 ),
@@ -441,7 +610,7 @@ class RideDetailScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                l10n.t('no_trip_notes'),
+                ride.notes.isEmpty ? l10n.t('no_trip_notes') : ride.notes,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -620,16 +789,222 @@ class RideDetailScreen extends StatelessWidget {
   }
 }
 
+class _RideSheetFrame extends StatelessWidget {
+  final String title;
+  final String? subtitle;
+  final Widget child;
+
+  const _RideSheetFrame({
+    required this.title,
+    this.subtitle,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        10,
+        20,
+        MediaQuery.viewInsetsOf(context).bottom + 24,
+      ),
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 48,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: colors.outlineVariant,
+                    borderRadius: BorderRadius.circular(99),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                title,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              if (subtitle != null) ...[
+                const SizedBox(height: 2),
+                Text(
+                  subtitle!,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colors.secondary,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 16),
+              child,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RideEditSheet extends StatefulWidget {
+  final String title, notesLabel, weatherLabel, saveLabel;
+  final String initialNotes, initialWeather;
+
+  const _RideEditSheet({
+    required this.title,
+    required this.notesLabel,
+    required this.weatherLabel,
+    required this.saveLabel,
+    required this.initialNotes,
+    required this.initialWeather,
+  });
+
+  @override
+  State<_RideEditSheet> createState() => _RideEditSheetState();
+}
+
+class _RideEditSheetState extends State<_RideEditSheet> {
+  late final TextEditingController notes;
+  late final TextEditingController weather;
+
+  @override
+  void initState() {
+    super.initState();
+    notes = TextEditingController(text: widget.initialNotes);
+    weather = TextEditingController(text: widget.initialWeather);
+  }
+
+  @override
+  void dispose() {
+    notes.dispose();
+    weather.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => _RideSheetFrame(
+    title: widget.title,
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        TextField(
+          controller: notes,
+          decoration: InputDecoration(labelText: widget.notesLabel),
+        ),
+        const SizedBox(height: 10),
+        TextField(
+          controller: weather,
+          decoration: InputDecoration(labelText: widget.weatherLabel),
+        ),
+        const SizedBox(height: 20),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton.icon(
+            onPressed: () => Navigator.pop(context, (
+              notes.text.trim(),
+              weather.text.trim(),
+            )),
+            icon: const Icon(Icons.check_rounded),
+            label: Text(widget.saveLabel),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _RideDistanceSheet extends StatefulWidget {
+  final String title, distanceLabel, saveLabel;
+  final double initialDistance;
+
+  const _RideDistanceSheet({
+    required this.title,
+    required this.distanceLabel,
+    required this.saveLabel,
+    required this.initialDistance,
+  });
+
+  @override
+  State<_RideDistanceSheet> createState() => _RideDistanceSheetState();
+}
+
+class _RideDistanceSheetState extends State<_RideDistanceSheet> {
+  late final TextEditingController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = TextEditingController(
+      text: widget.initialDistance.toStringAsFixed(1),
+    );
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => _RideSheetFrame(
+    title: widget.title,
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        TextField(
+          controller: controller,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: InputDecoration(labelText: widget.distanceLabel),
+        ),
+        const SizedBox(height: 20),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton.icon(
+            onPressed: () => Navigator.pop(
+              context,
+              double.tryParse(controller.text.replaceAll(',', '.')),
+            ),
+            icon: const Icon(Icons.check_rounded),
+            label: Text(widget.saveLabel),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 class _RoutePreviewPainter extends CustomPainter {
   final Color routeColor;
-  const _RoutePreviewPainter(this.routeColor);
+  final Color backgroundColor;
+  final Color roadColor;
+  final Color endpointColor;
+
+  const _RoutePreviewPainter(
+    this.routeColor,
+    this.backgroundColor,
+    this.roadColor,
+    this.endpointColor,
+  );
 
   @override
   void paint(Canvas canvas, Size size) {
-    final background = Paint()..color = const Color(0xFFE8EEF2);
+    final background = Paint()..color = backgroundColor;
     canvas.drawRect(Offset.zero & size, background);
     final roads = Paint()
-      ..color = Colors.white.withValues(alpha: .8)
+      ..color = roadColor.withValues(alpha: .8)
       ..strokeWidth = 9
       ..style = PaintingStyle.stroke;
     for (var i = 1; i < 5; i++) {
@@ -655,7 +1030,7 @@ class _RoutePreviewPainter extends CustomPainter {
     canvas.drawCircle(
       Offset(size.width * .18, size.height * .76),
       6,
-      Paint()..color = Colors.green.shade700,
+      Paint()..color = endpointColor,
     );
     canvas.drawCircle(
       Offset(size.width * .72, size.height * .28),
@@ -666,5 +1041,8 @@ class _RoutePreviewPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _RoutePreviewPainter oldDelegate) =>
-      oldDelegate.routeColor != routeColor;
+      oldDelegate.routeColor != routeColor ||
+      oldDelegate.backgroundColor != backgroundColor ||
+      oldDelegate.roadColor != roadColor ||
+      oldDelegate.endpointColor != endpointColor;
 }

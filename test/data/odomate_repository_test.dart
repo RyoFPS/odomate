@@ -32,7 +32,7 @@ void main() {
             'CREATE TABLE service_logs (id INTEGER PRIMARY KEY, service_item_id INTEGER NOT NULL, serviced_at TEXT NOT NULL, odometer_km REAL NOT NULL, note TEXT)',
           );
           await db.execute(
-            'CREATE TABLE rides (id INTEGER PRIMARY KEY, started_at TEXT NOT NULL, ended_at TEXT, distance_km REAL NOT NULL, odometer_applied_km REAL NOT NULL DEFAULT 0)',
+            "CREATE TABLE rides (id INTEGER PRIMARY KEY, started_at TEXT NOT NULL, ended_at TEXT, distance_km REAL NOT NULL, odometer_applied_km REAL NOT NULL DEFAULT 0, notes TEXT NOT NULL DEFAULT '', weather TEXT NOT NULL DEFAULT '')",
           );
           await db.execute(
             'CREATE TABLE notification_state (service_item_id INTEGER PRIMARY KEY, cycle INTEGER NOT NULL, last_reminder TEXT)',
@@ -245,5 +245,41 @@ void main() {
     expect(rides, hasLength(1));
     expect(rides.single.startedAt, startedAt);
     expect(rides.single.distanceKm, 12.5);
+  });
+
+  test('manages ride detail actions through the repository', () async {
+    await repository.saveVehicle(const Vehicle(name: 'Beat', odometerKm: 1000));
+    final id = await repository.createRide(
+      Ride(
+        startedAt: DateTime(2026, 9, 14, 8),
+        endedAt: DateTime(2026, 9, 14, 8, 30),
+        distanceKm: 12,
+      ),
+    );
+
+    await repository.updateRideDetails(id, notes: 'Tol', weather: 'Cerah');
+    await repository.updateRideDistance(id, 15);
+    final duplicateId = await repository.duplicateRide(
+      Ride(
+        id: id,
+        startedAt: DateTime(2026, 9, 14, 8),
+        endedAt: DateTime(2026, 9, 14, 8, 30),
+        distanceKm: 15,
+        notes: 'Tol',
+        weather: 'Cerah',
+      ),
+    );
+
+    final rides = await repository.listRides();
+    expect(rides.map((ride) => ride.id), containsAll([id, duplicateId]));
+    expect(rides.firstWhere((ride) => ride.id == id).notes, 'Tol');
+    expect(rides.firstWhere((ride) => ride.id == id).weather, 'Cerah');
+    expect((await repository.loadVehicle())!.odometerKm, 1003);
+
+    await repository.deleteRide(id);
+    expect(
+      (await repository.listRides()).every((ride) => ride.id != id),
+      isTrue,
+    );
   });
 }

@@ -40,7 +40,7 @@ void main() {
     expect(find.text('Edit Catatan & Cuaca'), findsOneWidget);
     expect(find.text('Duplikasi Log Perjalanan'), findsOneWidget);
     expect(find.text('Koreksi Jarak Manual'), findsOneWidget);
-    expect(find.text('Unduh Bukti GPX / KML'), findsOneWidget);
+    expect(find.text('Bagikan / Simpan Ringkasan'), findsOneWidget);
     expect(find.text('Hapus Log Perjalanan Ini'), findsOneWidget);
   });
 }

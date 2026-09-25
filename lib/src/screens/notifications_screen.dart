@@ -73,9 +73,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               ? 'service_due_notification'
               : 'service_soon_notification',
           subject: service.name,
-          value: service.lastServicedOdometerKm +
-              service.intervalKm -
-              odo,
+          value: service.lastServicedOdometerKm + service.intervalKm - odo,
           time: DateTime.now(),
           unread: true,
           action: _ActionKind.schedule,
@@ -167,7 +165,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               if (visible.isEmpty)
                 _empty(context, l10n)
               else ...[
-                if (today.isNotEmpty) _section(context, l10n, 'today_period', today),
+                if (today.isNotEmpty)
+                  _section(context, l10n, 'today_period', today),
                 if (today.isNotEmpty && earlier.isNotEmpty)
                   const SizedBox(height: 16),
                 if (earlier.isNotEmpty)
@@ -317,7 +316,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }) {
     final scheme = Theme.of(context).colorScheme;
     final unread = entries.where((entry) => entry.unread).length;
-    final note = trailing ??
+    final note =
+        trailing ??
         ((unread > 0 && !allRead) ? '$unread ${l10n.t('new_suffix')}' : null);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -497,8 +497,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       case _Tone.service:
         return [
           TextSpan(
-            text:
-                '${entry.subject}: ${l10n.t('service_remaining_before')} ',
+            text: '${entry.subject}: ${l10n.t('service_remaining_before')} ',
           ),
           strong('$km km', foreground),
           TextSpan(text: ' ${l10n.t('service_remaining_after')}'),
@@ -517,8 +516,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           TextSpan(text: '${l10n.t('profile_saved_before')} '),
           if (entry.userName != null && entry.userName!.isNotEmpty)
             TextSpan(
-              text:
-                  '${entry.userName} ${l10n.t('profile_saved_and_vehicle')} ',
+              text: '${entry.userName} ${l10n.t('profile_saved_and_vehicle')} ',
             ),
           TextSpan(text: entry.subject),
           TextSpan(text: ' ${l10n.t('profile_saved_after')}'),
@@ -563,11 +561,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   ),
                 ),
                 const SizedBox(width: 2),
-                Icon(
-                  Icons.chevron_right,
-                  size: 14,
-                  color: scheme.onPrimary,
-                ),
+                Icon(Icons.chevron_right, size: 14, color: scheme.onPrimary),
               ],
             ),
           ),
@@ -633,18 +627,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final scheme = Theme.of(context).colorScheme;
     switch (tone) {
       case _Tone.ride:
-        return (
-          scheme.primaryContainer.withValues(alpha: .12),
-          scheme.primary,
-        );
+        return (scheme.primaryContainer.withValues(alpha: .12), scheme.primary);
       case _Tone.service:
-        const amber = Color(0xFFD97706);
-        return (amber.withValues(alpha: .15), amber);
-      case _Tone.done:
         return (
-          scheme.tertiary.withValues(alpha: .15),
-          scheme.tertiary,
+          scheme.secondaryContainer.withValues(alpha: .45),
+          scheme.secondary,
         );
+      case _Tone.done:
+        return (scheme.tertiary.withValues(alpha: .15), scheme.tertiary);
       case _Tone.profile:
         return (
           scheme.onSurfaceVariant.withValues(alpha: .12),
@@ -660,9 +650,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       decoration: BoxDecoration(
         color: scheme.surfaceContainer.withValues(alpha: .6),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: scheme.outlineVariant.withValues(alpha: .6),
-        ),
+        border: Border.all(color: scheme.outlineVariant.withValues(alpha: .6)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -720,8 +708,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   /// Angka jarak dengan koma sebagai pemisah desimal, seperti di desain
   /// ("6,2 km"). Di locale Inggris titik tetap lebih lazim, tapi desain memakai
   /// koma dan app ini berbahasa Indonesia sebagai default.
-  String _number(double value) =>
-      value.toStringAsFixed(1).replaceAll('.', ',');
+  String _number(double value) => value.toStringAsFixed(1).replaceAll('.', ',');
 }
 
 class _NotificationEntry {

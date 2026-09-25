@@ -295,7 +295,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 6)),
     backgroundColor: WidgetStateProperty.resolveWith(
       (states) => states.contains(WidgetState.selected)
-          ? Colors.white
+          ? colors.surfaceContainer
           : Colors.transparent,
     ),
     foregroundColor: WidgetStateProperty.resolveWith(
@@ -306,7 +306,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     elevation: WidgetStateProperty.resolveWith(
       (states) => states.contains(WidgetState.selected) ? 2 : 0,
     ),
-    shadowColor: WidgetStatePropertyAll(Colors.black.withValues(alpha: .12)),
+    shadowColor: WidgetStatePropertyAll(colors.shadow.withValues(alpha: .12)),
     shape: WidgetStatePropertyAll(
       RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ),
