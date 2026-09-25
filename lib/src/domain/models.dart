@@ -7,6 +7,18 @@ class GeoPoint {
     required this.accuracyMeters,
     this.timestamp,
   });
+
+  @override
+  bool operator ==(Object other) =>
+      other is GeoPoint &&
+      latitude == other.latitude &&
+      longitude == other.longitude &&
+      accuracyMeters == other.accuracyMeters &&
+      timestamp == other.timestamp;
+
+  @override
+  int get hashCode =>
+      Object.hash(latitude, longitude, accuracyMeters, timestamp);
 }
 
 class DistanceResult {
@@ -87,6 +99,8 @@ class ServiceItem {
   /// Total biaya dalam rupiah. `0` berarti belum diisi (kolomnya opsional).
   final double cost;
   final double intervalKm, lastServicedOdometerKm;
+  final DateTime? lastServicedAt;
+  final int intervalMonths;
 
   /// Kalau `false`, pengingat untuk item ini tidak pernah dikirim — dipakai
   /// tombol "Pengingat Jadwal Servis" di halaman Tambah Servis.
@@ -99,6 +113,8 @@ class ServiceItem {
     this.cost = 0,
     required this.intervalKm,
     required this.lastServicedOdometerKm,
+    this.lastServicedAt,
+    this.intervalMonths = 0,
     this.remind = true,
   });
   ServiceItem copyWith({
@@ -109,6 +125,8 @@ class ServiceItem {
     double? cost,
     double? intervalKm,
     double? lastServicedOdometerKm,
+    DateTime? lastServicedAt,
+    int? intervalMonths,
     bool? remind,
   }) => ServiceItem(
     id: id ?? this.id,
@@ -119,6 +137,8 @@ class ServiceItem {
     intervalKm: intervalKm ?? this.intervalKm,
     lastServicedOdometerKm:
         lastServicedOdometerKm ?? this.lastServicedOdometerKm,
+    lastServicedAt: lastServicedAt ?? this.lastServicedAt,
+    intervalMonths: intervalMonths ?? this.intervalMonths,
     remind: remind ?? this.remind,
   );
 }

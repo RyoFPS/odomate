@@ -1,9 +1,11 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
 import '../data/odomate_repository.dart';
 import '../domain/models.dart';
 import '../domain/service_schedule.dart';
+import '../i18n/app_localizations.dart';
 
 class NotificationService {
   final FlutterLocalNotificationsPlugin plugin;
@@ -11,6 +13,7 @@ class NotificationService {
   final Future<void> Function()? initializePlugin;
   final Future<void> Function()? requestNotificationsPermission;
   final Future<void> Function()? cancelTrackingNotification;
+  String languageCode = 'id';
   final Map<int, ServiceReminder> _sent = {};
   NotificationService({
     FlutterLocalNotificationsPlugin? plugin,
@@ -19,6 +22,8 @@ class NotificationService {
     this.requestNotificationsPermission,
     this.cancelTrackingNotification,
   }) : plugin = plugin ?? FlutterLocalNotificationsPlugin();
+  void setLanguage(String code) => languageCode = code;
+  AppLocalizations get _l10n => AppLocalizations(Locale(languageCode));
   Future<void> initialize() async {
     await (initializePlugin?.call() ?? _initializePlugin());
     if (defaultTargetPlatform == TargetPlatform.android) {
@@ -50,7 +55,7 @@ class NotificationService {
     if (defaultTargetPlatform == TargetPlatform.android) return;
     await plugin.show(
       id: 1,
-      title: 'OdoMate sedang merekam perjalanan',
+      title: _l10n.t('active_ride_title'),
       body: '${distanceKm.toStringAsFixed(1)} km',
       notificationDetails: const NotificationDetails(
         iOS: DarwinNotificationDetails(),
@@ -74,14 +79,14 @@ class NotificationService {
     await plugin.show(
       id: item.id!,
       title: type == ServiceReminder.due
-          ? 'Sudah waktunya servis'
-          : 'Servis mendekat',
+          ? _l10n.t('service_due_notification')
+          : _l10n.t('service_soon_notification'),
       body: item.name,
-      notificationDetails: const NotificationDetails(
+      notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
           'service',
           'Service reminders',
-          channelDescription: 'Pengingat servis',
+          channelDescription: _l10n.t('service_soon_notification'),
         ),
       ),
     );

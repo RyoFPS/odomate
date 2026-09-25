@@ -9,6 +9,7 @@ import '../domain/service_schedule.dart';
 import '../i18n/app_localizations.dart';
 import '../tracking/ride_tracker.dart';
 import '../widgets/odometer_correction_sheet.dart';
+import '../widgets/ride_map.dart';
 import 'notifications_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -33,6 +34,9 @@ class _HomeScreenState extends State<HomeScreen> {
   int todayRideCount = 0;
   double sevenDayDistance = 0;
   int sevenDayRideCount = 0;
+  double monthlyDistance = 0;
+  int monthlyRideCount = 0;
+  Duration monthlyDuration = Duration.zero;
 
   @override
   void initState() {
@@ -51,6 +55,11 @@ class _HomeScreenState extends State<HomeScreen> {
       now,
       StatisticsPeriod.lastSevenDays,
     );
+    final month = calculateRideStatistics(
+      rides,
+      now,
+      StatisticsPeriod.currentMonth,
+    );
     if (!mounted) return;
     setState(() {
       vehicle = value;
@@ -59,6 +68,9 @@ class _HomeScreenState extends State<HomeScreen> {
       todayRideCount = today.rideCount;
       sevenDayDistance = sevenDay.totalDistanceKm;
       sevenDayRideCount = sevenDay.rideCount;
+      monthlyDistance = month.totalDistanceKm;
+      monthlyRideCount = month.rideCount;
+      monthlyDuration = month.totalDuration;
     });
   }
 
@@ -199,7 +211,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 160),
                     child: Text(
-                      vehicleSummary.isEmpty ? 'Motor utama' : vehicleSummary,
+                      vehicleSummary.isEmpty
+                          ? l10n.t('main_vehicle')
+                          : vehicleSummary,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodySmall?.copyWith(
@@ -228,6 +242,33 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
           children: [
             _vehicleCard(context, state, l10n),
+            if (state.active) ...[
+              const SizedBox(height: 12),
+              Card(
+                key: const ValueKey('home-live-ride-map'),
+                clipBehavior: Clip.antiAlias,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                      child: Text(
+                        l10n.t('live_route'),
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    RideMap(
+                      points: state.routePoints,
+                      followCurrentLocation: true,
+                      height: 220,
+                      gpsAccuracyMeters: state.gpsAccuracyMeters,
+                    ),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 12),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -415,7 +456,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Row(
                       children: [
                         Text(
-                          'Ketuk untuk koreksi odometer',
+                          l10n.t('tap_to_correct_odometer'),
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: colors.secondary,
                           ),
@@ -609,12 +650,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _tripStatisticsCard(BuildContext context, AppLocalizations l10n) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final averageRide = sevenDayRideCount == 0
+    final averageRide = monthlyRideCount == 0
         ? 0.0
-        : sevenDayDistance / sevenDayRideCount;
-    final progress = sevenDayDistance == 0
-        ? 0.0
-        : (todayDistance / sevenDayDistance).clamp(0.0, 1.0).toDouble();
+        : monthlyDistance / monthlyRideCount;
 
     return Card(
       key: const ValueKey('dashboard-trip-statistics'),
@@ -672,7 +710,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          l10n.t('last_seven_days'),
+                          l10n.t('current_month'),
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: colors.secondary,
                           ),
@@ -680,7 +718,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 3),
                         Text.rich(
                           TextSpan(
-                            text: _km(sevenDayDistance),
+                            text: _km(monthlyDistance),
                             children: [
                               TextSpan(
                                 text: ' km',
@@ -702,8 +740,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: _statisticsMiniMetric(
                       context,
                       l10n.t('ride_count'),
-                      '$sevenDayRideCount',
+                      '$monthlyRideCount',
                       Icons.route_outlined,
+                    ),
+                  ),
+                  Expanded(
+                    child: _statisticsMiniMetric(
+                      context,
+                      l10n.t('total_duration'),
+                      _formatDuration(monthlyDuration, l10n),
+                      Icons.schedule_outlined,
                     ),
                   ),
                   Expanded(
@@ -717,27 +763,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               const SizedBox(height: 14),
-              Row(
-                children: [
-                  Expanded(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(99),
-                      child: LinearProgressIndicator(
-                        value: progress,
-                        minHeight: 7,
-                        backgroundColor: colors.surfaceContainerHighest,
-                        valueColor: AlwaysStoppedAnimation(colors.primary),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    '${_km(todayDistance)} km ${l10n.t('today_lower')}',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: colors.secondary,
-                    ),
-                  ),
-                ],
+              Text(
+                '$monthlyRideCount ${l10n.t('rides_this_month')}',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colors.secondary,
+                ),
               ),
             ],
           ),
@@ -826,6 +856,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _serviceRow(BuildContext context, ServiceItem service) {
+    final l10n = AppLocalizations.of(context);
     final colors = Theme.of(context).colorScheme;
     final status = ServiceSchedule.status(vehicle?.odometerKm ?? 0, service);
     final remaining =
@@ -840,10 +871,10 @@ class _HomeScreenState extends State<HomeScreen> {
         ? colors.secondary
         : colors.tertiary;
     final label = isDue
-        ? 'Perlu Servis'
+        ? l10n.t('service_needed')
         : isSoon
-        ? 'Segera'
-        : 'Aman';
+        ? l10n.t('soon')
+        : l10n.t('safe');
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Container(
@@ -870,8 +901,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   Text(
                     isDue
-                        ? 'Lewat ${_km(-remaining)} km'
-                        : 'Sisa ${_km(remaining)} km lagi',
+                        ? '${l10n.t('service_overdue')} ${_km(-remaining)} km'
+                        : '${l10n.t('service_remaining')} ${_km(remaining)} km ${l10n.t('service_remaining_later')}',
                     style: Theme.of(context).textTheme.bodySmall
                         ?.copyWith(color: accent),
                   ),
@@ -901,4 +932,11 @@ class _HomeScreenState extends State<HomeScreen> {
   String _km(double value) => value == value.roundToDouble()
       ? value.toStringAsFixed(0)
       : value.toStringAsFixed(1);
+
+  String _formatDuration(Duration duration, AppLocalizations l10n) {
+    if (duration.inHours > 0) {
+      return '${duration.inHours} ${l10n.t('hours_unit')} ${duration.inMinutes.remainder(60)} ${l10n.t('minutes_unit')}';
+    }
+    return '${duration.inMinutes} ${l10n.t('minutes_unit')}';
+  }
 }

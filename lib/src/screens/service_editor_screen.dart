@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../data/odomate_repository.dart';
 import '../domain/models.dart';
+import '../i18n/app_localizations.dart';
 import 'service_style.dart';
 
 /// Halaman Tambah / Edit Servis.
@@ -49,6 +50,7 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
 
   _ServiceKind kind = _ServiceKind.routine;
   DateTime serviceDate = DateTime.now();
+  int intervalMonths = 0;
   bool remind = true;
   bool saving = false;
 
@@ -58,6 +60,8 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
   void initState() {
     super.initState();
     final service = widget.service;
+    serviceDate = service?.lastServicedAt ?? DateTime.now();
+    intervalMonths = service?.intervalMonths ?? 0;
     nameController.text = service?.name ?? '';
     intervalController.text = service == null
         ? ''
@@ -106,13 +110,18 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
     final odo = double.tryParse(odoController.text.trim());
     final km = interval;
     if (odo == null || km == null) return null;
-    return 'Target: ${serviceKm(odo + km)} km';
+    return AppLocalizations.of(context)
+        .t('service_editor_target')
+        .replaceFirst('{value}', serviceKm(odo + km));
   }
 
   /// Nama yang sedang diketik cocok dengan salah satu entri katalog, jadi
   /// formulir bisa menandainya "Bawaan" seperti di desain.
-  bool get isPreset =>
-      servicePresets.any((preset) => preset.name == nameController.text.trim());
+  bool get isPreset => servicePresets.any(
+    (preset) =>
+        preset.name == nameController.text.trim() ||
+        _presetLabel(context, preset) == nameController.text.trim(),
+  );
 
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
@@ -126,7 +135,7 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
 
   void _applyPreset(ServicePreset preset) {
     setState(() {
-      nameController.text = preset.name;
+      nameController.text = _presetLabel(context, preset);
       // Preset tanpa angka pabrikan tidak menebak intervalnya — kolomnya
       // dibiarkan seperti semula supaya pengguna yang menentukan.
       if (preset.intervalKm != null) {
@@ -144,12 +153,14 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
     final repository = widget.repository;
     final item = ServiceItem(
       id: widget.service?.id,
-      name: nameController.text.trim(),
+      name: _canonicalPresetName(nameController.text.trim()),
       description: notesController.text.trim(),
       location: locationController.text.trim(),
       cost: double.tryParse(costController.text.trim()) ?? 0,
       intervalKm: km,
       lastServicedOdometerKm: odo,
+      lastServicedAt: serviceDate,
+      intervalMonths: intervalMonths,
       remind: remind,
     );
     final id = await repository.saveService(item);
@@ -169,8 +180,16 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
     Navigator.of(context).pop(true);
   }
 
+  String _canonicalPresetName(String value) {
+    for (final preset in servicePresets) {
+      if (value == _presetLabel(context, preset)) return preset.name;
+    }
+    return value;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
@@ -182,7 +201,9 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
           icon: const Icon(Icons.arrow_back_rounded),
         ),
         title: Text(
-          editing ? 'Edit Servis' : 'Tambah Servis',
+          editing
+              ? l10n.t('service_editor_title_edit')
+              : l10n.t('service_editor_title_new'),
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
         ),
         actions: [
@@ -203,7 +224,7 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              child: const Text('Batal'),
+              child: Text(l10n.t('cancel')),
             ),
           ),
         ],
@@ -264,7 +285,8 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
                   children: [
                     Flexible(
                       child: Text(
-                        vehicle?.name ?? 'Kendaraan',
+                        vehicle?.name ??
+                            AppLocalizations.of(context).t('vehicle_fallback'),
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: colors.onSurface,
@@ -299,7 +321,7 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
                 Row(
                   children: [
                     Text(
-                      'Odometer Saat Ini:',
+                      '${AppLocalizations.of(context).t('service_editor_current_odo')}:',
                       style: TextStyle(color: colors.secondary, fontSize: 11),
                     ),
                     const SizedBox(width: 5),
@@ -346,7 +368,7 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
               context,
               kind: _ServiceKind.routine,
               icon: Icons.schedule_rounded,
-              label: 'Servis Rutin Berkala',
+              label: AppLocalizations.of(context).t('service_editor_routine'),
             ),
           ),
           const SizedBox(width: 4),
@@ -355,7 +377,7 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
               context,
               kind: _ServiceKind.custom,
               icon: Icons.edit_outlined,
-              label: 'Kustom / Perbaikan',
+              label: AppLocalizations.of(context).t('service_editor_custom'),
             ),
           ),
         ],
@@ -419,7 +441,7 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
               Icon(Icons.inventory_2_outlined, size: 14, color: colors.primary),
               const SizedBox(width: 6),
               Text(
-                'Pilih Cepat Komponen',
+                AppLocalizations.of(context).t('quick_component'),
                 style: TextStyle(
                   color: colors.onSurface,
                   fontSize: 12,
@@ -428,7 +450,7 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
               ),
               const Spacer(),
               Text(
-                'Katalog Pabrikan',
+                AppLocalizations.of(context).t('manufacturer_catalog'),
                 style: TextStyle(color: colors.outline, fontSize: 10),
               ),
             ],
@@ -482,16 +504,12 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
                   color: colors.primaryContainer,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(
-                  preset.icon,
-                  size: 14,
-                  color: colors.onPrimary,
-                ),
+                child: Icon(preset.icon, size: 14, color: colors.onPrimary),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  preset.name,
+                  _presetLabel(context, preset),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -509,6 +527,31 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
     );
   }
 
+  String _presetLabel(BuildContext context, ServicePreset preset) {
+    final key = switch (preset.name) {
+      'Ganti Oli Mesin' => 'preset_engine_oil',
+      'Oli Gardan' => 'preset_gear_oil',
+      'Servis CVT & Roller' => 'preset_cvt',
+      'Filter Udara' => 'preset_air_filter',
+      'Busi (Spark Plug)' => 'preset_spark_plug',
+      'Kampas Rem' => 'preset_brake_pad',
+      'Aki & Kelistrikan' => 'preset_battery',
+      'Ban Depan / Belakang' => 'preset_tires',
+      _ => null,
+    };
+    return key == null ? preset.name : AppLocalizations.of(context).t(key);
+  }
+
+  String _timeIntervalLabel(BuildContext context, int months) =>
+      AppLocalizations.of(context).t(switch (months) {
+        1 => 'service_editor_month_1',
+        2 => 'service_editor_month_2',
+        3 => 'service_editor_month_3',
+        6 => 'service_editor_month_6',
+        12 => 'service_editor_month_12',
+        _ => 'service_editor_no_time_interval',
+      });
+
   Widget _identityCard(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     return _card(
@@ -518,11 +561,11 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
         children: [
           _label(
             context,
-            'Nama Servis / Pekerjaan',
+            AppLocalizations.of(context).t('service_editor_name'),
             required: true,
             trailing: isPreset
                 ? Text(
-                    'Bawaan',
+                    AppLocalizations.of(context).t('default_badge'),
                     style: TextStyle(
                       color: colors.primary,
                       fontSize: 12,
@@ -536,8 +579,9 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
             controller: nameController,
             textInputAction: TextInputAction.next,
             onChanged: (_) => setState(() {}),
-            decoration: const InputDecoration(
-              hintText: 'cth: Ganti Oli Mesin + Filter',
+            decoration: InputDecoration(
+              hintText: AppLocalizations.of(context)
+                  .t('service_editor_name_hint'),
             ),
           ),
           const SizedBox(height: 14),
@@ -548,7 +592,11 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _label(context, 'Tanggal Servis', required: true),
+                    _label(
+                      context,
+                      AppLocalizations.of(context).t('service_editor_date'),
+                      required: true,
+                    ),
                     _dateField(context),
                   ],
                 ),
@@ -558,7 +606,11 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _label(context, 'Odometer (km)', required: true),
+                    _label(
+                      context,
+                      AppLocalizations.of(context).t('service_editor_odo'),
+                      required: true,
+                    ),
                     TextField(
                       key: const Key('service-editor-odometer'),
                       controller: odoController,
@@ -577,7 +629,7 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
           const SizedBox(height: 14),
           _label(
             context,
-            'Interval Servis Berikutnya',
+            AppLocalizations.of(context).t('next_service_interval'),
             trailing: _targetBadge(context),
           ),
           Row(
@@ -595,15 +647,31 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             textInputAction: TextInputAction.next,
             onChanged: (_) => setState(() {}),
-            decoration: const InputDecoration(
-              hintText: 'Atau masukkan kilometer manual',
-              suffixText: 'Tiap km',
+            decoration: InputDecoration(
+              hintText: AppLocalizations.of(context).t('manual_km_hint'),
+              suffixText: AppLocalizations.of(context).t('per_km'),
             ),
           ),
           const SizedBox(height: 6),
           Text(
-            'Rekomendasi pabrikan: Ganti oli rutin tiap 2.000 – 3.000 km.',
+            AppLocalizations.of(context).t('manufacturer_recommendation'),
             style: TextStyle(color: colors.outline, fontSize: 10),
+          ),
+          const SizedBox(height: 14),
+          DropdownButtonFormField<int>(
+            initialValue: intervalMonths,
+            decoration: InputDecoration(
+              labelText: AppLocalizations.of(context)
+                  .t('service_editor_time_interval'),
+            ),
+            items: [
+              for (final months in [0, 1, 2, 3, 6, 12])
+                DropdownMenuItem(
+                  value: months,
+                  child: Text(_timeIntervalLabel(context, months)),
+                ),
+            ],
+            onChanged: (value) => setState(() => intervalMonths = value ?? 0),
           ),
         ],
       ),
@@ -693,7 +761,11 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _label(context, 'Total Biaya', optional: true),
+                    _label(
+                      context,
+                      AppLocalizations.of(context).t('service_editor_cost'),
+                      optional: true,
+                    ),
                     TextField(
                       key: const Key('service-editor-cost'),
                       controller: costController,
@@ -712,13 +784,17 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _label(context, 'Bengkel / Tempat'),
+                    _label(
+                      context,
+                      AppLocalizations.of(context).t('service_editor_workshop'),
+                    ),
                     TextField(
                       key: const Key('service-editor-location'),
                       controller: locationController,
                       textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(
-                        hintText: 'cth: AHASS / Mandiri',
+                      decoration: InputDecoration(
+                        hintText: AppLocalizations.of(context)
+                            .t('service_editor_workshop'),
                       ),
                     ),
                   ],
@@ -727,14 +803,18 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
             ],
           ),
           const SizedBox(height: 14),
-          _label(context, 'Catatan & Spesifikasi Part', optional: true),
+          _label(
+            context,
+            AppLocalizations.of(context).t('service_editor_notes'),
+            optional: true,
+          ),
           TextField(
             key: const Key('service-editor-notes'),
             controller: notesController,
             minLines: 2,
             maxLines: 3,
-            decoration: const InputDecoration(
-              hintText: 'cth: Oli SPX 2 0.8L 10W-30.',
+            decoration: InputDecoration(
+              hintText: AppLocalizations.of(context).t('service_editor_notes'),
             ),
           ),
         ],
@@ -768,7 +848,7 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Pengingat Jadwal Servis',
+                  AppLocalizations.of(context).t('service_reminder_title'),
                   style: TextStyle(
                     color: colors.onSurface,
                     fontSize: 12,
@@ -778,7 +858,8 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
                 const SizedBox(height: 2),
                 Text.rich(
                   TextSpan(
-                    text: 'Beri notifikasi saat sisa ',
+                    text: AppLocalizations.of(context)
+                        .t('service_reminder_prefix'),
                     children: [
                       TextSpan(
                         text: '500 km',
@@ -787,7 +868,10 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      TextSpan(text: ' mendekati jatuh tempo.'),
+                      TextSpan(
+                        text: AppLocalizations.of(context)
+                            .t('service_reminder_suffix'),
+                      ),
                     ],
                   ),
                   style: TextStyle(
@@ -827,7 +911,11 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
               onPressed: valid && !saving ? _save : null,
               icon: const Icon(Icons.check_rounded, size: 18),
               label: Text(
-                editing ? 'Simpan Perubahan' : 'Simpan Jadwal Servis',
+                AppLocalizations.of(context).t(
+                  editing
+                      ? 'service_editor_save_edit'
+                      : 'service_editor_save_new',
+                ),
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -846,7 +934,7 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
                 const SizedBox(width: 5),
                 Flexible(
                   child: Text(
-                    'Data tersimpan offline di database lokal ponsel',
+                    AppLocalizations.of(context).t('saved_offline_local'),
                     style: TextStyle(color: colors.secondary, fontSize: 11),
                   ),
                 ),

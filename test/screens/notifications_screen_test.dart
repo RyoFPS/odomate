@@ -143,9 +143,8 @@ void main() {
     await tester.pumpWidget(_app(_full()));
     await tester.pumpAndSettle();
 
-    final scheme = Theme.of(
-      tester.element(find.byType(NotificationsScreen)),
-    ).colorScheme;
+    final scheme = Theme.of(tester.element(find.byType(NotificationsScreen)))
+        .colorScheme;
     final label = tester.widget<Text>(find.text('HARI INI'));
 
     expect(label.style?.color, scheme.secondary);

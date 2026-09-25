@@ -4,7 +4,7 @@ import 'package:sqflite/sqflite.dart';
 class LocalDatabase {
   static Future<Database> open() async => openDatabase(
     p.join(await getDatabasesPath(), 'odomate.db'),
-    version: 6,
+    version: 8,
     onCreate: _create,
     onUpgrade: (db, oldVersion, newVersion) => _ensureColumns(db),
     onOpen: _ensureColumns,
@@ -50,6 +50,16 @@ class LocalDatabase {
         'ALTER TABLE service_items ADD COLUMN remind INTEGER NOT NULL DEFAULT 1',
       );
     }
+    if (!serviceColumns.contains('interval_months')) {
+      await db.execute(
+        'ALTER TABLE service_items ADD COLUMN interval_months INTEGER NOT NULL DEFAULT 0',
+      );
+    }
+    if (!serviceColumns.contains('last_serviced_at')) {
+      await db.execute(
+        'ALTER TABLE service_items ADD COLUMN last_serviced_at TEXT',
+      );
+    }
     final rideRows = await db.rawQuery('PRAGMA table_info(rides)');
     final rideColumns = rideRows.map((row) => row['name'] as String).toSet();
     if (!rideColumns.contains('odometer_applied_km')) {
@@ -67,6 +77,16 @@ class LocalDatabase {
         "ALTER TABLE rides ADD COLUMN weather TEXT NOT NULL DEFAULT ''",
       );
     }
+    await db.execute(
+      'CREATE TABLE IF NOT EXISTS ride_points ('
+      'id INTEGER PRIMARY KEY, ride_id INTEGER NOT NULL, '
+      'latitude REAL NOT NULL, longitude REAL NOT NULL, '
+      'accuracy_m REAL NOT NULL, recorded_at TEXT NOT NULL)',
+    );
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_ride_points_ride_id_id '
+      'ON ride_points(ride_id, id)',
+    );
   }
 
   static Future<void> _create(Database db, int version) async {
@@ -77,7 +97,17 @@ class LocalDatabase {
       "CREATE TABLE rides (id INTEGER PRIMARY KEY, started_at TEXT NOT NULL, ended_at TEXT, distance_km REAL NOT NULL, odometer_applied_km REAL NOT NULL DEFAULT 0, notes TEXT NOT NULL DEFAULT '', weather TEXT NOT NULL DEFAULT '')",
     );
     await db.execute(
-      "CREATE TABLE service_items (id INTEGER PRIMARY KEY, name TEXT NOT NULL, description TEXT NOT NULL DEFAULT '', location TEXT NOT NULL DEFAULT '', cost REAL NOT NULL DEFAULT 0, remind INTEGER NOT NULL DEFAULT 1, interval_km REAL NOT NULL, last_serviced_km REAL NOT NULL)",
+      'CREATE TABLE ride_points ('
+      'id INTEGER PRIMARY KEY, ride_id INTEGER NOT NULL, '
+      'latitude REAL NOT NULL, longitude REAL NOT NULL, '
+      'accuracy_m REAL NOT NULL, recorded_at TEXT NOT NULL)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_ride_points_ride_id_id '
+      'ON ride_points(ride_id, id)',
+    );
+    await db.execute(
+      "CREATE TABLE service_items (id INTEGER PRIMARY KEY, name TEXT NOT NULL, description TEXT NOT NULL DEFAULT '', location TEXT NOT NULL DEFAULT '', cost REAL NOT NULL DEFAULT 0, remind INTEGER NOT NULL DEFAULT 1, interval_km REAL NOT NULL, last_serviced_km REAL NOT NULL, interval_months INTEGER NOT NULL DEFAULT 0, last_serviced_at TEXT)",
     );
     await db.execute(
       'CREATE TABLE service_logs (id INTEGER PRIMARY KEY, service_item_id INTEGER NOT NULL, serviced_at TEXT NOT NULL, odometer_km REAL NOT NULL, note TEXT)',

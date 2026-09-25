@@ -7,6 +7,7 @@ class OdometerMath {
     GeoPoint previous,
     GeoPoint current, {
     double maxAccuracyMeters = 50,
+    double minDistanceMeters = 5,
     double maxJumpMeters = 500,
   }) {
     if (current.accuracyMeters > maxAccuracyMeters ||
@@ -21,7 +22,7 @@ class OdometerMath {
         math.sin(dp / 2) * math.sin(dp / 2) +
         math.cos(p1) * math.cos(p2) * math.sin(dl / 2) * math.sin(dl / 2);
     final meters = 6371000 * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
-    return meters <= maxJumpMeters
+    return meters >= minDistanceMeters && meters <= maxJumpMeters
         ? DistanceResult(true, meters)
         : const DistanceResult(false, 0);
   }

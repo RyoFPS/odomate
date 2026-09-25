@@ -55,7 +55,7 @@ class PhotoSourceSheet extends StatelessWidget {
             ),
           ),
           Text(
-            'Pilih sumber foto profil',
+            l10n.t('photo_source_subtitle'),
             style: theme.textTheme.bodySmall?.copyWith(color: colors.secondary),
           ),
           const SizedBox(height: 16),

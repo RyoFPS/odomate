@@ -26,13 +26,16 @@ void main() {
             'CREATE TABLE vehicle (id INTEGER PRIMARY KEY, name TEXT NOT NULL, odometer_km REAL NOT NULL, user_name TEXT NOT NULL DEFAULT \'\', plate_number TEXT NOT NULL DEFAULT \'\', photo_path TEXT)',
           );
           await db.execute(
-            'CREATE TABLE service_items (id INTEGER PRIMARY KEY, name TEXT NOT NULL, description TEXT NOT NULL DEFAULT \'\', location TEXT NOT NULL DEFAULT \'\', cost REAL NOT NULL DEFAULT 0, remind INTEGER NOT NULL DEFAULT 1, interval_km REAL NOT NULL, last_serviced_km REAL NOT NULL)',
+            'CREATE TABLE service_items (id INTEGER PRIMARY KEY, name TEXT NOT NULL, description TEXT NOT NULL DEFAULT \'\', location TEXT NOT NULL DEFAULT \'\', cost REAL NOT NULL DEFAULT 0, remind INTEGER NOT NULL DEFAULT 1, interval_km REAL NOT NULL, last_serviced_km REAL NOT NULL, interval_months INTEGER NOT NULL DEFAULT 0, last_serviced_at TEXT)',
           );
           await db.execute(
             'CREATE TABLE service_logs (id INTEGER PRIMARY KEY, service_item_id INTEGER NOT NULL, serviced_at TEXT NOT NULL, odometer_km REAL NOT NULL, note TEXT)',
           );
           await db.execute(
             "CREATE TABLE rides (id INTEGER PRIMARY KEY, started_at TEXT NOT NULL, ended_at TEXT, distance_km REAL NOT NULL, odometer_applied_km REAL NOT NULL DEFAULT 0, notes TEXT NOT NULL DEFAULT '', weather TEXT NOT NULL DEFAULT '')",
+          );
+          await db.execute(
+            'CREATE TABLE ride_points (id INTEGER PRIMARY KEY, ride_id INTEGER NOT NULL, latitude REAL NOT NULL, longitude REAL NOT NULL, accuracy_m REAL NOT NULL, recorded_at TEXT NOT NULL)',
           );
           await db.execute(
             'CREATE TABLE notification_state (service_item_id INTEGER PRIMARY KEY, cycle INTEGER NOT NULL, last_reminder TEXT)',
@@ -96,6 +99,23 @@ void main() {
     expect(stored.location, 'AHASS Tebet Jaya');
     expect(stored.cost, 85000);
     expect(stored.remind, isFalse);
+  });
+
+  test('round-trips the service time interval and last service date', () async {
+    await repository.saveService(
+      ServiceItem(
+        id: 2,
+        name: 'Oli',
+        intervalKm: 2000,
+        intervalMonths: 2,
+        lastServicedAt: DateTime(2026, 8, 18),
+        lastServicedOdometerKm: 12000,
+      ),
+    );
+
+    final stored = (await repository.listServices()).single;
+    expect(stored.intervalMonths, 2);
+    expect(stored.lastServicedAt, DateTime(2026, 8, 18));
   });
 
   test(
@@ -281,5 +301,47 @@ void main() {
       (await repository.listRides()).every((ride) => ride.id != id),
       isTrue,
     );
+  });
+
+  test('stores route points in order and deletes them with the ride', () async {
+    final id = await repository.createRide(
+      Ride(startedAt: DateTime(2026, 9, 25, 8)),
+    );
+    final first = GeoPoint(
+      latitude: -6.2,
+      longitude: 106.8,
+      accuracyMeters: 5,
+      timestamp: DateTime(2026, 9, 25, 8),
+    );
+    final second = GeoPoint(
+      latitude: -6.201,
+      longitude: 106.801,
+      accuracyMeters: 6,
+      timestamp: DateTime(2026, 9, 25, 8, 1),
+    );
+    await repository.appendRidePoint(id, first);
+    await repository.appendRidePoint(id, second);
+    expect(await repository.listRidePoints(id), [first, second]);
+
+    await repository.deleteRide(id);
+    expect(await repository.listRidePoints(id), isEmpty);
+  });
+
+  test('does not copy route points when duplicating a ride', () async {
+    final sourceId = await repository.createRide(
+      Ride(startedAt: DateTime(2026, 9, 25, 8), distanceKm: 2),
+    );
+    final point = GeoPoint(
+      latitude: -6.2,
+      longitude: 106.8,
+      accuracyMeters: 5,
+      timestamp: DateTime(2026, 9, 25, 8),
+    );
+    await repository.appendRidePoint(sourceId, point);
+
+    final duplicateId = await repository.duplicateRide(
+      Ride(id: sourceId, startedAt: DateTime(2026, 9, 25, 8), distanceKm: 2),
+    );
+    expect(await repository.listRidePoints(duplicateId), isEmpty);
   });
 }

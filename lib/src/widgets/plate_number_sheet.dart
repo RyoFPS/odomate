@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../i18n/app_localizations.dart';
+
 Future<String?> showPlateNumberSheet(
   BuildContext context, {
   String initialValue = '',
@@ -49,6 +51,7 @@ class _PlateNumberSheetState extends State<_PlateNumberSheet> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
       child: Material(
@@ -73,13 +76,13 @@ class _PlateNumberSheetState extends State<_PlateNumberSheet> {
                   ),
                 ),
                 const SizedBox(height: 18),
-                const Text(
-                  'Perbarui Nomor Plat',
+                Text(
+                  l10n.t('plate_update_title'),
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Masukkan nomor plat kendaraan',
+                  l10n.t('plate_update_subtitle'),
                   style: TextStyle(color: colors.secondary, fontSize: 12),
                 ),
                 const SizedBox(height: 18),
@@ -87,14 +90,19 @@ class _PlateNumberSheetState extends State<_PlateNumberSheet> {
                   children: [
                     Expanded(
                       flex: 2,
-                      child: _input(region, 'Kode', 2, TextInputType.text),
+                      child: _input(
+                        region,
+                        l10n.t('plate_region'),
+                        2,
+                        TextInputType.text,
+                      ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       flex: 4,
                       child: _input(
                         number,
-                        'Angka',
+                        l10n.t('plate_number'),
                         4,
                         TextInputType.number,
                         digitsOnly: true,
@@ -103,7 +111,12 @@ class _PlateNumberSheetState extends State<_PlateNumberSheet> {
                     const SizedBox(width: 8),
                     Expanded(
                       flex: 3,
-                      child: _input(suffix, 'Seri', 3, TextInputType.text),
+                      child: _input(
+                        suffix,
+                        l10n.t('plate_series'),
+                        3,
+                        TextInputType.text,
+                      ),
                     ),
                   ],
                 ),
@@ -113,7 +126,7 @@ class _PlateNumberSheetState extends State<_PlateNumberSheet> {
                   child: FilledButton.icon(
                     onPressed: _save,
                     icon: const Icon(Icons.check_rounded),
-                    label: const Text('Simpan Nomor Plat'),
+                    label: Text(l10n.t('save_plate')),
                   ),
                 ),
               ],

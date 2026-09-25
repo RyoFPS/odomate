@@ -70,6 +70,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               const SizedBox(height: 16),
               _overviewCard(context, l10n, stats),
               const SizedBox(height: 12),
+              _monthlyDistanceCard(context, l10n, data),
+              const SizedBox(height: 12),
               _trendCard(context, l10n, data, period),
               const SizedBox(height: 20),
               _serviceCard(context, data, l10n),
@@ -164,6 +166,96 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 14),
+            Divider(color: colors.outlineVariant),
+            const SizedBox(height: 10),
+            _overviewMetric(
+              context,
+              l10n.t('total_duration'),
+              _formatDuration(stats.totalDuration, l10n),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _monthlyDistanceCard(
+    BuildContext context,
+    AppLocalizations l10n,
+    _StatisticsData data,
+  ) {
+    final theme = Theme.of(context);
+    final values = calculateMonthlyDistances(data.rides, data.now);
+    final maxValue = values.fold<double>(
+      0,
+      (max, value) => value.distanceKm > max ? value.distanceKm : max,
+    );
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.t('monthly_distance'),
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              l10n.t('last_six_months'),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 118,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  for (final value in values)
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text(
+                              value.distanceKm == 0
+                                  ? ''
+                                  : value.distanceKm.toStringAsFixed(0),
+                              style: theme.textTheme.labelSmall,
+                            ),
+                            const SizedBox(height: 4),
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              height: maxValue == 0
+                                  ? 6
+                                  : 72 * value.distanceKm / maxValue,
+                              decoration: BoxDecoration(
+                                color:
+                                    value.month.month == data.now.month &&
+                                        value.month.year == data.now.year
+                                    ? theme.colorScheme.primary
+                                    : theme.colorScheme.primaryContainer,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                            ),
+                            const SizedBox(height: 7),
+                            Text(
+                              '${value.month.month}/${value.month.year % 100}',
+                              style: theme.textTheme.labelSmall,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ],
         ),
@@ -278,28 +370,23 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     DateTime now,
     StatisticsPeriod selectedPeriod,
   ) {
-    final local = now.toLocal();
-    final today = DateTime(local.year, local.month, local.day);
-    final days = selectedPeriod == StatisticsPeriod.today ? 1 : 7;
-    return List.generate(days, (index) {
-      final day = selectedPeriod == StatisticsPeriod.today
-          ? today
-          : today.subtract(Duration(days: days - index - 1));
-      return rides
-          .where((ride) {
-            final date = ride.startedAt.toLocal();
-            return date.year == day.year &&
-                date.month == day.month &&
-                date.day == day.day;
-          })
-          .fold<double>(0, (sum, ride) => sum + ride.distanceKm);
-    });
+    return calculateDailyDistances(rides, now, selectedPeriod);
   }
 
   String _trendLabel(DateTime now, StatisticsPeriod selectedPeriod, int index) {
     if (selectedPeriod == StatisticsPeriod.today) return 'Hari';
+    if (selectedPeriod == StatisticsPeriod.currentMonth) {
+      return '${index + 1}';
+    }
     final day = now.toLocal().subtract(Duration(days: 6 - index));
     return '${day.day}/${day.month}';
+  }
+
+  String _formatDuration(Duration duration, AppLocalizations l10n) {
+    if (duration.inHours > 0) {
+      return '${duration.inHours} ${l10n.t('hours_unit')} ${duration.inMinutes.remainder(60)} ${l10n.t('minutes_unit')}';
+    }
+    return '${duration.inMinutes} ${l10n.t('minutes_unit')}';
   }
 
   Widget _serviceCard(

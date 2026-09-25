@@ -56,4 +56,49 @@ void main() {
       isNull,
     );
   });
+
+  test('date interval makes a service due when the date arrives', () {
+    final item = ServiceItem(
+      name: 'Oli mesin',
+      intervalKm: 2000,
+      lastServicedOdometerKm: 0,
+      lastServicedAt: DateTime(2026, 8, 18),
+      intervalMonths: 2,
+    );
+
+    expect(
+      ServiceSchedule.status(1000, item, now: DateTime(2026, 10, 18)),
+      ServiceStatus.due,
+    );
+  });
+
+  test('date reminder is due soon within seven days', () {
+    final item = ServiceItem(
+      name: 'Oli mesin',
+      intervalKm: 2000,
+      lastServicedOdometerKm: 0,
+      lastServicedAt: DateTime(2026, 8, 18),
+      intervalMonths: 2,
+    );
+
+    expect(
+      ServiceSchedule.status(1000, item, now: DateTime(2026, 10, 12)),
+      ServiceStatus.dueSoon,
+    );
+  });
+
+  test('the earlier kilometer or date threshold wins', () {
+    final item = ServiceItem(
+      name: 'Oli mesin',
+      intervalKm: 2000,
+      lastServicedOdometerKm: 0,
+      lastServicedAt: DateTime(2026, 8, 18),
+      intervalMonths: 2,
+    );
+
+    expect(
+      ServiceSchedule.status(2000, item, now: DateTime(2026, 9, 1)),
+      ServiceStatus.due,
+    );
+  });
 }

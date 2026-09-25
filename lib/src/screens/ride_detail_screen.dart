@@ -1,12 +1,16 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../data/odomate_repository.dart';
+import '../domain/gpx_export.dart';
 import '../domain/models.dart';
 import '../domain/ride_history.dart';
 import '../i18n/app_localizations.dart';
 import '../widgets/app_header.dart';
 import '../widgets/metric_tile.dart';
+import '../widgets/ride_map.dart';
 import '../widgets/status_badge.dart';
 
 class RideDetailScreen extends StatefulWidget {
@@ -21,11 +25,20 @@ class RideDetailScreen extends StatefulWidget {
 
 class _RideDetailScreenState extends State<RideDetailScreen> {
   late Ride ride;
+  late Future<List<GeoPoint>> _routePoints;
 
   @override
   void initState() {
     super.initState();
     ride = widget.ride;
+    _routePoints = _loadRoutePoints();
+  }
+
+  Future<List<GeoPoint>> _loadRoutePoints() {
+    final rideId = ride.id;
+    final repository = widget.repository;
+    if (rideId == null || repository == null) return Future.value(const []);
+    return repository.listRidePoints(rideId);
   }
 
   @override
@@ -57,12 +70,12 @@ class _RideDetailScreenState extends State<RideDetailScreen> {
         ),
         actions: [
           IconButton(
-            tooltip: 'Bagikan',
+            tooltip: l10n.t('share_trip'),
             icon: const Icon(Icons.share_outlined),
             onPressed: () => _share(context, l10n),
           ),
           IconButton(
-            tooltip: 'Opsi lainnya',
+            tooltip: l10n.t('trip_more_options'),
             icon: const Icon(Icons.more_vert),
             onPressed: () => _showMore(context, l10n, active, duration),
           ),
@@ -171,37 +184,40 @@ class _RideDetailScreenState extends State<RideDetailScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: MetricTile(
-                    key: const ValueKey('ride-average-speed'),
-                    icon: Icons.speed_outlined,
-                    label: l10n.t('average_speed'),
-                    value: averageSpeed == null
-                        ? '—'
-                        : '${averageSpeed.toStringAsFixed(0)} km/h',
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: MetricTile(
+                      key: const ValueKey('ride-average-speed'),
+                      icon: Icons.speed_outlined,
+                      label: l10n.t('average_speed'),
+                      value: averageSpeed == null
+                          ? '—'
+                          : '${averageSpeed.toStringAsFixed(0)} km/h',
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: MetricTile(
-                    key: const ValueKey('ride-estimate'),
-                    icon: Icons.local_gas_station_outlined,
-                    label: l10n.t('estimate'),
-                    value: '— L',
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: MetricTile(
+                      key: const ValueKey('ride-estimate'),
+                      icon: Icons.local_gas_station_outlined,
+                      label: l10n.t('estimate'),
+                      value: '— L',
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: MetricTile(
-                    key: const ValueKey('ride-final-odometer'),
-                    icon: Icons.speed,
-                    label: l10n.t('final_odometer'),
-                    value: '— km',
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: MetricTile(
+                      key: const ValueKey('ride-final-odometer'),
+                      icon: Icons.speed,
+                      label: l10n.t('final_odometer'),
+                      value: '— km',
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
@@ -400,12 +416,23 @@ class _RideDetailScreenState extends State<RideDetailScreen> {
   Future<void> _download(BuildContext context, AppLocalizations l10n) async {
     Navigator.pop(context);
     try {
-      final text =
-          '${l10n.t('distance')}: ${ride.distanceKm.toStringAsFixed(1)} km\n'
-          '${l10n.t('trip_notes')}: ${ride.notes}\n'
-          '${l10n.t('weather')}: ${ride.weather}';
+      final points = await _routePoints;
+      if (points.length < 2) {
+        return _feedback(l10n.t('gpx_route_unavailable'), success: false);
+      }
+      final fileName = rideGpxFileName(ride);
       await SharePlus.instance.share(
-        ShareParams(text: text, subject: l10n.t('download_gpx')),
+        ShareParams(
+          files: [
+            XFile.fromData(
+              utf8.encode(buildRideGpx(ride: ride, points: points)),
+              mimeType: 'application/gpx+xml',
+              name: fileName,
+            ),
+          ],
+          fileNameOverrides: [fileName],
+          subject: l10n.t('download_gpx'),
+        ),
       );
       if (mounted) _feedback(l10n.t('download_gpx'), success: true);
     } catch (_) {
@@ -495,58 +522,13 @@ class _RideDetailScreenState extends State<RideDetailScreen> {
       ),
       child: Column(
         children: [
-          SizedBox(
-            height: 168,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                CustomPaint(
-                  painter: _RoutePreviewPainter(
-                    colors.primary,
-                    colors.surfaceContainerHighest,
-                    colors.surface,
-                    colors.tertiary,
-                  ),
-                ),
-                Positioned(
-                  left: 12,
-                  top: 12,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: colors.surface.withValues(alpha: .92),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.gps_fixed,
-                            size: 14,
-                            color: colors.primary,
-                          ),
-                          SizedBox(width: 5),
-                          Text(l10n.t('gps_accurate')),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  right: 12,
-                  bottom: 12,
-                  child: FilledButton.tonalIcon(
-                    onPressed: null,
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size(96, 40),
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                    ),
-                    icon: const Icon(Icons.fullscreen, size: 14),
-                    label: Text(l10n.t('zoom_map')),
-                  ),
-                ),
-              ],
+          FutureBuilder<List<GeoPoint>>(
+            future: _routePoints,
+            initialData: const [],
+            builder: (context, snapshot) => RideMap(
+              points: snapshot.data ?? const [],
+              followCurrentLocation: false,
+              height: 300,
             ),
           ),
           Padding(
@@ -984,65 +966,4 @@ class _RideDistanceSheetState extends State<_RideDistanceSheet> {
       ],
     ),
   );
-}
-
-class _RoutePreviewPainter extends CustomPainter {
-  final Color routeColor;
-  final Color backgroundColor;
-  final Color roadColor;
-  final Color endpointColor;
-
-  const _RoutePreviewPainter(
-    this.routeColor,
-    this.backgroundColor,
-    this.roadColor,
-    this.endpointColor,
-  );
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final background = Paint()..color = backgroundColor;
-    canvas.drawRect(Offset.zero & size, background);
-    final roads = Paint()
-      ..color = roadColor.withValues(alpha: .8)
-      ..strokeWidth = 9
-      ..style = PaintingStyle.stroke;
-    for (var i = 1; i < 5; i++) {
-      final y = size.height * i / 5;
-      canvas.drawLine(Offset(0, y), Offset(size.width, y - 18), roads);
-    }
-    for (var i = 1; i < 4; i++) {
-      final x = size.width * i / 4;
-      canvas.drawLine(Offset(x, 0), Offset(x - 28, size.height), roads);
-    }
-    final route = Paint()
-      ..color = routeColor
-      ..strokeWidth = 4
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-    final path = Path()
-      ..moveTo(size.width * .18, size.height * .76)
-      ..lineTo(size.width * .32, size.height * .62)
-      ..lineTo(size.width * .48, size.height * .67)
-      ..lineTo(size.width * .56, size.height * .42)
-      ..lineTo(size.width * .72, size.height * .28);
-    canvas.drawPath(path, route);
-    canvas.drawCircle(
-      Offset(size.width * .18, size.height * .76),
-      6,
-      Paint()..color = endpointColor,
-    );
-    canvas.drawCircle(
-      Offset(size.width * .72, size.height * .28),
-      6,
-      Paint()..color = routeColor,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _RoutePreviewPainter oldDelegate) =>
-      oldDelegate.routeColor != routeColor ||
-      oldDelegate.backgroundColor != backgroundColor ||
-      oldDelegate.roadColor != roadColor ||
-      oldDelegate.endpointColor != endpointColor;
 }

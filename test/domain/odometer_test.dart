@@ -20,6 +20,15 @@ void main() {
     expect(result.accepted, isFalse);
   });
 
+  test('rejects movement under five meters', () {
+    final result = OdometerMath.acceptPoint(
+      const GeoPoint(latitude: -6.2, longitude: 106.8, accuracyMeters: 5),
+      const GeoPoint(latitude: -6.2, longitude: 106.800001, accuracyMeters: 5),
+    );
+
+    expect(result.accepted, isFalse);
+  });
+
   test('rejects jumps above 500 meters', () {
     final result = OdometerMath.acceptPoint(
       const GeoPoint(latitude: 0, longitude: 0, accuracyMeters: 5),

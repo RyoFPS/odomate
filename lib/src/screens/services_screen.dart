@@ -90,7 +90,9 @@ class _ServicesScreenState extends State<ServicesScreen> {
             icon: Icon(
               sortByUrgency ? Icons.swap_vert_rounded : Icons.sort_by_alpha,
             ),
-            tooltip: sortByUrgency ? 'Urut berdasarkan nama' : 'Urutkan jadwal',
+            tooltip: sortByUrgency
+                ? l10n.t('sort_by_name')
+                : l10n.t('sort_by_urgency'),
             color: Theme.of(context).colorScheme.secondary,
             style: IconButton.styleFrom(
               padding: const EdgeInsets.all(8),
@@ -136,11 +138,15 @@ class _ServicesScreenState extends State<ServicesScreen> {
                 Expanded(
                   child: Row(
                     children: [
-                      const Text(
-                        'Jadwal Perawatan Berkala',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
+                      Flexible(
+                        child: Text(
+                          l10n.t('maintenance_schedule_heading'),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 6),
@@ -151,7 +157,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                 TextButton.icon(
                   onPressed: _showHistory,
                   icon: const Icon(Icons.history_rounded, size: 15),
-                  label: const Text('Riwayat'),
+                  label: Text(l10n.t('history')),
                   style: TextButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 6),
                     minimumSize: Size.zero,
@@ -181,7 +187,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                 const SizedBox(width: 7),
                 Flexible(
                   child: Text(
-                    'Semua jadwal & riwayat tersimpan lokal (Offline-first)',
+                    l10n.t('offline_service_data'),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -240,6 +246,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
   }
 
   Widget _summaryCard(BuildContext context, int due, int soon) {
+    final l10n = AppLocalizations.of(context);
     final colors = Theme.of(context).colorScheme;
     ServiceItem? dueService;
     for (final item in items) {
@@ -281,7 +288,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'ODOMETER TERKINI',
+                          l10n.t('current_odometer_label'),
                           style: TextStyle(
                             color: colors.secondary,
                             fontSize: 11,
@@ -317,7 +324,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                   TextButton.icon(
                     onPressed: _updateOdometer,
                     icon: const Icon(Icons.edit_rounded, size: 14),
-                    label: const Text('Perbarui'),
+                    label: Text(l10n.t('update')),
                     style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       minimumSize: Size.zero,
@@ -336,17 +343,17 @@ class _ServicesScreenState extends State<ServicesScreen> {
               child: Row(
                 children: [
                   Expanded(
-                    child: _metric(due, 'Jatuh Tempo', ServiceStatus.due),
+                    child: _metric(due, l10n.t('due_label'), ServiceStatus.due),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: _metric(soon, 'Mendekat', ServiceStatus.dueSoon),
+                    child: _metric(soon, l10n.t('soon'), ServiceStatus.dueSoon),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: _metric(
                       items.length - due - soon,
-                      'Kondisi Aman',
+                      l10n.t('safe'),
                       ServiceStatus.safe,
                     ),
                   ),
@@ -380,7 +387,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        '${dueService.name} perlu segera diservis sebelum perjalanan berikutnya.',
+                        '${dueService.name} ${l10n.t('service_due_warning')}',
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.error,
                           fontSize: 12,
@@ -461,11 +468,13 @@ class _ServicesScreenState extends State<ServicesScreen> {
   );
 
   Widget _serviceCard(BuildContext context, ServiceItem service) {
+    final l10n = AppLocalizations.of(context);
     final colors = Theme.of(context).colorScheme;
     final status = _status(service);
     final tone = serviceTone(status, colors);
     final dueAt = service.lastServicedOdometerKm + service.intervalKm;
     final remaining = dueAt - odo;
+    final dueDate = ServiceSchedule.dueDate(service);
 
     void openDetail() {
       Navigator.of(context)
@@ -530,24 +539,35 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                     height: 1.15,
                                   ),
                                 ),
-                                _statusBadge(_statusLabel(status), tone),
+                                _statusBadge(_statusLabel(l10n, status), tone),
                               ],
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Rutin Tiap ${serviceKm(service.intervalKm)} km',
+                              '${l10n.t('routine_every')} ${serviceKm(service.intervalKm)} km',
                               style: TextStyle(
                                 color: colors.secondary,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
+                            if (dueDate != null) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                '${l10n.t('service_due_date')}: ${dueDate.day.toString().padLeft(2, '0')}/${dueDate.month.toString().padLeft(2, '0')}/${dueDate.year}',
+                                style: TextStyle(
+                                  color: colors.secondary,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                             const SizedBox(height: 8),
                             Text.rich(
                               TextSpan(
                                 children: [
                                   TextSpan(
-                                    text: 'Terakhir: ',
+                                    text: '${l10n.t('last_service_short')}: ',
                                     style: TextStyle(color: colors.secondary),
                                   ),
                                   TextSpan(
@@ -565,7 +585,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                     ),
                                   ),
                                   TextSpan(
-                                    text: 'Batas: ',
+                                    text: '${l10n.t('limit_short')}: ',
                                     style: TextStyle(color: colors.secondary),
                                   ),
                                   TextSpan(
@@ -599,8 +619,8 @@ class _ServicesScreenState extends State<ServicesScreen> {
                                 ],
                                 Text(
                                   remaining < 0
-                                      ? 'Lewat ${serviceKm(-remaining)} km'
-                                      : 'Sisa ${serviceKm(remaining)} km',
+                                      ? '${l10n.t('service_overdue')} ${serviceKm(-remaining)} km'
+                                      : '${l10n.t('service_remaining')} ${serviceKm(remaining)} km',
                                   style: TextStyle(
                                     color: tone.line,
                                     fontSize: 12,
@@ -644,7 +664,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              'Servis',
+                              l10n.t('service_action'),
                               style: TextStyle(
                                 color: tone.chipText,
                                 fontSize: 11,
@@ -676,11 +696,12 @@ class _ServicesScreenState extends State<ServicesScreen> {
   ServiceStatus _status(ServiceItem service) =>
       ServiceSchedule.status(odo, service);
 
-  String _statusLabel(ServiceStatus status) => status == ServiceStatus.due
-      ? 'Jatuh Tempo'
+  String _statusLabel(AppLocalizations l10n, ServiceStatus status) =>
+      status == ServiceStatus.due
+      ? l10n.t('due_label')
       : status == ServiceStatus.dueSoon
-      ? 'Mendekat'
-      : 'Aman';
+      ? l10n.t('soon')
+      : l10n.t('safe');
 
   Widget _statusBadge(String text, ServiceTone tone) => Container(
     key: const ValueKey('service-card-status-badge'),
@@ -786,16 +807,20 @@ class _ServicesScreenState extends State<ServicesScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Riwayat Servis',
+            Text(
+              AppLocalizations.of(context).t('service_history'),
               // Judul sheet: teks, bukan angka, jadi w700 seperti `font-bold`.
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 12),
             if (logs.isEmpty)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.symmetric(vertical: 24),
-                child: Center(child: Text('Belum ada riwayat servis.')),
+                child: Center(
+                  child: Text(
+                    AppLocalizations.of(context).t('service_history_empty'),
+                  ),
+                ),
               )
             else
               Flexible(
@@ -816,7 +841,10 @@ class _ServicesScreenState extends State<ServicesScreen> {
                             .onPrimary,
                         child: Icon(Icons.event_available_outlined),
                       ),
-                      title: Text(names[log.serviceItemId] ?? 'Servis'),
+                      title: Text(
+                        names[log.serviceItemId] ??
+                            AppLocalizations.of(context).t('service_action'),
+                      ),
                       subtitle: Text(_date(log.servicedAt)),
                       trailing: Text(
                         '${serviceKm(log.odometerKm)} km',
@@ -837,7 +865,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => _ServiceSheetFrame(
-        title: 'Opsi servis',
+        title: AppLocalizations.of(context).t('service_options'),
         child: Padding(
           padding: const EdgeInsets.only(top: 4),
           child: Column(
@@ -845,7 +873,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
             children: [
               ListTile(
                 leading: const Icon(Icons.edit_outlined),
-                title: const Text('Edit servis'),
+                title: Text(AppLocalizations.of(context).t('edit_service')),
                 onTap: () => Navigator.pop(context, 'edit'),
               ),
               ListTile(
@@ -854,7 +882,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
                   color: Theme.of(context).colorScheme.error,
                 ),
                 title: Text(
-                  'Hapus servis',
+                  AppLocalizations.of(context).t('delete_service'),
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
                 onTap: () => Navigator.pop(context, 'delete'),
@@ -873,14 +901,16 @@ class _ServicesScreenState extends State<ServicesScreen> {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (sheetContext) => _ServiceSheetFrame(
-        title: 'Hapus kategori servis?',
-        subtitle: 'Apakah Anda yakin ingin menghapus ${service.name}?',
+        title: AppLocalizations.of(sheetContext).t('confirm_delete_service'),
+        subtitle: AppLocalizations.of(sheetContext)
+            .t('confirm_delete_service_subtitle')
+            .replaceFirst('{name}', service.name),
         child: Row(
           children: [
             Expanded(
               child: OutlinedButton(
                 onPressed: () => Navigator.pop(sheetContext, false),
-                child: const Text('Batal'),
+                child: Text(AppLocalizations.of(sheetContext).t('cancel')),
               ),
             ),
             const SizedBox(width: 12),
@@ -891,7 +921,9 @@ class _ServicesScreenState extends State<ServicesScreen> {
                   backgroundColor: Theme.of(sheetContext).colorScheme.error,
                 ),
                 icon: const Icon(Icons.delete_outline),
-                label: const Text('Hapus'),
+                label: Text(
+                  AppLocalizations.of(sheetContext).t('delete_service'),
+                ),
               ),
             ),
           ],
@@ -1024,7 +1056,10 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       ),
     );
     await widget.repository.clearNotificationState(service.id!);
-    final updated = service.copyWith(lastServicedOdometerKm: odometer);
+    final updated = service.copyWith(
+      lastServicedOdometerKm: odometer,
+      lastServicedAt: date,
+    );
     if (!mounted) return;
     setState(() => service = updated);
     await _load();
@@ -1032,6 +1067,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final remaining =
         service.lastServicedOdometerKm + service.intervalKm - odometer;
     final status = ServiceSchedule.status(odometer, service);
@@ -1042,15 +1078,15 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         : ((odometer - service.lastServicedOdometerKm) / service.intervalKm)
               .clamp(0.0, 1.0);
     final statusText = status == ServiceStatus.due
-        ? 'Jatuh tempo'
+        ? l10n.t('due')
         : status == ServiceStatus.dueSoon
-        ? 'Mendekat'
-        : 'Aman';
+        ? l10n.t('soon')
+        : l10n.t('safe');
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: const AppHeader(
-        title: 'Detail servis',
-        titleStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+      appBar: AppHeader(
+        title: l10n.t('service_detail'),
+        titleStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 18, 16, 32),
@@ -1059,13 +1095,15 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
           const SizedBox(height: 14),
           _progressCard(context, tone, progress, remaining, target),
           const SizedBox(height: 14),
+          _serviceInfoCard(context),
+          const SizedBox(height: 14),
           Row(
             children: [
               Expanded(
                 child: _detailTile(
                   context,
                   Icons.repeat_rounded,
-                  'Interval servis',
+                  l10n.t('service_interval'),
                   '${serviceKm(service.intervalKm)} km',
                 ),
               ),
@@ -1074,8 +1112,10 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                 child: _detailTile(
                   context,
                   Icons.history_rounded,
-                  'Terakhir servis',
-                  logs.isEmpty ? 'Belum ada' : _date(logs.first.servicedAt),
+                  l10n.t('last_service'),
+                  logs.isEmpty
+                      ? l10n.t('not_entered')
+                      : _date(logs.first.servicedAt),
                 ),
               ),
             ],
@@ -1084,13 +1124,13 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
           FilledButton.icon(
             onPressed: _markServiced,
             icon: const Icon(Icons.check_circle_outline),
-            label: const Text('Tandai sudah servis'),
+            label: Text(l10n.t('service_mark_done')),
           ),
           const SizedBox(height: 24),
           Row(
             children: [
               Text(
-                'Riwayat servis',
+                l10n.t('service_history'),
                 style: Theme.of(context).textTheme.titleMedium
                     ?.copyWith(fontWeight: FontWeight.w800),
               ),
@@ -1111,61 +1151,66 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     ServiceTone tone,
     String status,
     double remaining,
-  ) => Card(
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: tone.soft,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: tone.softBorder),
+  ) {
+    final l10n = AppLocalizations.of(context);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: tone.soft,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: tone.softBorder),
+              ),
+              child: Icon(serviceIcon(service.name), color: tone.icon),
             ),
-            child: Icon(serviceIcon(service.name), color: tone.icon),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  service.name,
-                  style: Theme.of(context).textTheme.titleMedium
-                      ?.copyWith(fontWeight: FontWeight.w800),
-                ),
-                if (service.description.isNotEmpty) ...[
-                  const SizedBox(height: 3),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    service.description,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.secondary,
+                    service.name,
+                    style: Theme.of(context).textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w800),
+                  ),
+                  if (service.description.isNotEmpty) ...[
+                    const SizedBox(height: 3),
+                    Text(
+                      service.description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
                     ),
+                  ],
+                  const SizedBox(height: 10),
+                  StatusBadge(
+                    label: status,
+                    foregroundColor: tone.chipText,
+                    backgroundColor: tone.chipBg,
+                    icon: Icons.circle,
                   ),
                 ],
-                const SizedBox(height: 10),
-                StatusBadge(
-                  label: status,
-                  foregroundColor: tone.chipText,
-                  backgroundColor: tone.chipBg,
-                  icon: Icons.circle,
-                ),
-              ],
+              ),
             ),
-          ),
-          Text(
-            remaining < 0 ? 'Lewat' : 'Sisa',
-            style: TextStyle(color: tone.line, fontWeight: FontWeight.w700),
-          ),
-        ],
+            Text(
+              remaining < 0
+                  ? l10n.t('service_overdue')
+                  : l10n.t('service_remaining'),
+              style: TextStyle(color: tone.line, fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 
   Widget _progressCard(
     BuildContext context,
@@ -1173,60 +1218,157 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     double progress,
     double remaining,
     double target,
-  ) => Card(
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Status perawatan',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(99),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 8,
-              color: tone.icon,
-              backgroundColor: tone.soft,
+  ) {
+    final l10n = AppLocalizations.of(context);
+    final dueDate = ServiceSchedule.dueDate(service);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.t('service_status'),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
             ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(99),
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 8,
+                color: tone.icon,
+                backgroundColor: tone.soft,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    remaining < 0
+                        ? '${l10n.t('service_overdue')} ${serviceKm(-remaining)} km'
+                        : '${l10n.t('service_remaining')} ${serviceKm(remaining)} km',
+                    style: TextStyle(
+                      color: tone.line,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                Text(
+                  l10n.t('service_next_target'),
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 2),
+            Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                '${serviceKm(target)} km',
+                style: Theme.of(context).textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w800),
+              ),
+            ),
+            if (dueDate != null) ...[
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
                 child: Text(
-                  remaining < 0
-                      ? 'Lewat ${serviceKm(-remaining)} km'
-                      : 'Sisa ${serviceKm(remaining)} km',
-                  style: TextStyle(
-                    color: tone.line,
-                    fontWeight: FontWeight.w700,
+                  '${l10n.t('service_due_date')}: ${_date(dueDate)}',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: Theme.of(context).colorScheme.secondary,
                   ),
                 ),
               ),
-              Text(
-                'Target berikutnya',
-                style: Theme.of(context).textTheme.labelSmall
-                    ?.copyWith(color: Theme.of(context).colorScheme.secondary),
-              ),
             ],
-          ),
-          const SizedBox(height: 2),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Text(
-              '${serviceKm(target)} km',
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _serviceInfoCard(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.t('service_detail_info'),
               style: Theme.of(context).textTheme.titleSmall
                   ?.copyWith(fontWeight: FontWeight.w800),
             ),
-          ),
-        ],
+            const SizedBox(height: 14),
+            _infoRow(
+              context,
+              Icons.payments_outlined,
+              l10n.t('service_total_cost'),
+              service.cost > 0
+                  ? 'Rp ${service.cost.toStringAsFixed(0)}'
+                  : l10n.t('not_entered'),
+            ),
+            const SizedBox(height: 12),
+            _infoRow(
+              context,
+              Icons.storefront_outlined,
+              l10n.t('service_workshop'),
+              service.location.trim().isEmpty
+                  ? l10n.t('not_entered')
+                  : service.location.trim(),
+            ),
+            const SizedBox(height: 12),
+            _infoRow(
+              context,
+              Icons.notes_outlined,
+              l10n.t('service_notes'),
+              service.description.trim().isEmpty
+                  ? l10n.t('no_service_notes')
+                  : service.description.trim(),
+            ),
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
+
+  Widget _infoRow(
+    BuildContext context,
+    IconData icon,
+    String label,
+    String value,
+  ) {
+    final colors = Theme.of(context).colorScheme;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 18, color: colors.primary),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelSmall
+                    ?.copyWith(color: colors.onSurfaceVariant),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: Theme.of(context).textTheme.bodyMedium
+                    ?.copyWith(fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 
   Widget _detailTile(
     BuildContext context,
@@ -1265,15 +1407,15 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
       borderRadius: BorderRadius.circular(8),
     ),
     child: Text(
-      '${logs.length} entri',
+      '${logs.length} ${AppLocalizations.of(context).t('service_entries')}',
       style: Theme.of(context).textTheme.labelSmall,
     ),
   );
 
   Widget _emptyHistory(BuildContext context) => Card(
-    child: const Padding(
+    child: Padding(
       padding: EdgeInsets.all(18),
-      child: Text('Belum ada riwayat servis.'),
+      child: Text(AppLocalizations.of(context).t('service_history_empty')),
     ),
   );
 
@@ -1298,7 +1440,12 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         _date(log.servicedAt),
         style: const TextStyle(fontWeight: FontWeight.w700),
       ),
-      subtitle: Text('${serviceKm(log.odometerKm)} km'),
+      subtitle: Text(
+        [
+          '${serviceKm(log.odometerKm)} km',
+          if (log.note?.trim().isNotEmpty ?? false) log.note!.trim(),
+        ].join(' · '),
+      ),
       trailing: const Icon(Icons.chevron_right_rounded),
     ),
   );

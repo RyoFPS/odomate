@@ -66,11 +66,15 @@ Future<void> _pump(
   await tester.pumpAndSettle();
 }
 
-Finder get _saveButton => find.widgetWithText(FilledButton, 'Simpan Jadwal Servis');
-Finder get _saveEditButton => find.widgetWithText(FilledButton, 'Simpan Perubahan');
+Finder get _saveButton =>
+    find.widgetWithText(FilledButton, 'Simpan Jadwal Servis');
+Finder get _saveEditButton =>
+    find.widgetWithText(FilledButton, 'Simpan Perubahan');
 
 void main() {
-  testWidgets('a new schedule starts from the vehicle odometer', (tester) async {
+  testWidgets('a new schedule starts from the vehicle odometer', (
+    tester,
+  ) async {
     await _pump(tester, _FakeRepository());
 
     final odo = tester.widget<TextField>(

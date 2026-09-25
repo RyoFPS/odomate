@@ -93,8 +93,38 @@ class OdomateRepository {
     });
   }
 
-  Future<void> deleteRide(int id) async =>
-      (await db).delete('rides', where: 'id = ?', whereArgs: [id]);
+  Future<void> deleteRide(int id) async {
+    final d = await db;
+    await d.transaction((tx) async {
+      await tx.delete('ride_points', where: 'ride_id = ?', whereArgs: [id]);
+      await tx.delete('rides', where: 'id = ?', whereArgs: [id]);
+    });
+  }
+
+  Future<void> appendRidePoint(int rideId, GeoPoint point) async =>
+      (await db).insert('ride_points', {
+        'ride_id': rideId,
+        'latitude': point.latitude,
+        'longitude': point.longitude,
+        'accuracy_m': point.accuracyMeters,
+        'recorded_at': (point.timestamp ?? DateTime.now()).toIso8601String(),
+      });
+  Future<List<GeoPoint>> listRidePoints(int rideId) async =>
+      (await (await db).query(
+            'ride_points',
+            where: 'ride_id = ?',
+            whereArgs: [rideId],
+            orderBy: 'id ASC',
+          ))
+          .map(
+            (row) => GeoPoint(
+              latitude: (row['latitude'] as num).toDouble(),
+              longitude: (row['longitude'] as num).toDouble(),
+              accuracyMeters: (row['accuracy_m'] as num).toDouble(),
+              timestamp: DateTime.parse(row['recorded_at'] as String),
+            ),
+          )
+          .toList();
   Future<void> finishRide(int id, DateTime endedAt, double distanceKm) async =>
       (await db).transaction((tx) async {
         final ride = await tx.query(
@@ -170,6 +200,8 @@ class OdomateRepository {
         'remind': s.remind ? 1 : 0,
         'interval_km': s.intervalKm,
         'last_serviced_km': s.lastServicedOdometerKm,
+        'interval_months': s.intervalMonths,
+        'last_serviced_at': s.lastServicedAt?.toIso8601String(),
       }, conflictAlgorithm: ConflictAlgorithm.replace);
   Future<void> deleteService(int id) async =>
       (await db).delete('service_items', where: 'id = ?', whereArgs: [id]);
@@ -184,7 +216,10 @@ class OdomateRepository {
       });
       await tx.update(
         'service_items',
-        {'last_serviced_km': l.odometerKm},
+        {
+          'last_serviced_km': l.odometerKm,
+          'last_serviced_at': l.servicedAt.toIso8601String(),
+        },
         where: 'id = ?',
         whereArgs: [l.serviceItemId],
       );
@@ -327,6 +362,10 @@ class OdomateRepository {
     cost: (r['cost'] as num?)?.toDouble() ?? 0,
     intervalKm: (r['interval_km'] as num).toDouble(),
     lastServicedOdometerKm: (r['last_serviced_km'] as num).toDouble(),
+    lastServicedAt: r['last_serviced_at'] == null
+        ? null
+        : DateTime.parse(r['last_serviced_at'] as String),
+    intervalMonths: (r['interval_months'] as num?)?.toInt() ?? 0,
     remind: (r['remind'] as int? ?? 1) != 0,
   );
 }

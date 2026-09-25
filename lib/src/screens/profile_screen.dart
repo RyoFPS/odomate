@@ -135,6 +135,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _showPlateSheet() async {
+    final l10n = AppLocalizations.of(context);
     final current = plate.text.trim().toUpperCase().split(RegExp(r'\s+'));
     plateRegion.text = current.elementAtOrNull(0) ?? '';
     plateNumber.text = current.elementAtOrNull(1) ?? '';
@@ -169,13 +170,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   const SizedBox(height: 18),
-                  const Text(
-                    'Perbarui Nomor Plat',
+                  Text(
+                    l10n.t('plate_update_title'),
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Masukkan nomor plat kendaraan',
+                    l10n.t('plate_update_subtitle'),
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.secondary,
                       fontSize: 12,
@@ -188,7 +189,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         flex: 2,
                         child: _plateInput(
                           controller: plateRegion,
-                          label: 'Kode',
+                          label: l10n.t('plate_region'),
                           maxLength: 2,
                           keyboardType: TextInputType.text,
                         ),
@@ -198,7 +199,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         flex: 4,
                         child: _plateInput(
                           controller: plateNumber,
-                          label: 'Angka',
+                          label: l10n.t('plate_number'),
                           maxLength: 4,
                           keyboardType: TextInputType.number,
                           digitsOnly: true,
@@ -209,7 +210,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         flex: 3,
                         child: _plateInput(
                           controller: plateSuffix,
-                          label: 'Seri',
+                          label: l10n.t('plate_series'),
                           maxLength: 3,
                           keyboardType: TextInputType.text,
                         ),
@@ -233,7 +234,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Navigator.pop(sheetContext, values.join(' '));
                       },
                       icon: const Icon(Icons.check_rounded),
-                      label: const Text('Simpan Nomor Plat'),
+                      label: Text(l10n.t('save_plate')),
                     ),
                   ),
                 ],

@@ -274,6 +274,18 @@ void main() {
   testWidgets('service detail uses the modern status and history layout', (
     tester,
   ) async {
+    tester.view.physicalSize = const Size(400, 1200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    const service = ServiceItem(
+      id: 2,
+      name: 'Ganti Busi (Spark Plug)',
+      description: 'NGK CPR8EA-9',
+      location: 'AHASS Cempaka',
+      cost: 125000,
+      intervalKm: 10000,
+      lastServicedOdometerKm: 20000,
+    );
     await tester.pumpWidget(
       MaterialApp(
         home: ServiceDetailScreen(
@@ -281,13 +293,14 @@ void main() {
             vehicle: _vehicle,
             logs: [
               ServiceLog(
-                serviceItemId: _safeService.id!,
+                serviceItemId: service.id!,
                 servicedAt: DateTime(2026, 9, 1),
                 odometerKm: 24000,
+                note: 'Ganti busi dan cek celah elektroda',
               ),
             ],
           ),
-          service: _safeService,
+          service: service,
         ),
       ),
     );
@@ -295,7 +308,20 @@ void main() {
 
     expect(find.text('Status perawatan'), findsOneWidget);
     expect(find.text('Target berikutnya'), findsOneWidget);
-    expect(find.text('Tandai sudah servis'), findsOneWidget);
-    expect(find.text('Riwayat servis'), findsOneWidget);
+    expect(
+      find.text('Tandai sudah servis', skipOffstage: false),
+      findsOneWidget,
+    );
+    expect(find.text('Riwayat servis', skipOffstage: false), findsOneWidget);
+    expect(find.text('Rp 125000', skipOffstage: false), findsOneWidget);
+    expect(find.text('AHASS Cempaka', skipOffstage: false), findsOneWidget);
+    expect(find.text('NGK CPR8EA-9', skipOffstage: false), findsNWidgets(2));
+    expect(
+      find.textContaining(
+        'Ganti busi dan cek celah elektroda',
+        skipOffstage: false,
+      ),
+      findsOneWidget,
+    );
   });
 }

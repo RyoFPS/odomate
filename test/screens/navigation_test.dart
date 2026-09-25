@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:odomate/src/app.dart';
 import 'package:odomate/src/data/odomate_repository.dart';
 import 'package:odomate/src/domain/models.dart';
@@ -12,6 +13,8 @@ import 'package:odomate/src/tracking/ride_tracker.dart';
 
 class _FakeRepository extends OdomateRepository {
   final List<Ride> rides;
+  Ride? activeRide;
+  final List<GeoPoint> points = [];
 
   _FakeRepository({this.rides = const []});
 
@@ -39,6 +42,28 @@ class _FakeRepository extends OdomateRepository {
     required int limit,
     required int offset,
   }) async => const [];
+
+  @override
+  Future<int> createRide(Ride ride) async {
+    activeRide = ride.copyWith(id: 1);
+    return 1;
+  }
+
+  @override
+  Future<Ride?> loadActiveRide() async => activeRide;
+
+  @override
+  Future<void> saveActiveRideCheckpoint(Ride ride) async {
+    activeRide = ride;
+  }
+
+  @override
+  Future<void> appendRidePoint(int rideId, GeoPoint point) async {
+    points.add(point);
+  }
+
+  @override
+  Future<List<GeoPoint>> listRidePoints(int rideId) async => points;
 }
 
 /// Meniru halaman Profile: ada TextField yang memunculkan keyboard.
@@ -149,6 +174,11 @@ void main() {
     expect(find.text('Jarak'), findsOneWidget);
     expect(find.byIcon(Icons.arrow_back), findsOneWidget);
     expect(find.byTooltip('Start Ride'), findsNothing);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.byTooltip('Start Ride'), findsOneWidget);
   });
 
   testWidgets('Home shows the rider avatar template without a profile photo', (
@@ -170,6 +200,37 @@ void main() {
     final avatar = tester.widget<Image>(find.byType(Image).first);
     expect((avatar.image as ResizeImage).width, 76);
     expect((avatar.image as ResizeImage).height, 76);
+  });
+
+  testWidgets('Home only shows the live map during an active ride', (
+    tester,
+  ) async {
+    final repository = _FakeRepository();
+    final tracker = RideTracker(
+      repository,
+      positionStream: const Stream.empty(),
+      locationServiceEnabled: () async => true,
+      checkPermission: () async => LocationPermission.always,
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: HomeScreen(repository: repository, tracker: tracker),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byKey(const ValueKey('home-live-ride-map')), findsNothing);
+
+    await tracker.start();
+    await tracker.onLocation(
+      const GeoPoint(latitude: -6.2, longitude: 106.8, accuracyMeters: 5),
+    );
+    await tracker.onLocation(
+      const GeoPoint(latitude: -6.2, longitude: 106.8001, accuracyMeters: 5),
+    );
+    await tester.pump();
+
+    expect(find.byKey(const ValueKey('home-live-ride-map')), findsOneWidget);
   });
 
   testWidgets('Home history card opens the upgraded History screen', (

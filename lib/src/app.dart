@@ -53,8 +53,17 @@ class _OdoMateAppState extends State<OdoMateApp> {
     // because an active ride may publish a tracking notification.
     final vehicleFuture = widget.repository.loadVehicle();
     await widget.notifications.initialize();
-    hasVehicle = await vehicleFuture != null;
+    final vehicle = await vehicleFuture;
+    hasVehicle = vehicle != null;
     await widget.tracker.restore();
+    if (vehicle != null) {
+      for (final service in await widget.repository.listServices()) {
+        await widget.notifications.maybeNotifyService(
+          service,
+          vehicle.odometerKm,
+        );
+      }
+    }
     if (mounted) setState(() => loading = false);
   }
 
@@ -91,7 +100,11 @@ class _OdoMateAppState extends State<OdoMateApp> {
                 themeMode: themeMode,
                 language: language,
                 onThemeChanged: (v) => setState(() => themeMode = v),
-                onLanguageChanged: (v) => setState(() => language = v),
+                onLanguageChanged: (v) {
+                  widget.notifications.setLanguage(v);
+                  widget.tracker.setLanguage(v);
+                  setState(() => language = v);
+                },
               ),
               StatisticsScreen(repository: widget.repository),
             ],
@@ -280,6 +293,7 @@ class _SplashScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -323,7 +337,7 @@ class _SplashScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Buku Log & Perawatan Kendaraan Roda Dua',
+                l10n.t('splash_subtitle'),
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: colors.secondary,
@@ -342,7 +356,7 @@ class _SplashScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    'Aman & 100% Offline-First',
+                    l10n.t('splash_safe_offline'),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: colors.secondary,
                     ),
@@ -381,10 +395,16 @@ class _MainNavigationState extends State<MainNavigation> {
     if (index == 4 && widget.pages.length > 4) {
       final page = widget.pages[4];
       if (page is StatisticsScreen) {
-        return StatisticsScreen(
-          repository: page.repository,
-          now: page.now,
-          onBack: () => setState(() => index = 0),
+        return PopScope<void>(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, _) {
+            if (!didPop) setState(() => index = 0);
+          },
+          child: StatisticsScreen(
+            repository: page.repository,
+            now: page.now,
+            onBack: () => setState(() => index = 0),
+          ),
         );
       }
     }
