@@ -8,6 +8,9 @@ import '../domain/service_schedule.dart';
 import '../i18n/app_localizations.dart';
 
 class NotificationService {
+  // Auto-generated service IDs start at 1, leaving 0 for tracking.
+  static const int _trackingNotificationId = 0;
+
   final FlutterLocalNotificationsPlugin plugin;
   final OdomateRepository? repository;
   final Future<void> Function()? initializePlugin;
@@ -31,7 +34,8 @@ class NotificationService {
           _requestNotificationsPermission());
     }
     // Remove notifications created by older app versions before restoring state.
-    await (cancelTrackingNotification?.call() ?? plugin.cancel(id: 1));
+    await (cancelTrackingNotification?.call() ??
+        plugin.cancel(id: _trackingNotificationId));
   }
 
   Future<void> _initializePlugin() async => plugin.initialize(
@@ -54,7 +58,7 @@ class NotificationService {
     // by the location service and is removed when that service stops.
     if (defaultTargetPlatform == TargetPlatform.android) return;
     await plugin.show(
-      id: 1,
+      id: _trackingNotificationId,
       title: _l10n.t('active_ride_title'),
       body: '${distanceKm.toStringAsFixed(1)} km',
       notificationDetails: const NotificationDetails(
@@ -63,7 +67,8 @@ class NotificationService {
     );
   }
 
-  Future<void> clearTrackingActive() async => plugin.cancel(id: 1);
+  Future<void> clearTrackingActive() async =>
+      plugin.cancel(id: _trackingNotificationId);
   Future<void> maybeNotifyService(ServiceItem item, double odometerKm) async {
     if (item.id == null) return;
     final persisted = repository == null
