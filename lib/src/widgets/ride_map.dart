@@ -37,6 +37,7 @@ class _RideMapState extends State<RideMap> {
   @override
   void dispose() {
     _tileReset.close();
+    _controller.dispose();
     super.dispose();
   }
 
@@ -117,7 +118,7 @@ class _RideMapState extends State<RideMap> {
         children: [
           TileLayer(
             urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-            userAgentPackageName: 'com.odomate',
+            userAgentPackageName: 'com.ryo.odomate',
             maxNativeZoom: 19,
             maxZoom: 19,
             tileProvider: widget.tileProvider,

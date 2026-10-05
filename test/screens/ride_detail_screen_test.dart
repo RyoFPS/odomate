@@ -30,24 +30,11 @@ void main() {
       );
 
       expect(find.byKey(const ValueKey('ride-average-speed')), findsOneWidget);
-      expect(find.byKey(const ValueKey('ride-estimate')), findsOneWidget);
-      expect(find.byKey(const ValueKey('ride-final-odometer')), findsOneWidget);
+      expect(find.byKey(const ValueKey('ride-estimate')), findsNothing);
+      expect(find.byKey(const ValueKey('ride-final-odometer')), findsNothing);
       expect(find.byKey(const ValueKey('ride-map-empty')), findsOneWidget);
       expect(find.byTooltip('Bagikan'), findsOneWidget);
       expect(find.byTooltip('Opsi lainnya'), findsOneWidget);
-
-      final averageSpeedHeight = tester
-          .getSize(find.byKey(const ValueKey('ride-average-speed')))
-          .height;
-      final estimateHeight = tester
-          .getSize(find.byKey(const ValueKey('ride-estimate')))
-          .height;
-      final finalOdometerHeight = tester
-          .getSize(find.byKey(const ValueKey('ride-final-odometer')))
-          .height;
-
-      expect(averageSpeedHeight, estimateHeight);
-      expect(estimateHeight, finalOdometerHeight);
     },
   );
 

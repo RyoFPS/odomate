@@ -43,6 +43,9 @@ class RideTracker {
   Ride? _ride;
   List<GeoPoint> _routePoints = const [];
   double? _gpsAccuracyMeters;
+  Future<void> _locationQueue = Future<void>.value();
+  final Stopwatch _reminderClock = Stopwatch();
+  Duration? _lastServiceReminderCheck;
   RideTracker(
     this.repository, {
     this.positionStream,
@@ -103,6 +106,10 @@ class RideTracker {
       );
       _lastPoint = _routePoints.isEmpty ? null : _routePoints.last;
       _gpsAccuracyMeters = _lastPoint?.accuracyMeters;
+      _reminderClock
+        ..reset()
+        ..start();
+      _lastServiceReminderCheck = null;
       _state.value = _trackingState(waitingForFix: _routePoints.isEmpty);
       await notifications?.showTrackingActive(_ride!.distanceKm);
       final stream =
@@ -125,9 +132,10 @@ class RideTracker {
     }
   }
 
-  void _onStreamError(Object _, StackTrace stackTrace) {
-    _subscription?.cancel();
+  Future<void> _onStreamError(Object _, StackTrace stackTrace) async {
+    await _subscription?.cancel();
     _subscription = null;
+    await _locationQueue;
     _lastPoint = null;
     _routePoints = const [];
     _state.value = RideTrackingState(error: _l10n.t('gps_read_error'));
@@ -141,7 +149,13 @@ class RideTracker {
       timestamp: p.timestamp,
     ),
   );
-  Future<void> onLocation(GeoPoint point) async {
+  Future<void> onLocation(GeoPoint point) {
+    final processing = _locationQueue.then((_) => _processLocation(point));
+    _locationQueue = processing.catchError((Object _) {});
+    return processing;
+  }
+
+  Future<void> _processLocation(GeoPoint point) async {
     if (!_state.value.active) return;
     _gpsAccuracyMeters = point.accuracyMeters;
     if (point.accuracyMeters > 50) {
@@ -167,16 +181,31 @@ class RideTracker {
     _state.value = _trackingState();
     await repository.saveActiveRideCheckpoint(_ride!);
     await notifications?.showTrackingActive(_ride!.distanceKm);
-    for (final service in await repository.listServices()) {
-      await notifications?.maybeNotifyService(
-        service,
-        (await repository.loadVehicle())?.odometerKm ?? 0,
-      );
+    await _checkServiceReminders();
+  }
+
+  Future<void> _checkServiceReminders() async {
+    final notifications = this.notifications;
+    if (notifications == null || !notifications.serviceRemindersEnabled) return;
+    final now = _reminderClock.elapsed;
+    final lastCheck = _lastServiceReminderCheck;
+    if (lastCheck != null && now - lastCheck < const Duration(minutes: 1)) {
+      return;
+    }
+    _lastServiceReminderCheck = now;
+
+    final services = await repository.listServices();
+    if (services.isEmpty) return;
+    final odometerKm = (await repository.loadVehicle())?.odometerKm ?? 0;
+    for (final service in services) {
+      await notifications.maybeNotifyService(service, odometerKm);
     }
   }
 
   Future<Ride> stop() async {
     await _subscription?.cancel();
+    _subscription = null;
+    await _locationQueue;
     final ride = _ride ?? await repository.loadActiveRide();
     if (ride == null) throw StateError('Tidak ada ride aktif');
     final done = ride.copyWith(endedAt: DateTime.now());

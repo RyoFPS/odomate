@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,6 +15,7 @@ import 'screens/services_screen.dart';
 import 'screens/setup_screen.dart';
 import 'screens/statistics_screen.dart';
 import 'tracking/ride_tracker.dart';
+import 'widgets/profile_photo_cropper.dart';
 
 /// Tema OdoMate.
 ///
@@ -61,7 +63,19 @@ class _OdoMateAppState extends State<OdoMateApp> {
     final preferencesFuture = _loadPreferences();
     final vehicleFuture = widget.repository.loadVehicle();
     await widget.notifications.initialize();
-    final vehicle = await vehicleFuture;
+    var vehicle = await vehicleFuture;
+    final photoPath = vehicle?.photoPath;
+    if (photoPath != null && await File(photoPath).exists()) {
+      try {
+        final persistentPath = await persistProfilePhoto(photoPath);
+        if (persistentPath != photoPath) {
+          vehicle = vehicle!.copyWith(photoPath: persistentPath);
+          await widget.repository.saveVehicle(vehicle);
+        }
+      } catch (error) {
+        debugPrint('Could not persist profile photo: $error');
+      }
+    }
     await preferencesFuture;
     hasVehicle = vehicle != null;
     widget.notifications.setLanguage(language);

@@ -183,40 +183,13 @@ class _RideDetailScreenState extends State<RideDetailScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(
-                    child: MetricTile(
-                      key: const ValueKey('ride-average-speed'),
-                      icon: Icons.speed_outlined,
-                      label: l10n.t('average_speed'),
-                      value: averageSpeed == null
-                          ? '—'
-                          : '${averageSpeed.toStringAsFixed(0)} km/h',
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: MetricTile(
-                      key: const ValueKey('ride-estimate'),
-                      icon: Icons.local_gas_station_outlined,
-                      label: l10n.t('estimate'),
-                      value: '— L',
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: MetricTile(
-                      key: const ValueKey('ride-final-odometer'),
-                      icon: Icons.speed,
-                      label: l10n.t('final_odometer'),
-                      value: '— km',
-                    ),
-                  ),
-                ],
-              ),
+            MetricTile(
+              key: const ValueKey('ride-average-speed'),
+              icon: Icons.speed_outlined,
+              label: l10n.t('average_speed'),
+              value: averageSpeed == null
+                  ? '—'
+                  : '${averageSpeed.toStringAsFixed(0)} km/h',
             ),
           ],
         ),
