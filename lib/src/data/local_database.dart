@@ -1,14 +1,107 @@
+import 'dart:io';
+import 'dart:math';
+
 import 'package:path/path.dart' as p;
-import 'package:sqflite/sqflite.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:sqflite_sqlcipher/sqflite.dart';
 
 class LocalDatabase {
-  static Future<Database> open() async => openDatabase(
-    p.join(await getDatabasesPath(), 'odomate.db'),
-    version: 8,
-    onCreate: _create,
-    onUpgrade: (db, oldVersion, newVersion) => _ensureColumns(db),
-    onOpen: _ensureColumns,
-  );
+  static const _keyStorage = FlutterSecureStorage();
+  static const _keyName = 'odomate_database_key';
+
+  static Future<Database> open() async {
+    final directory = await getDatabasesPath();
+    final legacyPath = p.join(directory, 'odomate.db');
+    final databasePath = p.join(directory, 'odomate_encrypted.db');
+    final password = await _databaseKey();
+
+    if (!await databaseExists(databasePath) &&
+        await databaseExists(legacyPath)) {
+      await _encryptLegacyDatabase(legacyPath, databasePath, password);
+    }
+
+    final database = await _openEncrypted(databasePath, password);
+    try {
+      if (await databaseExists(legacyPath)) await deleteDatabase(legacyPath);
+      return database;
+    } catch (_) {
+      await database.close();
+      rethrow;
+    }
+  }
+
+  static Future<String> _databaseKey() async {
+    final existing = await _keyStorage.read(key: _keyName);
+    if (existing != null) {
+      if (!RegExp(r'^[0-9a-f]{64}$').hasMatch(existing)) {
+        throw StateError('Stored database encryption key is invalid.');
+      }
+      return existing;
+    }
+
+    final random = Random.secure();
+    final key = List.generate(
+      32,
+      (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0'),
+    ).join();
+    await _keyStorage.write(key: _keyName, value: key);
+    return key;
+  }
+
+  static Future<Database> _openEncrypted(String path, String password) =>
+      openDatabase(
+        path,
+        password: password,
+        version: 8,
+        onCreate: _create,
+        onUpgrade: (db, oldVersion, newVersion) => _ensureColumns(db),
+        onOpen: _ensureColumns,
+      );
+
+  static Future<void> _encryptLegacyDatabase(
+    String legacyPath,
+    String databasePath,
+    String password,
+  ) async {
+    final temporaryPath = '$databasePath.migrating';
+    await deleteDatabase(temporaryPath);
+
+    final legacy = await openDatabase(
+      legacyPath,
+      version: 8,
+      onUpgrade: (db, oldVersion, newVersion) => _ensureColumns(db),
+      onOpen: _ensureColumns,
+    );
+    try {
+      await legacy.execute('ATTACH DATABASE ? AS encrypted KEY ?', [
+        temporaryPath,
+        password,
+      ]);
+      try {
+        await legacy.rawQuery("SELECT sqlcipher_export('encrypted')");
+        await legacy.execute('PRAGMA encrypted.user_version = 8');
+      } finally {
+        await legacy.execute('DETACH DATABASE encrypted');
+      }
+    } finally {
+      await legacy.close();
+    }
+
+    final encrypted = await openDatabase(
+      temporaryPath,
+      password: password,
+      readOnly: true,
+    );
+    try {
+      final check = await encrypted.rawQuery('PRAGMA quick_check');
+      if (check.isEmpty || check.first.values.first != 'ok') {
+        throw StateError('Encrypted database migration failed validation.');
+      }
+    } finally {
+      await encrypted.close();
+    }
+    await File(temporaryPath).rename(databasePath);
+  }
 
   static Future<void> _ensureColumns(Database db) async {
     final rows = await db.rawQuery('PRAGMA table_info(vehicle)');
