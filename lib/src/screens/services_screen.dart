@@ -33,13 +33,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
 
   Future<void> _load() async {
     final loadedVehicle = await widget.repository.loadVehicle();
-    var loadedItems = await widget.repository.listServices();
-    if (loadedItems.isEmpty && loadedVehicle != null) {
-      for (final service in _defaultServices(loadedVehicle.odometerKm)) {
-        await widget.repository.saveService(service);
-      }
-      loadedItems = await widget.repository.listServices();
-    }
+    final loadedItems = await widget.repository.listServices();
     if (!mounted) return;
     setState(() {
       vehicle = loadedVehicle;
@@ -738,19 +732,6 @@ class _ServicesScreenState extends State<ServicesScreen> {
       ),
     ),
   );
-
-  /// Jadwal awal untuk kendaraan baru. Hanya komponen yang intervalnya tercatat
-  /// di [servicePresets] yang dipakai — preset tanpa angka tidak diikutkan,
-  /// supaya app tidak mengarang jadwal servis yang tidak diminta pengguna.
-  List<ServiceItem> _defaultServices(double km) => [
-    for (final preset in servicePresets)
-      if (preset.intervalKm != null)
-        ServiceItem(
-          name: preset.name,
-          intervalKm: preset.intervalKm!,
-          lastServicedOdometerKm: km,
-        ),
-  ];
 
   Future<void> _addService() async {
     final saved = await _openEditor();

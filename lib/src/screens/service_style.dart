@@ -112,10 +112,8 @@ class ServicePreset {
 
   /// Interval yang disarankan saat preset ini dipilih.
   ///
-  /// `null` untuk komponen yang intervalnya tidak tercatat di
-  /// `_defaultServices` halaman Servis — app ini tidak punya angka pabrikan
-  /// yang bisa dipertanggungjawabkan untuk komponen itu, jadi kolom intervalnya
-  /// sengaja dibiarkan kosong untuk diisi pengguna daripada diisi karangan.
+  /// `null` bila tidak ada angka yang cukup pasti untuk diisi otomatis, supaya
+  /// pengguna bisa menentukan intervalnya sendiri.
   final double? intervalKm;
 
   const ServicePreset(this.name, this.icon, [this.intervalKm]);
