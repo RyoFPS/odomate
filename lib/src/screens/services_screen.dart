@@ -6,6 +6,7 @@ import '../domain/service_schedule.dart';
 import '../i18n/app_localizations.dart';
 import '../widgets/app_header.dart';
 import '../widgets/odometer_correction_sheet.dart';
+import '../widgets/sheet_frame.dart';
 import '../widgets/status_badge.dart';
 import 'service_editor_screen.dart';
 import 'service_style.dart';
@@ -849,7 +850,7 @@ class _ServicesScreenState extends State<ServicesScreen> {
     final action = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => _ServiceSheetFrame(
+      builder: (context) => SheetFrame(
         title: AppLocalizations.of(context).t('service_options'),
         child: Padding(
           padding: const EdgeInsets.only(top: 4),
@@ -882,111 +883,20 @@ class _ServicesScreenState extends State<ServicesScreen> {
   }
 
   Future<void> _confirmDelete(ServiceItem service) async {
-    final confirmed = await showModalBottomSheet<bool>(
+    final l10n = AppLocalizations.of(context);
+    final confirmed = await showConfirmSheet(
       context: context,
-      backgroundColor: Colors.transparent,
-      builder: (sheetContext) => _ServiceSheetFrame(
-        title: AppLocalizations.of(sheetContext).t('confirm_delete_service'),
-        subtitle: AppLocalizations.of(sheetContext)
-            .t('confirm_delete_service_subtitle')
-            .replaceFirst('{name}', service.name),
-        child: Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () => Navigator.pop(sheetContext, false),
-                child: Text(AppLocalizations.of(sheetContext).t('cancel')),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: FilledButton.icon(
-                onPressed: () => Navigator.pop(sheetContext, true),
-                style: FilledButton.styleFrom(
-                  backgroundColor: Theme.of(sheetContext).colorScheme.error,
-                ),
-                icon: const Icon(Icons.delete_outline),
-                label: Text(
-                  AppLocalizations.of(sheetContext).t('delete_service'),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      title: l10n.t('confirm_delete_service'),
+      subtitle: l10n
+          .t('confirm_delete_service_subtitle')
+          .replaceFirst('{name}', service.name),
+      confirmLabel: l10n.t('delete_service'),
+      cancelLabel: l10n.t('cancel'),
     );
-    if (confirmed == true && service.id != null) {
+    if (confirmed && service.id != null) {
       await widget.repository.deleteService(service.id!);
       await _load();
     }
-  }
-}
-
-class _ServiceSheetFrame extends StatelessWidget {
-  final String title;
-  final String? subtitle;
-  final Widget child;
-
-  const _ServiceSheetFrame({
-    required this.title,
-    this.subtitle,
-    required this.child,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      padding: EdgeInsets.fromLTRB(
-        20,
-        10,
-        20,
-        MediaQuery.viewInsetsOf(context).bottom + 24,
-      ),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Center(
-              child: Container(
-                width: 48,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: colors.outlineVariant,
-                  borderRadius: BorderRadius.circular(99),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            if (subtitle != null) ...[
-              const SizedBox(height: 2),
-              Text(
-                subtitle!,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colors.secondary,
-                ),
-              ),
-            ],
-            const SizedBox(height: 16),
-            child,
-          ],
-        ),
-      ),
-    );
   }
 }
 
