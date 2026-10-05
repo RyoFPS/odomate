@@ -21,8 +21,15 @@ void main() {
 
   test('filters using the local date of UTC timestamps', () {
     final ride = Ride(startedAt: DateTime.utc(2026, 9, 9, 17));
+    final localDate = ride.startedAt.toLocal();
+    final localNoon = DateTime(
+      localDate.year,
+      localDate.month,
+      localDate.day,
+      12,
+    );
 
-    expect(filterRides([ride], now, RideHistoryPeriod.today), [ride]);
+    expect(filterRides([ride], localNoon, RideHistoryPeriod.today), [ride]);
   });
 
   test('formats completed duration and active ride status', () {
