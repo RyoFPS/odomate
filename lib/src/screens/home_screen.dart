@@ -37,11 +37,26 @@ class _HomeScreenState extends State<HomeScreen> {
   double monthlyDistance = 0;
   int monthlyRideCount = 0;
   Duration monthlyDuration = Duration.zero;
+  bool _wasRideActive = false;
 
   @override
   void initState() {
     super.initState();
+    _wasRideActive = widget.tracker.state.value.active;
+    widget.tracker.state.addListener(_refreshAfterRideStop);
     _refresh();
+  }
+
+  @override
+  void dispose() {
+    widget.tracker.state.removeListener(_refreshAfterRideStop);
+    super.dispose();
+  }
+
+  void _refreshAfterRideStop() {
+    final active = widget.tracker.state.value.active;
+    if (_wasRideActive && !active) _refresh();
+    _wasRideActive = active;
   }
 
   Future<void> _refresh() async {
