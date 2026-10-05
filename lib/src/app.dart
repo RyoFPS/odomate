@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'data/odomate_repository.dart';
@@ -36,9 +39,13 @@ class OdoMateApp extends StatefulWidget {
 }
 
 class _OdoMateAppState extends State<OdoMateApp> {
+  final _preferences = SharedPreferencesAsync();
   bool loading = true, hasVehicle = false;
   ThemeMode themeMode = ThemeMode.light;
   String language = 'id';
+  bool usesKilometers = true;
+  bool serviceReminders = true;
+  int serviceInterval = 2000;
 
   @override
   void initState() {
@@ -51,10 +58,15 @@ class _OdoMateAppState extends State<OdoMateApp> {
     // before awaiting either so cold launch does not serialize local I/O and
     // plugin initialization. Tracker restore stays after notifications
     // because an active ride may publish a tracking notification.
+    final preferencesFuture = _loadPreferences();
     final vehicleFuture = widget.repository.loadVehicle();
     await widget.notifications.initialize();
     final vehicle = await vehicleFuture;
+    await preferencesFuture;
     hasVehicle = vehicle != null;
+    widget.notifications.setLanguage(language);
+    widget.tracker.setLanguage(language);
+    widget.notifications.setServiceRemindersEnabled(serviceReminders);
     await widget.tracker.restore();
     if (vehicle != null) {
       for (final service in await widget.repository.listServices()) {
@@ -65,6 +77,56 @@ class _OdoMateAppState extends State<OdoMateApp> {
       }
     }
     if (mounted) setState(() => loading = false);
+  }
+
+  Future<void> _loadPreferences() async {
+    final saved = await Future.wait<Object?>([
+      _preferences.getString('themeMode'),
+      _preferences.getString('language'),
+      _preferences.getBool('usesKilometers'),
+      _preferences.getBool('serviceReminders'),
+      _preferences.getInt('serviceInterval'),
+    ]);
+    themeMode = ThemeMode.values.firstWhere(
+      (mode) => mode.name == saved[0],
+      orElse: () => ThemeMode.light,
+    );
+    language = const ['id', 'en', 'ja'].contains(saved[1])
+        ? saved[1]! as String
+        : 'id';
+    usesKilometers = saved[2] as bool? ?? true;
+    serviceReminders = saved[3] as bool? ?? true;
+    serviceInterval = const [1000, 2000, 5000].contains(saved[4])
+        ? saved[4]! as int
+        : 2000;
+  }
+
+  void _setThemeMode(ThemeMode value) {
+    setState(() => themeMode = value);
+    unawaited(_preferences.setString('themeMode', value.name));
+  }
+
+  void _setLanguage(String value) {
+    widget.notifications.setLanguage(value);
+    widget.tracker.setLanguage(value);
+    setState(() => language = value);
+    unawaited(_preferences.setString('language', value));
+  }
+
+  void _setUsesKilometers(bool value) {
+    setState(() => usesKilometers = value);
+    unawaited(_preferences.setBool('usesKilometers', value));
+  }
+
+  void _setServiceReminders(bool value) {
+    setState(() => serviceReminders = value);
+    widget.notifications.setServiceRemindersEnabled(value);
+    unawaited(_preferences.setBool('serviceReminders', value));
+  }
+
+  void _setServiceInterval(int value) {
+    setState(() => serviceInterval = value);
+    unawaited(_preferences.setInt('serviceInterval', value));
   }
 
   @override
@@ -99,12 +161,14 @@ class _OdoMateAppState extends State<OdoMateApp> {
                 repository: widget.repository,
                 themeMode: themeMode,
                 language: language,
-                onThemeChanged: (v) => setState(() => themeMode = v),
-                onLanguageChanged: (v) {
-                  widget.notifications.setLanguage(v);
-                  widget.tracker.setLanguage(v);
-                  setState(() => language = v);
-                },
+                usesKilometers: usesKilometers,
+                serviceReminders: serviceReminders,
+                serviceInterval: serviceInterval,
+                onThemeChanged: _setThemeMode,
+                onLanguageChanged: _setLanguage,
+                onUsesKilometersChanged: _setUsesKilometers,
+                onServiceRemindersChanged: _setServiceReminders,
+                onServiceIntervalChanged: _setServiceInterval,
               ),
               StatisticsScreen(repository: widget.repository),
             ],

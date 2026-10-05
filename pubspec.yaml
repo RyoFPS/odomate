@@ -21,6 +21,7 @@ dependencies:
   sqflite_sqlcipher: ^3.4.1
   share_plus: ^13.3.0
   image_cropper: ^12.2.1
+  shared_preferences: ^2.5.5
 
 dev_dependencies:
   flutter_test:

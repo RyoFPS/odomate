@@ -16,8 +16,14 @@ class ProfileScreen extends StatefulWidget {
   final OdomateRepository repository;
   final ThemeMode themeMode;
   final String language;
+  final bool usesKilometers;
+  final bool serviceReminders;
+  final int serviceInterval;
   final ValueChanged<ThemeMode> onThemeChanged;
   final ValueChanged<String> onLanguageChanged;
+  final ValueChanged<bool>? onUsesKilometersChanged;
+  final ValueChanged<bool>? onServiceRemindersChanged;
+  final ValueChanged<int>? onServiceIntervalChanged;
 
   const ProfileScreen({
     super.key,
@@ -26,6 +32,12 @@ class ProfileScreen extends StatefulWidget {
     required this.language,
     required this.onThemeChanged,
     required this.onLanguageChanged,
+    this.usesKilometers = true,
+    this.serviceReminders = true,
+    this.serviceInterval = 2000,
+    this.onUsesKilometersChanged,
+    this.onServiceRemindersChanged,
+    this.onServiceIntervalChanged,
   });
 
   @override
@@ -339,8 +351,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 builder: (_) => SettingsScreen(
                   themeMode: widget.themeMode,
                   language: widget.language,
+                  usesKilometers: widget.usesKilometers,
+                  serviceReminders: widget.serviceReminders,
+                  serviceInterval: widget.serviceInterval,
                   onThemeChanged: widget.onThemeChanged,
                   onLanguageChanged: widget.onLanguageChanged,
+                  onUsesKilometersChanged: widget.onUsesKilometersChanged,
+                  onServiceRemindersChanged: widget.onServiceRemindersChanged,
+                  onServiceIntervalChanged: widget.onServiceIntervalChanged,
                 ),
               ),
             ),
