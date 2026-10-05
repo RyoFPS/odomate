@@ -24,7 +24,15 @@ class OdomateRepository {
     'photo_path': v.photoPath,
   }, conflictAlgorithm: ConflictAlgorithm.replace);
   Future<void> updateOdometer(double odometerKm) async {
-    await (await db).update('vehicle', {'odometer_km': odometerKm});
+    final d = await db;
+    final vehicle = await d.query('vehicle', columns: ['id'], limit: 1);
+    if (vehicle.isEmpty) return;
+    await d.update(
+      'vehicle',
+      {'odometer_km': odometerKm},
+      where: 'id = ?',
+      whereArgs: [vehicle.first['id']],
+    );
   }
 
   Future<int> createRide(Ride r) async => (await db).insert('rides', {
@@ -203,8 +211,23 @@ class OdomateRepository {
         'interval_months': s.intervalMonths,
         'last_serviced_at': s.lastServicedAt?.toIso8601String(),
       }, conflictAlgorithm: ConflictAlgorithm.replace);
-  Future<void> deleteService(int id) async =>
-      (await db).delete('service_items', where: 'id = ?', whereArgs: [id]);
+  Future<void> deleteService(int id) async {
+    final d = await db;
+    await d.transaction((tx) async {
+      await tx.delete(
+        'service_logs',
+        where: 'service_item_id = ?',
+        whereArgs: [id],
+      );
+      await tx.delete(
+        'notification_state',
+        where: 'service_item_id = ?',
+        whereArgs: [id],
+      );
+      await tx.delete('service_items', where: 'id = ?', whereArgs: [id]);
+    });
+  }
+
   Future<void> recordService(ServiceLog l) async {
     final d = await db;
     await d.transaction((tx) async {
