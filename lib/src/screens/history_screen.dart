@@ -771,7 +771,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ),
           );
           if (!context.mounted) return;
-          setState(() => future = _load());
+          setState(() {
+            future = _load();
+          });
           if (deleted != true) return;
           final colors = Theme.of(context).colorScheme;
           final messenger = ScaffoldMessenger.of(context);
