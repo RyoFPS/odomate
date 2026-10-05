@@ -58,9 +58,14 @@ enum RideHistoryPeriod { all, today, lastSevenDays, currentMonth }
     RideHistoryPeriod.all => throw StateError('all has no previous window'),
   };
 
+  final previousEnd = previousStart.add(localNow.difference(window.start));
   return (
     start: previousStart,
-    end: previousStart.add(localNow.difference(window.start)),
+    end:
+        period == RideHistoryPeriod.currentMonth &&
+            previousEnd.isAfter(window.start)
+        ? window.start
+        : previousEnd,
   );
 }
 
