@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../i18n/app_localizations.dart';
 
@@ -33,6 +34,7 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  late final Future<PackageInfo> _packageInfo = PackageInfo.fromPlatform();
   late ThemeMode _themeMode = widget.themeMode;
   late String _language = widget.language;
   late bool _usesKilometers = widget.usesKilometers;
@@ -571,7 +573,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ? kilometers
         : (kilometers * 0.621371).round();
     final separator = _language == 'en' ? ',' : '.';
-    final formatted = value.toString().replaceFirstMapped(
+    final formatted = value.toString().replaceAllMapped(
       RegExp(r'(\d)(?=(\d{3})+$)'),
       (match) => '${match[1]}$separator',
     );
@@ -643,13 +645,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
               color: colors.onSurfaceVariant,
             ),
             const SizedBox(width: 6),
-            Text(
-              'OdoMate v0.1.0 (Build 1)',
-              style: TextStyle(
-                color: colors.onSurfaceVariant,
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-              ),
+            FutureBuilder<PackageInfo>(
+              future: _packageInfo,
+              builder: (context, snapshot) {
+                final info = snapshot.data;
+                return Text(
+                  info == null
+                      ? 'OdoMate'
+                      : 'OdoMate v${info.version} (Build ${info.buildNumber})',
+                  style: TextStyle(
+                    color: colors.onSurfaceVariant,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                );
+              },
             ),
           ],
         ),

@@ -31,5 +31,10 @@ String rideGpxFileName(Ride ride) {
   final date = ride.startedAt.toLocal();
   final month = date.month.toString().padLeft(2, '0');
   final day = date.day.toString().padLeft(2, '0');
-  return 'odomate-${date.year}-$month-$day.gpx';
+  final time =
+      '${date.hour.toString().padLeft(2, '0')}'
+      '${date.minute.toString().padLeft(2, '0')}'
+      '${date.second.toString().padLeft(2, '0')}';
+  final rideId = ride.id == null ? '' : '-${ride.id}';
+  return 'odomate-${date.year}-$month-$day-$time$rideId.gpx';
 }

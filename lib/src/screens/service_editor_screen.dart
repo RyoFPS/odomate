@@ -96,7 +96,7 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
 
   String? get serviceOdometer {
     final value = double.tryParse(odoController.text.trim());
-    return value == null ? null : odoController.text.trim();
+    return value == null || value < 0 ? null : odoController.text.trim();
   }
 
   bool get valid =>
@@ -109,7 +109,7 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
   String? get targetLabel {
     final odo = double.tryParse(odoController.text.trim());
     final km = interval;
-    if (odo == null || km == null) return null;
+    if (odo == null || odo < 0 || km == null) return null;
     return AppLocalizations.of(context)
         .t('service_editor_target')
         .replaceFirst('{value}', serviceKm(odo + km));
@@ -147,7 +147,7 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
   Future<void> _save() async {
     final km = interval;
     final odo = double.tryParse(odoController.text.trim());
-    if (km == null || odo == null) return;
+    if (km == null || odo == null || odo < 0) return;
     setState(() => saving = true);
 
     final repository = widget.repository;
