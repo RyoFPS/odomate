@@ -4,6 +4,7 @@ import '../data/odomate_repository.dart';
 import '../domain/models.dart';
 import '../i18n/app_localizations.dart';
 import '../widgets/plate_number_sheet.dart';
+import 'service_style.dart';
 
 class SetupScreen extends StatefulWidget {
   final OdomateRepository repository;
@@ -59,9 +60,15 @@ class _SetupScreenState extends State<SetupScreen> {
         plateNumber: plateNumber.text.trim().toUpperCase(),
       ),
     );
-    for (final n in ['Oli mesin', 'Oli gardan', 'Busi', 'Filter udara']) {
+    for (final preset in servicePresets.where(
+      (preset) => preset.intervalKm != null,
+    )) {
       await widget.repository.saveService(
-        ServiceItem(name: n, intervalKm: 1000, lastServicedOdometerKm: km),
+        ServiceItem(
+          name: preset.name,
+          intervalKm: preset.intervalKm!,
+          lastServicedOdometerKm: km,
+        ),
       );
     }
     if (!mounted) return;
