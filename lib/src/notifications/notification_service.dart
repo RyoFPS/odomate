@@ -14,6 +14,7 @@ class NotificationService {
   final Future<void> Function()? requestNotificationsPermission;
   final Future<void> Function()? cancelTrackingNotification;
   String languageCode = 'id';
+  bool serviceRemindersEnabled = true;
   final Map<int, ServiceReminder> _sent = {};
   NotificationService({
     FlutterLocalNotificationsPlugin? plugin,
@@ -23,6 +24,8 @@ class NotificationService {
     this.cancelTrackingNotification,
   }) : plugin = plugin ?? FlutterLocalNotificationsPlugin();
   void setLanguage(String code) => languageCode = code;
+  void setServiceRemindersEnabled(bool enabled) =>
+      serviceRemindersEnabled = enabled;
   AppLocalizations get _l10n => AppLocalizations(Locale(languageCode));
   Future<void> initialize() async {
     await (initializePlugin?.call() ?? _initializePlugin());
@@ -65,7 +68,7 @@ class NotificationService {
 
   Future<void> clearTrackingActive() async => plugin.cancel(id: 1);
   Future<void> maybeNotifyService(ServiceItem item, double odometerKm) async {
-    if (item.id == null) return;
+    if (!serviceRemindersEnabled || item.id == null) return;
     final persisted = repository == null
         ? NotificationState(lastReminder: _sent[item.id])
         : await repository!.loadNotificationState(item.id!);

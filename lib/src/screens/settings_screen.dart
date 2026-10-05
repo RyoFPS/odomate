@@ -5,8 +5,14 @@ import '../i18n/app_localizations.dart';
 class SettingsScreen extends StatefulWidget {
   final ThemeMode themeMode;
   final String language;
+  final bool usesKilometers;
+  final bool serviceReminders;
+  final int serviceInterval;
   final ValueChanged<ThemeMode> onThemeChanged;
   final ValueChanged<String> onLanguageChanged;
+  final ValueChanged<bool>? onUsesKilometersChanged;
+  final ValueChanged<bool>? onServiceRemindersChanged;
+  final ValueChanged<int>? onServiceIntervalChanged;
 
   const SettingsScreen({
     super.key,
@@ -14,6 +20,12 @@ class SettingsScreen extends StatefulWidget {
     required this.language,
     required this.onThemeChanged,
     required this.onLanguageChanged,
+    this.usesKilometers = true,
+    this.serviceReminders = true,
+    this.serviceInterval = 2000,
+    this.onUsesKilometersChanged,
+    this.onServiceRemindersChanged,
+    this.onServiceIntervalChanged,
   });
 
   @override
@@ -23,10 +35,19 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   late ThemeMode _themeMode = widget.themeMode;
   late String _language = widget.language;
-  bool _usesKilometers = true;
-  bool _autoTrack = true;
-  bool _serviceReminders = true;
-  int _serviceInterval = 2000;
+  late bool _usesKilometers = widget.usesKilometers;
+  late bool _serviceReminders = widget.serviceReminders;
+  late int _serviceInterval = widget.serviceInterval;
+
+  @override
+  void didUpdateWidget(covariant SettingsScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _themeMode = widget.themeMode;
+    _language = widget.language;
+    _usesKilometers = widget.usesKilometers;
+    _serviceReminders = widget.serviceReminders;
+    _serviceInterval = widget.serviceInterval;
+  }
 
   String _copy(String id, String en, String ja) => switch (_language) {
     'en' => en,
@@ -211,8 +232,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ],
                     selected: {_usesKilometers},
-                    onSelectionChanged: (values) =>
-                        setState(() => _usesKilometers = values.first),
+                    onSelectionChanged: (values) {
+                      final value = values.first;
+                      setState(() => _usesKilometers = value);
+                      widget.onUsesKilometersChanged?.call(value);
+                    },
                   ),
                 ),
               ],
@@ -228,24 +252,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               '走行記録とオドメーター',
             ),
             description: _copy(
-              'Preferensi lokal untuk sesi pengaturan ini.',
-              'Local preferences for this settings session.',
-              'この設定セッション内のローカル設定です。',
+              'Atur pengingat jadwal servis dan interval odometer.',
+              'Set service schedule reminders and odometer intervals.',
+              '整備予定の通知とオドメーター間隔を設定します。',
             ),
             child: Column(
               children: [
-                _switchTile(
-                  colors,
-                  title: 'Auto-track via GPS',
-                  subtitle: _copy(
-                    'Aktif saat kecepatan di atas 15 km/jam',
-                    'Active above 15 km/h',
-                    '時速15 km以上で有効',
-                  ),
-                  value: _autoTrack,
-                  onChanged: (value) => setState(() => _autoTrack = value),
-                ),
-                Divider(height: 1, color: colors.outlineVariant),
                 _switchTile(
                   colors,
                   title: _copy(
@@ -259,8 +271,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     '整備時期の前に通知',
                   ),
                   value: _serviceReminders,
-                  onChanged: (value) =>
-                      setState(() => _serviceReminders = value),
+                  onChanged: (value) {
+                    setState(() => _serviceReminders = value);
+                    widget.onServiceRemindersChanged?.call(value);
+                  },
                 ),
                 Divider(height: 1, color: colors.outlineVariant),
                 _intervalTile(colors),
@@ -519,7 +533,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ),
     trailing: PopupMenuButton<int>(
       initialValue: _serviceInterval,
-      onSelected: (value) => setState(() => _serviceInterval = value),
+      onSelected: (value) {
+        setState(() => _serviceInterval = value);
+        widget.onServiceIntervalChanged?.call(value);
+      },
       itemBuilder: (_) => [1000, 2000, 5000]
           .map(
             (value) =>
