@@ -770,8 +770,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   RideDetailScreen(ride: ride, repository: widget.repository),
             ),
           );
-          if (!context.mounted || deleted != true) return;
+          if (!context.mounted) return;
           setState(() => future = _load());
+          if (deleted != true) return;
           final colors = Theme.of(context).colorScheme;
           final messenger = ScaffoldMessenger.of(context);
           messenger
