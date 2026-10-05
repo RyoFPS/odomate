@@ -32,11 +32,15 @@ void main() {
           startedAt: DateTime(2026, 9, 10, 10),
           endedAt: DateTime(2026, 9, 10, 11, 5),
         ),
+        activeLabel: 'Active',
       ),
       '1h 05m',
     );
     expect(
-      formatRideDuration(Ride(startedAt: DateTime(2026, 9, 10, 11, 30))),
+      formatRideDuration(
+        Ride(startedAt: DateTime(2026, 9, 10, 11, 30)),
+        activeLabel: 'Active',
+      ),
       'Active',
     );
   });
@@ -48,6 +52,7 @@ void main() {
           startedAt: DateTime(2026, 9, 10, 11),
           endedAt: DateTime(2026, 9, 10, 10),
         ),
+        activeLabel: 'Active',
       ),
       'Active',
     );

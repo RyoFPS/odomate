@@ -144,7 +144,11 @@ class _ServicesScreenState extends State<ServicesScreen> {
                         ),
                       ),
                       const SizedBox(width: 6),
-                      _countChip('${items.length} item'),
+                      _countChip(
+                        l10n
+                            .t('service_items_count')
+                            .replaceAll('{count}', items.length.toString()),
+                      ),
                     ],
                   ),
                 ),

@@ -177,7 +177,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     ),
                   ),
                   Text(
-                    _copy(context, 'subtitle'),
+                    _t(context, 'history_subtitle'),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.secondary,
                     ),
@@ -203,7 +203,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           IconButton(
             onPressed: _showFilters,
             icon: const Icon(Icons.tune),
-            tooltip: _copy(context, 'filter'),
+            tooltip: _t(context, 'history_filter'),
           ),
         ],
       ),
@@ -255,7 +255,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             vertical: 3,
                           ),
                           child: Text(
-                            '${rides.length} ${_copy(context, 'entries')}',
+                            '${rides.length} ${_t(context, 'history_entries')}',
                             style: TextStyle(
                               color: theme.colorScheme.onSurfaceVariant,
                               fontSize: 11,
@@ -301,7 +301,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     child: Center(
                       child: Text(
                         historyType == _HistoryType.services
-                            ? _copy(context, 'serviceHistoryEmpty')
+                            ? _t(context, 'history_service_empty')
                             : l10n.t('history_empty'),
                       ),
                     ),
@@ -324,7 +324,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   const SizedBox(width: 6),
                   Flexible(
                     child: Text(
-                      _copy(context, 'offline'),
+                      _t(context, 'history_offline'),
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.secondary,
@@ -432,7 +432,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    '${_copy(context, 'summary')} ${_periodLabel(l10n, period)}',
+                    '${_t(context, 'history_summary')} ${_periodLabel(l10n, period)}',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.w600,
@@ -475,7 +475,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   Expanded(
                     child: _metric(
                       context,
-                      _copy(context, 'totalDistance'),
+                      _t(context, 'history_total_distance'),
                       distance.toStringAsFixed(1),
                       Icons.straighten_outlined,
                       suffix: 'km',
@@ -489,15 +489,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       children: [
                         _smallMetric(
                           context,
-                          _copy(context, 'frequency'),
+                          _t(context, 'history_frequency'),
                           '$count',
                           Icons.alt_route,
-                          suffix: 'rit',
+                          suffix: l10n.t('ride_count_unit'),
                         ),
                         const SizedBox(height: 8),
                         _smallMetric(
                           context,
-                          _copy(context, 'averageDaily'),
+                          _t(context, 'history_average_daily'),
                           averageDaily.toStringAsFixed(1),
                           Icons.calendar_view_day_outlined,
                           suffix: 'km',
@@ -523,7 +523,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  '${_copy(context, 'fuelEfficiency')}: —',
+                  '${_t(context, 'history_fuel_efficiency')}: —',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -597,7 +597,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         const SizedBox(width: 4),
         Expanded(
           child: Text(
-            '${rounded > 0 ? '+' : ''}$rounded% ${_copy(context, key)}',
+            '${rounded > 0 ? '+' : ''}$rounded% ${_t(context, key)}',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
@@ -614,9 +614,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
   /// Kunci teks pembanding tiap periode — null kalau periodenya tidak punya
   /// periode sebelumnya untuk dibandingkan.
   static String? _comparisonKey(RideHistoryPeriod period) => switch (period) {
-    RideHistoryPeriod.today => 'vsYesterday',
-    RideHistoryPeriod.lastSevenDays => 'vsLastWeek',
-    RideHistoryPeriod.currentMonth => 'vsLastMonth',
+    RideHistoryPeriod.today => 'history_vs_yesterday',
+    RideHistoryPeriod.lastSevenDays => 'history_vs_last_week',
+    RideHistoryPeriod.currentMonth => 'history_vs_last_month',
     RideHistoryPeriod.all => null,
   };
 
@@ -928,7 +928,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          _copy(context, 'filterTitle'),
+                          _t(context, 'history_filter_title'),
                           // Desain: `text-base font-bold tracking-tight` —
                           // 16px w700, bukan w800.
                           style: theme.textTheme.titleMedium?.copyWith(
@@ -957,7 +957,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   ),
                   const Divider(),
                   Text(
-                    _copy(context, 'dateRange'),
+                    _t(context, 'history_date_range'),
                     style: _filterLabelStyle(theme),
                   ),
                   const SizedBox(height: 8),
@@ -974,7 +974,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    _copy(context, 'historyType'),
+                    _t(context, 'history_type'),
                     style: _filterLabelStyle(theme),
                   ),
                   const SizedBox(height: 8),
@@ -1003,7 +1003,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  Text(_copy(context, 'sort'), style: _filterLabelStyle(theme)),
+                  Text(
+                    _t(context, 'history_sort'),
+                    style: _filterLabelStyle(theme),
+                  ),
                   const SizedBox(height: 8),
                   // Desain memakai `grid grid-cols-3` untuk grup ini: ketiga
                   // chip membagi lebar sama rata, bukan selebar isinya.
@@ -1053,7 +1056,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        child: Text(_copy(context, 'reset')),
+                        child: Text(_t(context, 'history_reset')),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -1085,7 +1088,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             shadowColor: colors.primary.withValues(alpha: .2),
                           ),
                           icon: const Icon(Icons.check, size: 16),
-                          label: Text(_copy(context, 'apply')),
+                          label: Text(_t(context, 'history_apply')),
                         ),
                       ),
                     ],
@@ -1161,12 +1164,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   String _duration(Ride ride, AppLocalizations l10n) {
-    final endedAt = ride.endedAt;
-    if (endedAt == null || endedAt.isBefore(ride.startedAt)) {
-      return l10n.t('active_status');
-    }
     return formatRideDuration(
       ride,
+      activeLabel: l10n.t('active_status'),
       hourSuffix: l10n.t('hours_unit'),
       minuteSuffix: l10n.t('minutes_unit'),
     );
@@ -1184,106 +1184,21 @@ class _HistoryScreenState extends State<HistoryScreen> {
       };
 
   static String _sortLabel(BuildContext context, _HistorySort value) =>
-      _copy(context, switch (value) {
-        _HistorySort.newest => 'newest',
-        _HistorySort.oldest => 'oldest',
-        _HistorySort.distance => 'farthest',
+      _t(context, switch (value) {
+        _HistorySort.newest => 'history_newest',
+        _HistorySort.oldest => 'history_oldest',
+        _HistorySort.distance => 'history_farthest',
       });
 
   static String _historyTypeLabel(BuildContext context, _HistoryType value) =>
-      _copy(context, switch (value) {
-        _HistoryType.all => 'showAllHistory',
-        _HistoryType.rides => 'showRidesOnly',
-        _HistoryType.services => 'showServicesOnly',
+      _t(context, switch (value) {
+        _HistoryType.all => 'history_show_all',
+        _HistoryType.rides => 'history_show_rides_only',
+        _HistoryType.services => 'history_show_services_only',
       });
 
-  static String _copy(BuildContext context, String key) {
-    const copy = {
-      'id': {
-        'subtitle': 'Log waktu & jarak tempuh',
-        'summary': 'Ringkasan',
-        'totalDistance': 'Total Jarak',
-        'frequency': 'Frekuensi',
-        'averageDaily': 'Rata-rata harian',
-        'vsYesterday': 'vs kemarin',
-        'vsLastWeek': 'vs minggu lalu',
-        'vsLastMonth': 'vs bulan lalu',
-        'fuelEfficiency': 'Efisiensi BBM rata-rata',
-        'filter': 'Filter',
-        'entries': 'entri',
-        'offline': 'Semua data tersimpan secara offline',
-        'filterTitle': 'Filter Riwayat',
-        'dateRange': 'Rentang Waktu',
-        'historyType': 'Jenis Riwayat',
-        'showAllHistory': 'Tampilkan semua',
-        'showRidesOnly': 'Tampilkan perjalanan',
-        'showServicesOnly': 'Tampilkan service',
-        'serviceHistoryEmpty': 'Belum ada riwayat service.',
-        'sort': 'Urutan Log',
-        'newest': 'Terbaru',
-        'oldest': 'Terlama',
-        'farthest': 'Jarak Terjauh',
-        'reset': 'Reset Filter',
-        'apply': 'Terapkan Filter',
-      },
-      'en': {
-        'subtitle': 'Time & distance log',
-        'summary': 'Summary',
-        'totalDistance': 'Total distance',
-        'frequency': 'Frequency',
-        'averageDaily': 'Daily average',
-        'vsYesterday': 'vs yesterday',
-        'vsLastWeek': 'vs last week',
-        'vsLastMonth': 'vs last month',
-        'fuelEfficiency': 'Average fuel efficiency',
-        'filter': 'Filter',
-        'entries': 'entries',
-        'offline': 'All data is stored offline',
-        'filterTitle': 'History Filter',
-        'dateRange': 'Date Range',
-        'historyType': 'History Type',
-        'showAllHistory': 'Show all',
-        'showRidesOnly': 'Show rides',
-        'showServicesOnly': 'Show services',
-        'serviceHistoryEmpty': 'No service history yet.',
-        'sort': 'Log Order',
-        'newest': 'Newest',
-        'oldest': 'Oldest',
-        'farthest': 'Farthest Distance',
-        'reset': 'Reset Filters',
-        'apply': 'Apply Filters',
-      },
-      'ja': {
-        'summary': '概要',
-        'totalDistance': '合計距離',
-        'frequency': '回数',
-        'averageDaily': '日平均',
-        'vsYesterday': '前日比',
-        'vsLastWeek': '前週比',
-        'vsLastMonth': '前月比',
-        'fuelEfficiency': '平均燃費',
-        'subtitle': '時間と走行距離の記録',
-        'filter': 'フィルター',
-        'entries': '件',
-        'offline': 'すべてのデータはオフラインで保存されます',
-        'filterTitle': '履歴フィルター',
-        'dateRange': '期間',
-        'historyType': '履歴の種類',
-        'showAllHistory': 'すべて表示',
-        'showRidesOnly': '走行のみ表示',
-        'showServicesOnly': '整備のみ表示',
-        'serviceHistoryEmpty': '整備履歴はまだありません。',
-        'sort': '並び順',
-        'newest': '新しい順',
-        'oldest': '古い順',
-        'farthest': '距離順',
-        'reset': 'リセット',
-        'apply': '適用',
-      },
-    };
-    final language = Localizations.localeOf(context).languageCode;
-    return (copy[language] ?? copy['en'])![key] ?? key;
-  }
+  static String _t(BuildContext context, String key) =>
+      AppLocalizations.of(context).t(key);
 
   static String _dateTime(BuildContext context, DateTime value) {
     final local = value.toLocal();
