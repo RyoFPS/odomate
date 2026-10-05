@@ -91,12 +91,14 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
 
   double? get interval {
     final value = double.tryParse(intervalController.text.trim());
-    return value == null || value <= 0 ? null : value;
+    return value == null || !value.isFinite || value <= 0 ? null : value;
   }
 
   String? get serviceOdometer {
     final value = double.tryParse(odoController.text.trim());
-    return value == null || value < 0 ? null : odoController.text.trim();
+    return value == null || !value.isFinite || value < 0
+        ? null
+        : odoController.text.trim();
   }
 
   bool get valid =>
@@ -109,10 +111,12 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
   String? get targetLabel {
     final odo = double.tryParse(odoController.text.trim());
     final km = interval;
-    if (odo == null || odo < 0 || km == null) return null;
+    if (odo == null || !odo.isFinite || odo < 0 || km == null) return null;
+    final target = odo + km;
+    if (!target.isFinite) return null;
     return AppLocalizations.of(context)
         .t('service_editor_target')
-        .replaceFirst('{value}', serviceKm(odo + km));
+        .replaceFirst('{value}', serviceKm(target));
   }
 
   /// Nama yang sedang diketik cocok dengan salah satu entri katalog, jadi
@@ -147,7 +151,7 @@ class _ServiceEditorScreenState extends State<ServiceEditorScreen> {
   Future<void> _save() async {
     final km = interval;
     final odo = double.tryParse(odoController.text.trim());
-    if (km == null || odo == null || odo < 0) return;
+    if (km == null || odo == null || !odo.isFinite || odo < 0) return;
     setState(() => saving = true);
 
     final repository = widget.repository;

@@ -23,7 +23,7 @@ void main() {
     expect(gpx, contains('<trkpt lat="-6.201" lon="106.801">'));
     expect(
       rideGpxFileName(Ride(startedAt: DateTime(2026, 9, 25))),
-      'odomate-2026-09-25.gpx',
+      'odomate-2026-09-25-000000.gpx',
     );
   });
 }
