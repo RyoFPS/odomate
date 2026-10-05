@@ -108,6 +108,22 @@ void main() {
     );
   });
 
+  test('does not let the previous month overlap the current month', () {
+    final marchEnd = DateTime(2026, 3, 31, 15);
+    expect(
+      previousRideHistoryWindow(marchEnd, RideHistoryPeriod.currentMonth),
+      (start: DateTime(2026, 2, 1), end: DateTime(2026, 3, 1)),
+    );
+    expect(
+      previousPeriodDistance(
+        [Ride(startedAt: DateTime(2026, 3, 1), distanceKm: 99)],
+        marchEnd,
+        RideHistoryPeriod.currentMonth,
+      ),
+      0,
+    );
+  });
+
   test('has nothing to compare the unbounded period against', () {
     expect(
       previousPeriodDistance(const [], now, RideHistoryPeriod.all),
