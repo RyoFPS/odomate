@@ -294,7 +294,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     label: l10n.t('today_upper'),
                     value: _km(todayDistance),
                     unit: 'km',
-                    footer: '$todayRideCount rit',
+                    footer: l10n
+                        .t('ride_count_footer')
+                        .replaceAll('{count}', '$todayRideCount'),
                     icon: Icons.today_outlined,
                   ),
                 ),
@@ -305,7 +307,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     label: l10n.t('last_seven_days_upper'),
                     value: _km(sevenDayDistance),
                     unit: 'km',
-                    footer: '$sevenDayRideCount rit',
+                    footer: l10n
+                        .t('ride_count_footer')
+                        .replaceAll('{count}', '$sevenDayRideCount'),
                     icon: Icons.date_range_outlined,
                   ),
                 ),
@@ -518,7 +522,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Text.rich(
                       TextSpan(
                         text: state.error != null
-                            ? 'Perlu perhatian'
+                            ? l10n.t('attention_needed')
                             : state.active
                             ? l10n.t('ride_active')
                             : l10n.t('no_active_ride'),

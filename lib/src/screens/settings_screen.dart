@@ -49,11 +49,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _serviceInterval = widget.serviceInterval;
   }
 
-  String _copy(String id, String en, String ja) => switch (_language) {
-    'en' => en,
-    'ja' => ja,
-    _ => id,
-  };
+  String _t(String key) => AppLocalizations.of(context).t(key);
 
   @override
   Widget build(BuildContext context) {
@@ -78,11 +74,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
             ),
             Text(
-              _copy(
-                'Konfigurasi OdoMate Motor',
-                'Configure OdoMate Motor',
-                'OdoMate Motor の設定',
-              ),
+              _t('settings_subtitle'),
               style: TextStyle(
                 color: colors.onSurfaceVariant,
                 fontSize: 11,
@@ -104,12 +96,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _section(
             context,
             icon: Icons.palette_outlined,
-            title: _copy('Tema Tampilan', 'Display Theme', '表示テーマ'),
-            description: _copy(
-              'Pilih mode kenyamanan layar saat berkendara siang atau malam.',
-              'Choose a comfortable display for daytime or night riding.',
-              '昼夜の走行に合う表示モードを選択します。',
-            ),
+            title: _t('settings_theme_title'),
+            description: _t('settings_theme_description'),
             child: _segmentedTrack(
               colors,
               SegmentedButton<ThemeMode>(
@@ -130,7 +118,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ButtonSegment(
                     value: ThemeMode.system,
                     icon: const Icon(Icons.brightness_auto_outlined),
-                    label: Text(_copy('Sistem', 'System', 'システム')),
+                    label: Text(_t('settings_theme_system')),
                   ),
                 ],
                 selected: {_themeMode},
@@ -146,12 +134,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _section(
             context,
             icon: Icons.translate_outlined,
-            title: _copy('Bahasa & Satuan', 'Language & Units', '言語と単位'),
-            description: _copy(
-              'Tentukan preferensi bahasa antarmuka dan penghitungan jarak.',
-              'Choose the interface language and distance unit.',
-              '表示言語と距離単位を選択します。',
-            ),
+            title: _t('settings_language_units_title'),
+            description: _t('settings_language_units_description'),
             child: Column(
               children: [
                 _languageTile(
@@ -159,11 +143,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   code: 'id',
                   country: 'ID',
                   title: 'Bahasa Indonesia',
-                  subtitle: _copy(
-                    'Bawaan perangkat',
-                    'Device default',
-                    '端末のデフォルト',
-                  ),
+                  subtitle: _t('settings_language_device_default'),
                 ),
                 const SizedBox(height: 6),
                 _languageTile(
@@ -188,18 +168,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      _copy('Format Metrik Jarak', 'Distance Format', '距離単位'),
+                      _t('settings_distance_format'),
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     Text(
-                      _copy(
-                        'Aktif: ${_unit()}',
-                        'Active: ${_unit()}',
-                        '選択中: ${_unit()}',
-                      ),
+                      _t('settings_active_unit').replaceAll('{unit}', _unit()),
                       style: TextStyle(
                         color: colors.primary,
                         fontSize: 11,
@@ -219,16 +195,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ButtonSegment(
                         value: true,
                         icon: const Icon(Icons.speed_outlined),
-                        label: Text(
-                          _copy('Kilometer (km)', 'Kilometers (km)', 'キロ (km)'),
-                        ),
+                        label: Text(_t('settings_kilometers')),
                       ),
                       ButtonSegment(
                         value: false,
                         icon: const Icon(Icons.pin_drop_outlined),
-                        label: Text(
-                          _copy('Mil (mi)', 'Miles (mi)', 'マイル (mi)'),
-                        ),
+                        label: Text(_t('settings_miles')),
                       ),
                     ],
                     selected: {_usesKilometers},
@@ -246,30 +218,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _section(
             context,
             icon: Icons.two_wheeler_outlined,
-            title: _copy(
-              'Pencatatan & Odometer',
-              'Tracking & Odometer',
-              '走行記録とオドメーター',
-            ),
-            description: _copy(
-              'Atur pengingat jadwal servis dan interval odometer.',
-              'Set service schedule reminders and odometer intervals.',
-              '整備予定の通知とオドメーター間隔を設定します。',
-            ),
+            title: _t('settings_tracking_title'),
+            description: _t('settings_tracking_description'),
             child: Column(
               children: [
                 _switchTile(
                   colors,
-                  title: _copy(
-                    'Pemberitahuan Jadwal Servis',
-                    'Service Schedule Alerts',
-                    '整備スケジュール通知',
-                  ),
-                  subtitle: _copy(
-                    'Pengingat sebelum jadwal servis',
-                    'Reminder before service is due',
-                    '整備時期の前に通知',
-                  ),
+                  title: _t('settings_service_alerts_title'),
+                  subtitle: _t('settings_service_alerts_description'),
                   value: _serviceReminders,
                   onChanged: (value) {
                     setState(() => _serviceReminders = value);
@@ -285,16 +241,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _section(
             context,
             icon: Icons.save_outlined,
-            title: _copy(
-              'Data & Penyimpanan Offline',
-              'Data & Offline Storage',
-              'データとオフライン保存',
-            ),
-            description: _copy(
-              'Log perjalanan tersimpan lokal tanpa koneksi internet terus-menerus.',
-              'Ride logs stay on this device without a constant connection.',
-              '走行ログは常時接続なしで端末内に保存されます。',
-            ),
+            title: _t('settings_storage_title'),
+            description: _t('settings_storage_description'),
             child: _storageStatus(colors),
           ),
           const SizedBox(height: 24),
@@ -352,7 +300,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         Icon(Icons.circle, size: 8, color: colors.tertiary),
         const SizedBox(width: 6),
         Text(
-          _copy('Offline Aktif', 'Offline Ready', 'オフライン対応'),
+          _t('settings_offline_active'),
           style: TextStyle(
             color: colors.tertiary,
             fontSize: 11,
@@ -516,19 +464,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     contentPadding: EdgeInsets.zero,
     dense: true,
     title: Text(
-      _copy(
-        'Interval Pengingat Servis',
-        'Service Reminder Interval',
-        '整備通知の間隔',
-      ),
+      _t('settings_reminder_interval_title'),
       style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
     ),
     subtitle: Text(
-      _copy(
-        'Berdasarkan akumulasi odometer',
-        'Based on odometer distance',
-        'オドメーター距離を基準',
-      ),
+      _t('settings_reminder_interval_description'),
       style: TextStyle(color: colors.onSurfaceVariant, fontSize: 10),
     ),
     trailing: PopupMenuButton<int>(
@@ -594,11 +534,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                _copy('Penyimpanan Log Lokal', 'Local Log Storage', 'ローカルログ保存'),
+                _t('settings_local_storage'),
                 style: TextStyle(color: colors.onSurfaceVariant, fontSize: 11),
               ),
               Text(
-                _copy('Offline siap', 'Offline ready', 'オフライン対応'),
+                _t('settings_offline_ready'),
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
@@ -614,7 +554,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
-            _copy('Optimal', 'Optimal', '正常'),
+            _t('settings_optimal'),
             style: TextStyle(
               color: colors.tertiary,
               fontSize: 10,
@@ -656,11 +596,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       const SizedBox(height: 8),
       Text(
-        _copy(
-          'Dibuat untuk pengendara roda dua • Aman & Offline-First',
-          'Built for two-wheel riders • Safe & Offline-First',
-          '二輪ライダーのために • 安全でオフライン優先',
-        ),
+        _t('settings_footer'),
         textAlign: TextAlign.center,
         style: TextStyle(
           color: colors.onSurfaceVariant.withValues(alpha: .65),

@@ -46,13 +46,12 @@ class _RideDetailScreenState extends State<RideDetailScreen> {
     final l10n = AppLocalizations.of(context);
     final active =
         ride.endedAt == null || ride.endedAt!.isBefore(ride.startedAt);
-    final duration = active
-        ? l10n.t('active_status')
-        : formatRideDuration(
-            ride,
-            hourSuffix: l10n.t('hours_unit'),
-            minuteSuffix: l10n.t('minutes_unit'),
-          );
+    final duration = formatRideDuration(
+      ride,
+      activeLabel: l10n.t('active_status'),
+      hourSuffix: l10n.t('hours_unit'),
+      minuteSuffix: l10n.t('minutes_unit'),
+    );
     final elapsedMinutes = active
         ? 0
         : ride.endedAt!.difference(ride.startedAt).inMinutes;
@@ -72,7 +71,7 @@ class _RideDetailScreenState extends State<RideDetailScreen> {
           IconButton(
             tooltip: l10n.t('share_trip'),
             icon: const Icon(Icons.share_outlined),
-            onPressed: () => _share(context, l10n),
+            onPressed: () => _share(context, l10n, duration),
           ),
           IconButton(
             tooltip: l10n.t('trip_more_options'),
@@ -225,10 +224,14 @@ class _RideDetailScreenState extends State<RideDetailScreen> {
     );
   }
 
-  Future<void> _share(BuildContext context, AppLocalizations l10n) async {
+  Future<void> _share(
+    BuildContext context,
+    AppLocalizations l10n,
+    String duration,
+  ) async {
     final text =
         '${l10n.t('distance')}: ${ride.distanceKm.toStringAsFixed(1)} km\n'
-        '${l10n.t('duration')}: ${ride.endedAt == null ? l10n.t('active_status') : formatRideDuration(ride, hourSuffix: l10n.t('hours_unit'), minuteSuffix: l10n.t('minutes_unit'))}';
+        '${l10n.t('duration')}: $duration';
     try {
       await SharePlus.instance.share(ShareParams(text: text));
     } catch (_) {

@@ -101,12 +101,13 @@ double? distanceChangePercent(double current, double previous) =>
 
 String formatRideDuration(
   Ride ride, {
+  required String activeLabel,
   String hourSuffix = 'h',
   String minuteSuffix = 'm',
 }) {
   final endedAt = ride.endedAt?.toLocal();
   final startedAt = ride.startedAt.toLocal();
-  if (endedAt == null || endedAt.isBefore(startedAt)) return 'Active';
+  if (endedAt == null || endedAt.isBefore(startedAt)) return activeLabel;
 
   final duration = endedAt.difference(startedAt);
   final hours = duration.inHours;
