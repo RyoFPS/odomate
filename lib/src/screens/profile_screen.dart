@@ -113,19 +113,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _load() async {
-    var value = await widget.repository.loadVehicle();
-    final oldPhotoPath = value?.photoPath;
-    if (oldPhotoPath != null && await File(oldPhotoPath).exists()) {
-      try {
-        final persistentPath = await persistProfilePhoto(oldPhotoPath);
-        if (persistentPath != oldPhotoPath) {
-          value = value!.copyWith(photoPath: persistentPath);
-          await widget.repository.saveVehicle(value);
-        }
-      } catch (error) {
-        debugPrint('Could not persist profile photo: $error');
-      }
-    }
+    final value = await widget.repository.loadVehicle();
     if (!mounted) return;
     vehicle = value;
     if (value != null) {
