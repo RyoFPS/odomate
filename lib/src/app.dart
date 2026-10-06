@@ -16,6 +16,7 @@ import 'screens/setup_screen.dart';
 import 'screens/statistics_screen.dart';
 import 'tracking/ride_tracker.dart';
 import 'widgets/profile_photo_cropper.dart';
+import 'widgets/ride_control_button.dart';
 
 /// Tema OdoMate.
 ///
@@ -555,32 +556,28 @@ class _MainNavigationState extends State<MainNavigation> {
   Widget _rideButton(AppLocalizations l10n) {
     final tracker = widget.tracker;
     if (tracker == null) {
-      return FloatingActionButton(
-        shape: const CircleBorder(),
-        elevation: 6,
+      return RideControlButton(
+        key: const ValueKey('global-ride-control'),
+        active: widget.rideActive,
+        label: widget.rideActive ? l10n.t('stop_ride') : l10n.t('start_ride'),
         onPressed: widget.onRide,
-        tooltip: widget.rideActive ? l10n.t('stop_ride') : l10n.t('start_ride'),
-        child: Icon(widget.rideActive ? Icons.stop : Icons.play_arrow),
+        floating: true,
       );
     }
     return ValueListenableBuilder<RideTrackingState>(
       valueListenable: tracker.state,
-      builder: (context, state, _) => FloatingActionButton(
-        shape: const CircleBorder(),
-        elevation: 6,
+      builder: (context, state, _) => RideControlButton(
+        key: const ValueKey('global-ride-control'),
+        active: state.active,
+        label: state.active ? l10n.t('stop_ride') : l10n.t('start_ride'),
         onPressed: () async {
-          if (state.active) {
+          if (tracker.state.value.active) {
             await tracker.stop();
           } else {
             await tracker.start();
           }
         },
-        tooltip: state.active ? l10n.t('stop_ride') : l10n.t('start_ride'),
-        child: Icon(
-          state.active
-              ? (state.waitingForFix ? Icons.gps_not_fixed : Icons.stop)
-              : Icons.play_arrow,
-        ),
+        floating: true,
       ),
     );
   }

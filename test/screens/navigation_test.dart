@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';
@@ -86,6 +87,30 @@ class _ProfilePage extends StatelessWidget {
       const Scaffold(body: Center(child: TextField()));
 }
 
+class _FakeTracker extends RideTracker {
+  final _state = ValueNotifier(const RideTrackingState());
+  int startCount = 0;
+  int stopCount = 0;
+
+  _FakeTracker(super.repository);
+
+  @override
+  ValueListenable<RideTrackingState> get state => _state;
+
+  @override
+  Future<void> start() async {
+    startCount++;
+    _state.value = const RideTrackingState(active: true);
+  }
+
+  @override
+  Future<Ride> stop() async {
+    stopCount++;
+    _state.value = const RideTrackingState();
+    return Ride(startedAt: DateTime.now(), endedAt: DateTime.now());
+  }
+}
+
 void main() {
   testWidgets('bottom navigation preserves four tabs and ride action', (
     tester,
@@ -109,6 +134,126 @@ void main() {
     expect(find.byTooltip('Start Ride'), findsOneWidget);
     expect(find.text('Service'), findsOneWidget);
     expect(find.text('Profile'), findsOneWidget);
+  });
+
+  testWidgets('Home and global ride controls stay reachable and signal STOP', (
+    tester,
+  ) async {
+    final repository = _FakeRepository();
+    final tracker = _FakeTracker(repository);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: odomateTheme(Brightness.light),
+        home: MainNavigation(
+          pages: [
+            HomeScreen(repository: repository, tracker: tracker),
+            const Text('History page'),
+            const Text('Service page'),
+            const Text('Profile page'),
+          ],
+          tracker: tracker,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final homeControl = find.byKey(const ValueKey('home-ride-control'));
+    final globalControl = find.byKey(const ValueKey('global-ride-control'));
+    final card = find.byType(Card).first;
+    final theme = odomateTheme(Brightness.light);
+    expect(tester.getSize(homeControl).height, 64);
+    expect(tester.getSize(homeControl).width, tester.getSize(card).width - 32);
+    expect(tester.getSize(globalControl).height, 64);
+    final fabBounds = tester.getRect(globalControl);
+    final viewportHeight =
+        tester.view.physicalSize.height / tester.view.devicePixelRatio;
+    expect(fabBounds.top, greaterThanOrEqualTo(0));
+    expect(fabBounds.bottom, lessThanOrEqualTo(viewportHeight));
+    expect(
+      tester.getCenter(globalControl).dx,
+      tester.view.physicalSize.width / tester.view.devicePixelRatio / 2,
+    );
+    expect(find.byTooltip('Start Ride'), findsOneWidget);
+    final startButton = tester.widget<FilledButton>(
+      find.descendant(of: homeControl, matching: find.byType(FilledButton)),
+    );
+    final startFab = tester.widget<FloatingActionButton>(
+      find.descendant(
+        of: globalControl,
+        matching: find.byType(FloatingActionButton),
+      ),
+    );
+    expect(
+      startButton.style!.backgroundColor!.resolve({}),
+      theme.colorScheme.primary,
+    );
+    expect(startFab.backgroundColor, theme.colorScheme.primary);
+
+    await tester.tap(homeControl);
+    await tester.pump();
+    expect(tracker.startCount, 1);
+    expect(tracker.state.value.active, isTrue);
+    await tester.pump(const Duration(milliseconds: 220));
+
+    final stopButton = tester.widget<FilledButton>(
+      find.descendant(of: homeControl, matching: find.byType(FilledButton)),
+    );
+    final floatingButton = tester.widget<FloatingActionButton>(
+      find.descendant(
+        of: globalControl,
+        matching: find.byType(FloatingActionButton),
+      ),
+    );
+    expect(find.text('Stop Ride'), findsOneWidget);
+    expect(find.byTooltip('Stop Ride'), findsOneWidget);
+    expect(
+      stopButton.style!.backgroundColor!.resolve({}),
+      theme.colorScheme.error,
+    );
+    expect(
+      stopButton.style!.foregroundColor!.resolve({}),
+      theme.colorScheme.onError,
+    );
+    expect(floatingButton.backgroundColor, theme.colorScheme.error);
+    expect(floatingButton.foregroundColor, theme.colorScheme.onError);
+    expect(find.byIcon(Icons.stop), findsNWidgets(2));
+    expect(
+      tester
+          .widget<ScaleTransition>(
+            find.descendant(
+              of: homeControl,
+              matching: find.byType(ScaleTransition),
+            ),
+          )
+          .scale
+          .value,
+      greaterThan(1),
+    );
+    expect(
+      tester
+          .widget<ScaleTransition>(
+            find.descendant(
+              of: globalControl,
+              matching: find.byType(ScaleTransition),
+            ),
+          )
+          .scale
+          .value,
+      greaterThan(1),
+    );
+
+    await tester.tap(
+      find.descendant(of: globalControl, matching: find.byIcon(Icons.stop)),
+    );
+    await tester.pump();
+    expect(tracker.stopCount, 1);
+    expect(tracker.state.value.active, isFalse);
+    await tester.pumpAndSettle();
+    expect(find.text('Start Ride'), findsOneWidget);
+    expect(
+      tester.getCenter(globalControl).dx,
+      tester.view.physicalSize.width / tester.view.devicePixelRatio / 2,
+    );
   });
 
   testWidgets('keyboard does not lift the bottom bar or the Start button', (

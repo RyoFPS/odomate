@@ -10,6 +10,7 @@ import '../i18n/app_localizations.dart';
 import '../tracking/ride_tracker.dart';
 import '../widgets/metric_tile.dart';
 import '../widgets/odometer_correction_sheet.dart';
+import '../widgets/ride_control_button.dart';
 import '../widgets/ride_map.dart';
 import 'notifications_screen.dart';
 
@@ -558,12 +559,11 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(height: 10),
-            FilledButton.icon(
+            RideControlButton(
+              key: const ValueKey('home-ride-control'),
+              active: state.active,
+              label: state.active ? l10n.t('stop_ride') : l10n.t('start_ride'),
               onPressed: _toggleRide,
-              icon: Icon(state.active ? Icons.stop : Icons.play_arrow),
-              label: Text(
-                state.active ? l10n.t('stop_ride') : l10n.t('start_ride'),
-              ),
             ),
           ],
         ),
