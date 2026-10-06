@@ -16,6 +16,7 @@ import 'screens/setup_screen.dart';
 import 'screens/statistics_screen.dart';
 import 'tracking/ride_tracker.dart';
 import 'widgets/profile_photo_cropper.dart';
+import 'widgets/sheet_frame.dart';
 
 /// Tema OdoMate.
 ///
@@ -570,7 +571,11 @@ class _MainNavigationState extends State<MainNavigation> {
         elevation: 6,
         onPressed: () async {
           if (state.active) {
-            await tracker.stop();
+            await stopRideWithConfirmation(
+              context: context,
+              tracker: tracker,
+              l10n: l10n,
+            );
           } else {
             await tracker.start();
           }
