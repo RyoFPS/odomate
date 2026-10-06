@@ -349,6 +349,12 @@ class AppLocalizations {
           'Berdasarkan akumulasi odometer',
       'settings_local_storage': 'Penyimpanan Log Lokal',
       'settings_offline_ready': 'Offline siap',
+      'settings_clear_map_cache': 'Hapus cache peta',
+      'settings_clear_map_cache_confirmation':
+          'Tile peta tersimpan akan dihapus dan perlu diunduh lagi saat online.',
+      'settings_clear_action': 'Hapus',
+      'settings_map_cache_cleared': 'Cache peta berhasil dihapus',
+      'settings_map_cache_clear_failed': 'Cache peta gagal dihapus',
       'settings_optimal': 'Optimal',
       'settings_footer':
           'Dibuat untuk pengendara roda dua • Aman & Offline-First',
@@ -690,6 +696,12 @@ class AppLocalizations {
       'settings_reminder_interval_description': 'Based on odometer distance',
       'settings_local_storage': 'Local Log Storage',
       'settings_offline_ready': 'Offline ready',
+      'settings_clear_map_cache': 'Clear map cache',
+      'settings_clear_map_cache_confirmation':
+          'Saved map tiles will be removed and downloaded again when online.',
+      'settings_clear_action': 'Clear',
+      'settings_map_cache_cleared': 'Map cache cleared',
+      'settings_map_cache_clear_failed': 'Could not clear map cache',
       'settings_optimal': 'Optimal',
       'settings_footer': 'Built for two-wheel riders • Safe & Offline-First',
       'ride_count_footer': '{count} rides',
@@ -1018,6 +1030,12 @@ class AppLocalizations {
       'settings_reminder_interval_description': 'オドメーター距離を基準',
       'settings_local_storage': 'ローカルログ保存',
       'settings_offline_ready': 'オフライン対応',
+      'settings_clear_map_cache': '地図キャッシュを削除',
+      'settings_clear_map_cache_confirmation':
+          '保存済みの地図タイルを削除します。オンライン時に再度ダウンロードされます。',
+      'settings_clear_action': '削除',
+      'settings_map_cache_cleared': '地図キャッシュを削除しました',
+      'settings_map_cache_clear_failed': '地図キャッシュを削除できませんでした',
       'settings_optimal': '正常',
       'settings_footer': '二輪ライダーのために • 安全でオフライン優先',
       'ride_count_footer': '{count}回',
