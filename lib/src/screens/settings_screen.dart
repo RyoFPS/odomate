@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:share_plus/share_plus.dart';
 
+import '../diagnostics/diagnostic_log.dart';
 import '../data/map_tile_cache.dart';
 import '../i18n/app_localizations.dart';
 
@@ -42,6 +44,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late bool _usesKilometers = widget.usesKilometers;
   late bool _serviceReminders = widget.serviceReminders;
   late int _serviceInterval = widget.serviceInterval;
+  bool _diagnosticLogsEnabled = DiagnosticLog.instance.enabled;
+  bool _sharingDiagnostics = false;
   bool _clearingMapCache = false;
 
   @override
@@ -308,6 +312,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           ),
+          const SizedBox(height: 16),
+          _section(
+            context,
+            icon: Icons.privacy_tip_outlined,
+            title: _t('settings_diagnostics_title'),
+            description: _t('settings_diagnostics_description'),
+            child: Column(
+              children: [
+                _switchTile(
+                  colors,
+                  title: _t('settings_diagnostics_opt_in'),
+                  subtitle: _t('settings_diagnostics_opt_in_description'),
+                  value: _diagnosticLogsEnabled,
+                  onChanged: _setDiagnosticLogsEnabled,
+                ),
+                Divider(height: 1, color: colors.outlineVariant),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: OutlinedButton.icon(
+                    onPressed: _diagnosticLogsEnabled && !_sharingDiagnostics
+                        ? _exportDiagnostics
+                        : null,
+                    icon: const Icon(Icons.ios_share_outlined),
+                    label: Text(_t('settings_diagnostics_export')),
+                  ),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 24),
           _footer(colors),
         ],
@@ -566,6 +599,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     ),
   );
+
+  Future<void> _setDiagnosticLogsEnabled(bool value) async {
+    setState(() => _diagnosticLogsEnabled = value);
+    final saved = await DiagnosticLog.instance.setEnabled(value);
+    if (!mounted || saved) return;
+    setState(() => _diagnosticLogsEnabled = DiagnosticLog.instance.enabled);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(_t('settings_diagnostics_save_failed'))),
+    );
+  }
+
+  Future<void> _exportDiagnostics() async {
+    setState(() => _sharingDiagnostics = true);
+    try {
+      final file = await DiagnosticLog.instance.exportFile();
+      if (!mounted) return;
+      if (file == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_t('settings_diagnostics_empty'))),
+        );
+        return;
+      }
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [file],
+          fileNameOverrides: [DiagnosticLog.exportFileName],
+          subject: _t('settings_diagnostics_export'),
+        ),
+      );
+    } catch (error, stackTrace) {
+      debugPrint('Failed to export diagnostic log: $error\n$stackTrace');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_t('settings_diagnostics_export_failed'))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _sharingDiagnostics = false);
+    }
+  }
 
   String _unit() => _usesKilometers ? 'km' : 'mi';
 
