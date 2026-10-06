@@ -343,6 +343,16 @@ class AppLocalizations {
       'settings_service_alerts_description': 'Pengingat sebelum jadwal servis',
       'settings_storage_title': 'Data & Penyimpanan Offline',
       'settings_storage_description': 'Log perjalanan tersimpan lokal tanpa koneksi internet terus-menerus.',
+      'settings_diagnostics_title': 'Privasi & Diagnostik',
+      'settings_diagnostics_description': 'Jika diaktifkan, jenis error dan stack trace disimpan di perangkat ini. Ekspor menambahkan versi aplikasi dan sistem operasi. Tidak ada yang dikirim otomatis; data perjalanan, foto, dan lokasi tidak disertakan.',
+      'settings_diagnostics_opt_in': 'Kumpulkan log error aplikasi',
+      'settings_diagnostics_opt_in_description':
+          'Nonaktif secara bawaan. Menonaktifkan akan menghapus log tersimpan.',
+      'settings_diagnostics_export': 'Ekspor log diagnostik',
+      'settings_diagnostics_empty': 'Belum ada error yang tersimpan.',
+      'settings_diagnostics_export_failed': 'Gagal menyiapkan log diagnostik.',
+      'settings_diagnostics_save_failed':
+          'Gagal menyimpan pengaturan diagnostik.',
       'settings_offline_active': 'Offline Aktif',
       'settings_reminder_interval_title': 'Interval Pengingat Servis',
       'settings_reminder_interval_description':
@@ -685,6 +695,17 @@ class AppLocalizations {
       'settings_storage_title': 'Data & Offline Storage',
       'settings_storage_description':
           'Ride logs stay on this device without a constant connection.',
+      'settings_diagnostics_title': 'Privacy & Diagnostics',
+      'settings_diagnostics_description': 'When enabled, error types and stack traces are saved on this device. Export adds app and operating system versions. Nothing is sent automatically; ride, photo, and location data are excluded.',
+      'settings_diagnostics_opt_in': 'Collect app error logs',
+      'settings_diagnostics_opt_in_description':
+          'Off by default. Turning this off deletes saved logs.',
+      'settings_diagnostics_export': 'Export diagnostic logs',
+      'settings_diagnostics_empty': 'No diagnostic errors are saved.',
+      'settings_diagnostics_export_failed':
+          'Could not prepare diagnostic logs.',
+      'settings_diagnostics_save_failed':
+          'Could not save the diagnostic setting.',
       'settings_offline_active': 'Offline Ready',
       'settings_reminder_interval_title': 'Service Reminder Interval',
       'settings_reminder_interval_description': 'Based on odometer distance',
@@ -1013,6 +1034,15 @@ class AppLocalizations {
       'settings_service_alerts_description': '整備時期の前に通知',
       'settings_storage_title': 'データとオフライン保存',
       'settings_storage_description': '走行ログは常時接続なしで端末内に保存されます。',
+      'settings_diagnostics_title': 'プライバシーと診断',
+      'settings_diagnostics_description': '有効にすると、アプリのエラー種類とスタックトレースをこの端末に保存します。エクスポートにはアプリとOSのバージョンが含まれます。自動送信は行わず、走行データ、写真、位置情報は含みません。',
+      'settings_diagnostics_opt_in': 'アプリのエラーログを記録',
+      'settings_diagnostics_opt_in_description':
+          '初期状態ではオフです。オフにすると保存済みログを削除します。',
+      'settings_diagnostics_export': '診断ログをエクスポート',
+      'settings_diagnostics_empty': '保存された診断エラーはありません。',
+      'settings_diagnostics_export_failed': '診断ログを準備できませんでした。',
+      'settings_diagnostics_save_failed': '診断設定を保存できませんでした。',
       'settings_offline_active': 'オフライン対応',
       'settings_reminder_interval_title': '整備通知の間隔',
       'settings_reminder_interval_description': 'オドメーター距離を基準',
