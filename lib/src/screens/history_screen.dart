@@ -640,23 +640,98 @@ class _HistoryScreenState extends State<HistoryScreen> {
     String? suffix,
   }) {
     final theme = Theme.of(context);
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(10),
-      constraints: const BoxConstraints(minHeight: 52),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: theme.colorScheme.outlineVariant),
+    return Semantics(
+      container: true,
+      label: '$label, $value${suffix == null ? '' : ' $suffix'}',
+      excludeSemantics: true,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(10),
+        constraints: const BoxConstraints(minHeight: 52),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: theme.colorScheme.outlineVariant),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: theme.textTheme.bodySmall),
+                  const SizedBox(height: 2),
+                  Text.rich(
+                    TextSpan(
+                      text: value,
+                      children: suffix == null
+                          ? const []
+                          : [
+                              TextSpan(
+                                text: ' $suffix',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                    ),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: theme.colorScheme.onSurface,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(icon, size: 16, color: theme.colorScheme.primary),
+          ],
+        ),
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
+    );
+  }
+
+  Widget _metric(
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon, {
+    String? suffix,
+    Widget? detail,
+  }) {
+    final theme = Theme.of(context);
+    return Semantics(
+      container: true,
+      label: '$label, $value${suffix == null ? '' : ' $suffix'}',
+      excludeSemantics: true,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        // Tingginya tidak dipatok: di desain blok ini ada di dalam sel grid
+        // dengan `justify-between`, jadi tingginya mengikuti kolom di
+        // sebelahnya (lihat `IntrinsicHeight` di pemanggilnya).
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: theme.colorScheme.outlineVariant),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          // Label menempel atas, angkanya ke bawah — padanan `justify-between`
+          // desain untuk dua kelompok isi yang dimiliki app ini.
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Expanded(child: Text(label, style: theme.textTheme.bodySmall)),
+                Icon(icon, size: 17, color: theme.colorScheme.primary),
+              ],
+            ),
+            const SizedBox(height: 5),
+            // Angka dan baris pembandingnya turun bersama sebagai satu blok,
+            // jadi `spaceBetween` hanya membagi ruang antara label dan blok ini.
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: theme.textTheme.bodySmall),
-                const SizedBox(height: 2),
                 Text.rich(
                   TextSpan(
                     text: value,
@@ -672,85 +747,20 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             ),
                           ],
                   ),
-                  style: theme.textTheme.titleMedium?.copyWith(
+                  style: theme.textTheme.titleLarge?.copyWith(
                     color: theme.colorScheme.onSurface,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
+                if (detail != null) ...[
+                  // `mt-2` di desain = 8.
+                  const SizedBox(height: 8),
+                  detail,
+                ],
               ],
             ),
-          ),
-          Icon(icon, size: 16, color: theme.colorScheme.primary),
-        ],
-      ),
-    );
-  }
-
-  Widget _metric(
-    BuildContext context,
-    String label,
-    String value,
-    IconData icon, {
-    String? suffix,
-    Widget? detail,
-  }) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.all(12),
-      // Tingginya tidak dipatok: di desain blok ini ada di dalam sel grid
-      // dengan `justify-between`, jadi tingginya mengikuti kolom di
-      // sebelahnya (lihat `IntrinsicHeight` di pemanggilnya).
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: theme.colorScheme.outlineVariant),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        // Label menempel atas, angkanya ke bawah — padanan `justify-between`
-        // desain untuk dua kelompok isi yang dimiliki app ini.
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Expanded(child: Text(label, style: theme.textTheme.bodySmall)),
-              Icon(icon, size: 17, color: theme.colorScheme.primary),
-            ],
-          ),
-          const SizedBox(height: 5),
-          // Angka dan baris pembandingnya turun bersama sebagai satu blok,
-          // jadi `spaceBetween` hanya membagi ruang antara label dan blok ini.
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text.rich(
-                TextSpan(
-                  text: value,
-                  children: suffix == null
-                      ? const []
-                      : [
-                          TextSpan(
-                            text: ' $suffix',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                ),
-                style: theme.textTheme.titleLarge?.copyWith(
-                  color: theme.colorScheme.onSurface,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              if (detail != null) ...[
-                // `mt-2` di desain = 8.
-                const SizedBox(height: 8),
-                detail,
-              ],
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -761,100 +771,113 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final accent = active
         ? theme.colorScheme.tertiary
         : theme.colorScheme.primary;
-    return Card(
-      margin: const EdgeInsets.only(bottom: 10),
-      child: InkWell(
-        onTap: () async {
-          final deleted = await Navigator.of(context).push<bool>(
-            MaterialPageRoute<bool>(
-              builder: (_) =>
-                  RideDetailScreen(ride: ride, repository: widget.repository),
+    final semanticLabel = [
+      l10n.t('ride'),
+      active ? l10n.t('active_status') : l10n.t('completed_status'),
+      _dateTime(context, ride.startedAt),
+      '${ride.distanceKm.toStringAsFixed(1)} km',
+      if (!active) _duration(ride, l10n),
+    ].join(', ');
+
+    Future<void> openRide() async {
+      final deleted = await Navigator.of(context).push<bool>(
+        MaterialPageRoute<bool>(
+          builder: (_) =>
+              RideDetailScreen(ride: ride, repository: widget.repository),
+        ),
+      );
+      if (!context.mounted) return;
+      setState(() {
+        future = _load();
+      });
+      if (deleted != true) return;
+      final colors = Theme.of(context).colorScheme;
+      final messenger = ScaffoldMessenger.of(context);
+      messenger
+        ..clearMaterialBanners()
+        ..showMaterialBanner(
+          MaterialBanner(
+            backgroundColor: colors.tertiaryContainer,
+            leading: Icon(Icons.check_circle_outline, color: colors.tertiary),
+            content: Text(
+              AppLocalizations.of(context).t('delete_trip_success'),
             ),
-          );
-          if (!context.mounted) return;
-          setState(() {
-            future = _load();
-          });
-          if (deleted != true) return;
-          final colors = Theme.of(context).colorScheme;
-          final messenger = ScaffoldMessenger.of(context);
-          messenger
-            ..clearMaterialBanners()
-            ..showMaterialBanner(
-              MaterialBanner(
-                backgroundColor: colors.tertiaryContainer,
-                leading: Icon(
-                  Icons.check_circle_outline,
-                  color: colors.tertiary,
-                ),
-                content: Text(
-                  AppLocalizations.of(context).t('delete_trip_success'),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: messenger.hideCurrentMaterialBanner,
-                    child: Text(
-                      MaterialLocalizations.of(context).closeButtonLabel,
-                    ),
-                  ),
-                ],
-              ),
-            );
-        },
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  _status(
-                    context,
-                    active
-                        ? l10n.t('active_status')
-                        : l10n.t('completed_status'),
-                    accent,
-                    active,
-                  ),
-                  const Spacer(),
-                  Text(
-                    _dateTime(context, ride.startedAt),
-                    style: theme.textTheme.bodySmall,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: accent.withValues(alpha: .12),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(Icons.two_wheeler, color: accent, size: 20),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${ride.distanceKm.toStringAsFixed(1)} km',
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        if (!active) Text(_duration(ride, l10n)),
-                      ],
-                    ),
-                  ),
-                  const Icon(Icons.chevron_right),
-                ],
+            actions: [
+              TextButton(
+                onPressed: messenger.hideCurrentMaterialBanner,
+                child: Text(MaterialLocalizations.of(context).closeButtonLabel),
               ),
             ],
+          ),
+        );
+    }
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: Semantics(
+        container: true,
+        label: semanticLabel,
+        button: true,
+        enabled: true,
+        onTap: openRide,
+        excludeSemantics: true,
+        child: InkWell(
+          onTap: openRide,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    _status(
+                      context,
+                      active
+                          ? l10n.t('active_status')
+                          : l10n.t('completed_status'),
+                      accent,
+                      active,
+                    ),
+                    const Spacer(),
+                    Text(
+                      _dateTime(context, ride.startedAt),
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: accent.withValues(alpha: .12),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(Icons.two_wheeler, color: accent, size: 20),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${ride.distanceKm.toStringAsFixed(1)} km',
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          if (!active) Text(_duration(ride, l10n)),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

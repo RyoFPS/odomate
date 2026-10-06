@@ -558,11 +558,21 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(height: 10),
-            FilledButton.icon(
-              onPressed: _toggleRide,
-              icon: Icon(state.active ? Icons.stop : Icons.play_arrow),
-              label: Text(
-                state.active ? l10n.t('stop_ride') : l10n.t('start_ride'),
+            Semantics(
+              container: true,
+              label: state.active
+                  ? '${l10n.t('stop_ride')}, ${l10n.t('ride_active')}'
+                  : l10n.t('start_ride'),
+              button: true,
+              enabled: true,
+              onTap: _toggleRide,
+              excludeSemantics: true,
+              child: FilledButton.icon(
+                onPressed: _toggleRide,
+                icon: Icon(state.active ? Icons.stop : Icons.play_arrow),
+                label: Text(
+                  state.active ? l10n.t('stop_ride') : l10n.t('start_ride'),
+                ),
               ),
             ),
           ],

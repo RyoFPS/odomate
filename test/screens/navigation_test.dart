@@ -1,10 +1,14 @@
+import 'dart:ui' show Tristate;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:odomate/src/app.dart';
 import 'package:odomate/src/data/odomate_repository.dart';
 import 'package:odomate/src/domain/models.dart';
 import 'package:odomate/src/domain/ride_statistics.dart';
+import 'package:odomate/src/i18n/app_localizations.dart';
 import 'package:odomate/src/screens/home_screen.dart';
 import 'package:odomate/src/screens/history_screen.dart';
 import 'package:odomate/src/screens/profile_screen.dart';
@@ -87,6 +91,117 @@ class _ProfilePage extends StatelessWidget {
 }
 
 void main() {
+  testWidgets('primary ride and history controls expose clear semantics', (
+    tester,
+  ) async {
+    final ride = Ride(
+      id: 1,
+      startedAt: DateTime(2026, 9, 10, 9),
+      distanceKm: 12.5,
+    );
+    final repository = _FakeRepository(rides: [ride]);
+    final tracker = RideTracker(
+      repository,
+      positionStream: const Stream.empty(),
+      locationServiceEnabled: () async => true,
+      checkPermission: () async => LocationPermission.always,
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MainNavigation(
+          pages: [
+            HomeScreen(repository: repository, tracker: tracker),
+            HistoryScreen(repository: repository),
+            const Text('Service page'),
+            const Text('Profile page'),
+          ],
+          tracker: tracker,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final l10n = AppLocalizations(const Locale('id'));
+    final startLabel = l10n.t('start_ride');
+    final startFinder = find.bySemanticsLabel(startLabel);
+    expect(startFinder, findsNWidgets(2));
+    final startData = tester.semantics
+        .find(startFinder.first)
+        .getSemanticsData();
+    expect(startData.hasAction(SemanticsAction.tap), isTrue);
+    expect(startData.flagsCollection.isButton, isTrue);
+    expect(startData.flagsCollection.isEnabled, Tristate.isTrue);
+
+    final todayLabel = l10n.t('today_upper');
+    final rideCount = l10n.t('ride_count_footer').replaceAll('{count}', '0');
+    expect(
+      find.bySemanticsLabel('$todayLabel, 0 km, $rideCount'),
+      findsOneWidget,
+    );
+    final homeTraversalLabels = tester.semantics
+        .simulatedAccessibilityTraversal()
+        .map((node) => node.getSemanticsData().label)
+        .toList();
+    final todayIndex = homeTraversalLabels.indexOf(
+      '$todayLabel, 0 km, $rideCount',
+    );
+    final sevenDayLabel =
+        '${l10n.t('last_seven_days_upper')}, 0 km, $rideCount';
+    expect(homeTraversalLabels.indexOf(startLabel), lessThan(todayIndex));
+    expect(todayIndex, lessThan(homeTraversalLabels.indexOf(sevenDayLabel)));
+
+    await tracker.start();
+    await tester.pumpAndSettle();
+    final stopLabel = '${l10n.t('stop_ride')}, ${l10n.t('ride_active')}';
+    final stopFinder = find.bySemanticsLabel(stopLabel);
+    expect(stopFinder, findsNWidgets(2));
+    final stopData = tester.semantics.find(stopFinder.first).getSemanticsData();
+    expect(stopData.hasAction(SemanticsAction.tap), isTrue);
+    expect(stopData.flagsCollection.isButton, isTrue);
+    expect(stopData.flagsCollection.isEnabled, Tristate.isTrue);
+
+    await tester.tap(find.byTooltip(l10n.t('history')));
+    await tester.pumpAndSettle();
+    final historyContext = tester.element(find.byType(HistoryScreen));
+    final materialLocalizations = MaterialLocalizations.of(historyContext);
+    final date = materialLocalizations.formatShortDate(ride.startedAt);
+    final time = materialLocalizations.formatTimeOfDay(
+      TimeOfDay.fromDateTime(ride.startedAt),
+    );
+    final rideFinder = find.bySemanticsLabel(
+      [
+        l10n.t('ride'),
+        l10n.t('active_status'),
+        '$date, $time',
+        '12.5 km',
+      ].join(', '),
+    );
+    expect(rideFinder, findsOneWidget);
+    final rideData = tester.semantics.find(rideFinder).getSemanticsData();
+    expect(rideData.hasAction(SemanticsAction.tap), isTrue);
+    expect(rideData.flagsCollection.isButton, isTrue);
+    expect(rideData.flagsCollection.isEnabled, Tristate.isTrue);
+    final historyTraversalLabels = tester.semantics
+        .simulatedAccessibilityTraversal()
+        .map((node) => node.getSemanticsData().label)
+        .toList();
+    expect(
+      historyTraversalLabels.indexOf(
+        '${l10n.t('history_total_distance')}, 12.5 km',
+      ),
+      lessThan(
+        historyTraversalLabels.indexOf(
+          [
+            l10n.t('ride'),
+            l10n.t('active_status'),
+            '$date, $time',
+            '12.5 km',
+          ].join(', '),
+        ),
+      ),
+    );
+  });
+
   testWidgets('bottom navigation preserves four tabs and ride action', (
     tester,
   ) async {

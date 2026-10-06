@@ -555,35 +555,61 @@ class _MainNavigationState extends State<MainNavigation> {
   Widget _rideButton(AppLocalizations l10n) {
     final tracker = widget.tracker;
     if (tracker == null) {
-      return FloatingActionButton(
-        shape: const CircleBorder(),
-        elevation: 6,
-        onPressed: widget.onRide,
-        tooltip: widget.rideActive ? l10n.t('stop_ride') : l10n.t('start_ride'),
-        child: Icon(widget.rideActive ? Icons.stop : Icons.play_arrow),
+      return Semantics(
+        container: true,
+        label: _rideActionLabel(l10n, widget.rideActive),
+        button: true,
+        enabled: widget.onRide != null,
+        onTap: widget.onRide,
+        excludeSemantics: true,
+        child: FloatingActionButton(
+          shape: const CircleBorder(),
+          elevation: 6,
+          onPressed: widget.onRide,
+          tooltip: widget.rideActive
+              ? l10n.t('stop_ride')
+              : l10n.t('start_ride'),
+          child: Icon(widget.rideActive ? Icons.stop : Icons.play_arrow),
+        ),
       );
     }
     return ValueListenableBuilder<RideTrackingState>(
       valueListenable: tracker.state,
-      builder: (context, state, _) => FloatingActionButton(
-        shape: const CircleBorder(),
-        elevation: 6,
-        onPressed: () async {
+      builder: (context, state, _) {
+        Future<void> toggleRide() async {
           if (state.active) {
             await tracker.stop();
           } else {
             await tracker.start();
           }
-        },
-        tooltip: state.active ? l10n.t('stop_ride') : l10n.t('start_ride'),
-        child: Icon(
-          state.active
-              ? (state.waitingForFix ? Icons.gps_not_fixed : Icons.stop)
-              : Icons.play_arrow,
-        ),
-      ),
+        }
+
+        return Semantics(
+          container: true,
+          label: _rideActionLabel(l10n, state.active),
+          button: true,
+          enabled: true,
+          onTap: toggleRide,
+          excludeSemantics: true,
+          child: FloatingActionButton(
+            shape: const CircleBorder(),
+            elevation: 6,
+            onPressed: toggleRide,
+            tooltip: state.active ? l10n.t('stop_ride') : l10n.t('start_ride'),
+            child: Icon(
+              state.active
+                  ? (state.waitingForFix ? Icons.gps_not_fixed : Icons.stop)
+                  : Icons.play_arrow,
+            ),
+          ),
+        );
+      },
     );
   }
+
+  String _rideActionLabel(AppLocalizations l10n, bool active) => active
+      ? '${l10n.t('stop_ride')}, ${l10n.t('ride_active')}'
+      : l10n.t('start_ride');
 
   Widget _page() {
     final page = widget.pages[index];
