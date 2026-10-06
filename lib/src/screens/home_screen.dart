@@ -266,86 +266,90 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: ValueListenableBuilder<RideTrackingState>(
         valueListenable: widget.tracker.state,
-        builder: (context, state, child) => ListView(
-          // 16 = jarak header->konten di design (header h-16 + main pt-20).
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-          children: [
-            _vehicleCard(context, state, l10n),
-            if (state.active) ...[
-              const SizedBox(height: 12),
-              Card(
-                key: const ValueKey('home-live-ride-map'),
-                clipBehavior: Clip.antiAlias,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                      child: Text(
-                        l10n.t('live_route'),
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
+        builder: (context, state, child) => RefreshIndicator(
+          onRefresh: _refresh,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            // 16 = jarak header->konten di design (header h-16 + main pt-20).
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+            children: [
+              _vehicleCard(context, state, l10n),
+              if (state.active) ...[
+                const SizedBox(height: 12),
+                Card(
+                  key: const ValueKey('home-live-ride-map'),
+                  clipBehavior: Clip.antiAlias,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                        child: Text(
+                          l10n.t('live_route'),
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
-                    ),
-                    RideMap(
-                      points: state.routePoints,
-                      followCurrentLocation: true,
-                      height: 220,
-                      gpsAccuracyMeters: state.gpsAccuracyMeters,
-                    ),
-                  ],
+                      RideMap(
+                        points: state.routePoints,
+                        followCurrentLocation: true,
+                        height: 220,
+                        gpsAccuracyMeters: state.gpsAccuracyMeters,
+                      ),
+                    ],
+                  ),
                 ),
+              ],
+              const SizedBox(height: 12),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: MetricTile(
+                      label: l10n.t('today_upper'),
+                      value: _km(todayDistance),
+                      suffix: 'km',
+                      footer: l10n
+                          .t('ride_count_footer')
+                          .replaceAll('{count}', '$todayRideCount'),
+                      icon: Icons.today_outlined,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: MetricTile(
+                      label: l10n.t('last_seven_days_upper'),
+                      value: _km(sevenDayDistance),
+                      suffix: 'km',
+                      footer: l10n
+                          .t('ride_count_footer')
+                          .replaceAll('{count}', '$sevenDayRideCount'),
+                      icon: Icons.date_range_outlined,
+                    ),
+                  ),
+                ],
               ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _shortcutCard(
+                      context,
+                      icon: Icons.history,
+                      title: l10n.t('trip_history'),
+                      subtitle: l10n.t('view_saved_trips'),
+                      onTap: () => widget.onNavigate?.call(1),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              _tripStatisticsCard(context, l10n),
+              const SizedBox(height: 12),
+              _serviceSummary(context, l10n),
             ],
-            const SizedBox(height: 12),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: MetricTile(
-                    label: l10n.t('today_upper'),
-                    value: _km(todayDistance),
-                    suffix: 'km',
-                    footer: l10n
-                        .t('ride_count_footer')
-                        .replaceAll('{count}', '$todayRideCount'),
-                    icon: Icons.today_outlined,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: MetricTile(
-                    label: l10n.t('last_seven_days_upper'),
-                    value: _km(sevenDayDistance),
-                    suffix: 'km',
-                    footer: l10n
-                        .t('ride_count_footer')
-                        .replaceAll('{count}', '$sevenDayRideCount'),
-                    icon: Icons.date_range_outlined,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _shortcutCard(
-                    context,
-                    icon: Icons.history,
-                    title: l10n.t('trip_history'),
-                    subtitle: l10n.t('view_saved_trips'),
-                    onTap: () => widget.onNavigate?.call(1),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            _tripStatisticsCard(context, l10n),
-            const SizedBox(height: 12),
-            _serviceSummary(context, l10n),
-          ],
+          ),
         ),
       ),
     );
