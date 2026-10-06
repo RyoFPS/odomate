@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:odomate/src/data/odomate_repository.dart';
 import 'package:odomate/src/domain/models.dart';
+import 'package:odomate/src/domain/ride_statistics.dart';
 import 'package:odomate/src/i18n/app_localizations.dart';
 import 'package:odomate/src/screens/statistics_screen.dart';
 
@@ -26,7 +27,50 @@ class _FakeRepository extends OdomateRepository {
   }
 
   @override
-  Future<List<Ride>> listRides() async => rides;
+  Future<List<Ride>> listRides() async =>
+      throw StateError('StatisticsScreen must use SQL aggregates');
+
+  @override
+  Future<List<DailyRideStatistics>> aggregateRideStatistics(
+    DateTime from,
+    DateTime until,
+  ) async {
+    final grouped = <DateTime, List<Ride>>{};
+    for (final ride in rides) {
+      final startedAt = ride.startedAt.toLocal();
+      if (startedAt.isBefore(from.toLocal()) ||
+          startedAt.isAfter(until.toLocal())) {
+        continue;
+      }
+      final day = DateTime(startedAt.year, startedAt.month, startedAt.day);
+      grouped.putIfAbsent(day, () => []).add(ride);
+    }
+    return [
+      for (final entry in grouped.entries)
+        DailyRideStatistics(
+          day: entry.key,
+          totalDistanceKm: entry.value
+              .where((ride) => ride.startedAt.isBefore(until.toLocal()))
+              .fold<double>(0, (sum, ride) => sum + ride.distanceKm),
+          chartDistanceKm: entry.value.fold<double>(
+            0,
+            (sum, ride) => sum + ride.distanceKm,
+          ),
+          rideCount: entry.value
+              .where((ride) => ride.startedAt.isBefore(until.toLocal()))
+              .length,
+          totalDuration: entry.value
+              .where((ride) => ride.startedAt.isBefore(until.toLocal()))
+              .fold(Duration.zero, (sum, ride) {
+                final endedAt = ride.endedAt;
+                if (endedAt == null || endedAt.isBefore(ride.startedAt)) {
+                  return sum;
+                }
+                return sum + endedAt.difference(ride.startedAt);
+              }),
+        ),
+    ];
+  }
 
   @override
   Future<List<ServiceItem>> listServices() async => services;

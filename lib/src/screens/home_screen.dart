@@ -62,16 +62,24 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _refresh() async {
     final value = await widget.repository.loadVehicle();
     final serviceItems = await widget.repository.listServices();
-    final rides = await widget.repository.listRides();
     final now = DateTime.now();
-    final today = calculateRideStatistics(rides, now, StatisticsPeriod.today);
-    final sevenDay = calculateRideStatistics(
-      rides,
+    final todayStart = DateTime(now.year, now.month, now.day);
+    final weekStart = todayStart.subtract(const Duration(days: 6));
+    final monthStart = DateTime(now.year, now.month);
+    final from = weekStart.isBefore(monthStart) ? weekStart : monthStart;
+    final rideDays = await widget.repository.aggregateRideStatistics(from, now);
+    final today = calculateRideStatisticsFromDaily(
+      rideDays,
+      now,
+      StatisticsPeriod.today,
+    );
+    final sevenDay = calculateRideStatisticsFromDaily(
+      rideDays,
       now,
       StatisticsPeriod.lastSevenDays,
     );
-    final month = calculateRideStatistics(
-      rides,
+    final month = calculateRideStatisticsFromDaily(
+      rideDays,
       now,
       StatisticsPeriod.currentMonth,
     );

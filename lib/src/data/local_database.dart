@@ -180,6 +180,9 @@ class LocalDatabase {
       'CREATE INDEX IF NOT EXISTS idx_ride_points_ride_id_id '
       'ON ride_points(ride_id, id)',
     );
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_rides_started_at ON rides(started_at)',
+    );
   }
 
   static Future<void> _create(Database db, int version) async {
