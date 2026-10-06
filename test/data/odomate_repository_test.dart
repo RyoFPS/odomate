@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:odomate/src/data/odomate_repository.dart';
 import 'package:odomate/src/domain/models.dart';
+import 'package:odomate/src/domain/ride_statistics.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -33,6 +34,9 @@ void main() {
           );
           await db.execute(
             "CREATE TABLE rides (id INTEGER PRIMARY KEY, started_at TEXT NOT NULL, ended_at TEXT, distance_km REAL NOT NULL, odometer_applied_km REAL NOT NULL DEFAULT 0, notes TEXT NOT NULL DEFAULT '', weather TEXT NOT NULL DEFAULT '')",
+          );
+          await db.execute(
+            'CREATE INDEX idx_rides_started_at ON rides(started_at)',
           );
           await db.execute(
             'CREATE TABLE ride_points (id INTEGER PRIMARY KEY, ride_id INTEGER NOT NULL, latitude REAL NOT NULL, longitude REAL NOT NULL, accuracy_m REAL NOT NULL, recorded_at TEXT NOT NULL)',
@@ -170,6 +174,96 @@ void main() {
     );
     expect(await repository.listRidesPage(limit: 2, offset: 3), isEmpty);
   });
+
+  test(
+    'SQL ride aggregates match Dart statistics with many stored rides',
+    () async {
+      final now = DateTime(2026, 10, 5, 12, 30);
+      final samples = [
+        Ride(
+          startedAt: DateTime(2026, 5, 1),
+          endedAt: DateTime(2026, 5, 1, 0, 20),
+          distanceKm: 2.5,
+        ),
+        Ride(
+          startedAt: DateTime(2026, 10, 5, 11),
+          endedAt: DateTime(2026, 10, 5, 12),
+          distanceKm: 5,
+        ),
+        Ride(startedAt: DateTime(2026, 10, 5, 10), distanceKm: 0),
+        Ride(
+          startedAt: DateTime(2026, 10, 4, 23, 30),
+          endedAt: DateTime(2026, 10, 4, 23, 29),
+          distanceKm: 3,
+        ),
+        Ride(startedAt: now, distanceKm: 100),
+        Ride(startedAt: now.add(const Duration(minutes: 1)), distanceKm: 100),
+        Ride(startedAt: DateTime(2026, 4, 30, 23, 59), distanceKm: 100),
+        Ride(
+          startedAt: DateTime.utc(2026, 10, 4, 23, 30),
+          endedAt: DateTime.utc(2026, 10, 5, 0, 30),
+          distanceKm: 3.25,
+        ),
+      ];
+      for (final ride in samples) {
+        await repository.createRide(ride);
+      }
+
+      final batch = database.batch();
+      final bulkStart = DateTime(2026, 6, 1);
+      for (var i = 0; i < 5000; i++) {
+        final startedAt = bulkStart.add(Duration(minutes: i * 30));
+        batch.insert('rides', {
+          'started_at': startedAt.toIso8601String(),
+          'ended_at': startedAt
+              .add(const Duration(minutes: 5))
+              .toIso8601String(),
+          'distance_km': 0.25,
+        });
+      }
+      await batch.commit(noResult: true);
+
+      final from = DateTime(now.year, now.month - 5);
+      final rides = await repository.listRides();
+      final daily = await repository.aggregateRideStatistics(from, now);
+      expect(daily.length, lessThan(rides.length));
+
+      for (final period in StatisticsPeriod.values) {
+        final sqlResult = calculateRideStatisticsFromDaily(daily, now, period);
+        final dartResult = calculateRideStatistics(rides, now, period);
+        expect(sqlResult.rideCount, dartResult.rideCount);
+        expect(
+          sqlResult.totalDistanceKm,
+          closeTo(dartResult.totalDistanceKm, 1e-6),
+        );
+        expect(
+          sqlResult.averageDistanceKm,
+          closeTo(dartResult.averageDistanceKm, 1e-6),
+        );
+        expect(
+          sqlResult.totalDuration.inMinutes,
+          dartResult.totalDuration.inMinutes,
+        );
+        expect(
+          calculateDailyDistancesFromDaily(daily, now, period),
+          orderedEquals(calculateDailyDistances(rides, now, period)),
+        );
+      }
+
+      final sqlMonthly = calculateMonthlyDistancesFromDaily(daily, now);
+      final dartMonthly = calculateMonthlyDistances(rides, now);
+      expect(
+        sqlMonthly.map((value) => value.month),
+        dartMonthly.map((value) => value.month),
+      );
+      for (var i = 0; i < sqlMonthly.length; i++) {
+        expect(
+          sqlMonthly[i].distanceKm,
+          closeTo(dartMonthly[i].distanceKm, 1e-6),
+        );
+      }
+    },
+  );
 
   test(
     'paginates service logs by timestamp then id with short pages',

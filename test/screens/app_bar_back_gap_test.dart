@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:odomate/src/app.dart';
 import 'package:odomate/src/data/odomate_repository.dart';
 import 'package:odomate/src/domain/models.dart';
+import 'package:odomate/src/domain/ride_statistics.dart';
 import 'package:odomate/src/i18n/app_localizations.dart';
 import 'package:odomate/src/screens/history_screen.dart';
 import 'package:odomate/src/screens/notifications_screen.dart';
@@ -35,6 +36,12 @@ class _FakeRepository extends OdomateRepository {
 
   @override
   Future<List<Ride>> listRides() async => const [];
+
+  @override
+  Future<List<DailyRideStatistics>> aggregateRideStatistics(
+    DateTime from,
+    DateTime until,
+  ) async => const [];
 
   @override
   Future<List<ServiceItem>> listServices() async => const [];
