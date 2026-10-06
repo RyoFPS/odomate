@@ -24,6 +24,7 @@ dependencies:
   image_cropper: ^12.2.1
   shared_preferences: ^2.5.5
   package_info_plus: ^10.2.1
+  image: ^4.10.1
 
 dev_dependencies:
   flutter_test:
