@@ -76,6 +76,18 @@ class AppLocalizations {
       'welcome_odomate': 'Selamat datang di OdoMate',
       'welcome_subtitle':
           'Catat perjalanan dan rawat kendaraanmu dengan mudah.',
+      'onboarding_ride_title': 'Catat perjalanan otomatis',
+      'onboarding_ride_body':
+          'Lacak perjalanan dengan GPS yang hemat baterai. Data perjalananmu tetap milikmu.',
+      'onboarding_service_title': 'Pengingat servis',
+      'onboarding_service_body':
+          'Dapatkan pengingat berdasarkan jarak agar servis kendaraan tidak terlewat.',
+      'onboarding_privacy_title': '100% offline & privat',
+      'onboarding_privacy_body':
+          'Tanpa akun dan tanpa cloud. Data tersimpan di perangkatmu.',
+      'onboarding_skip': 'Lewati',
+      'onboarding_next': 'Lanjut',
+      'onboarding_start': 'Mulai',
       'your_name_upper': 'NAMA KAMU',
       'vehicle_upper': 'NAMA MOTOR',
       'plate_upper': 'PLAT NOMOR',
@@ -438,6 +450,18 @@ class AppLocalizations {
       'welcome_odomate': 'Welcome to OdoMate',
       'welcome_subtitle':
           'Track trips and take care of your vehicle with ease.',
+      'onboarding_ride_title': 'Record rides automatically',
+      'onboarding_ride_body':
+          'Track rides with battery-efficient GPS. Your trip data stays yours.',
+      'onboarding_service_title': 'Service reminders',
+      'onboarding_service_body':
+          'Get distance-based reminders so you never miss vehicle maintenance.',
+      'onboarding_privacy_title': '100% offline and private',
+      'onboarding_privacy_body':
+          'No account or cloud needed. Your data stays on your device.',
+      'onboarding_skip': 'Skip',
+      'onboarding_next': 'Continue',
+      'onboarding_start': 'Start',
       'your_name_upper': 'YOUR NAME',
       'vehicle_upper': 'VEHICLE NAME',
       'plate_upper': 'PLATE NUMBER',
@@ -795,6 +819,18 @@ class AppLocalizations {
       'ready_percent': '準備完了',
       'welcome_odomate': 'OdoMateへようこそ',
       'welcome_subtitle': '走行を記録し、車両を簡単にメンテナンスできます。',
+      'onboarding_ride_title': '走行を自動で記録',
+      'onboarding_ride_body':
+          'バッテリーに配慮したGPSで走行を記録。データはあなたのものです。',
+      'onboarding_service_title': 'メンテナンス通知',
+      'onboarding_service_body':
+          '走行距離に応じて通知し、整備のタイミングをお知らせします。',
+      'onboarding_privacy_title': '完全オフラインでプライベート',
+      'onboarding_privacy_body':
+          'アカウントもクラウドも不要。データは端末内に保存されます。',
+      'onboarding_skip': 'スキップ',
+      'onboarding_next': '次へ',
+      'onboarding_start': '開始',
       'your_name_upper': '名前',
       'vehicle_upper': '車両名',
       'plate_upper': 'ナンバー',
