@@ -8,6 +8,7 @@ import '../domain/ride_statistics.dart';
 import '../domain/service_schedule.dart';
 import '../i18n/app_localizations.dart';
 import '../tracking/ride_tracker.dart';
+import '../widgets/metric_tile.dart';
 import '../widgets/odometer_correction_sheet.dart';
 import '../widgets/ride_map.dart';
 import 'notifications_screen.dart';
@@ -289,11 +290,10 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: _metricCard(
-                    context,
+                  child: MetricTile(
                     label: l10n.t('today_upper'),
                     value: _km(todayDistance),
-                    unit: 'km',
+                    suffix: 'km',
                     footer: l10n
                         .t('ride_count_footer')
                         .replaceAll('{count}', '$todayRideCount'),
@@ -302,11 +302,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _metricCard(
-                    context,
+                  child: MetricTile(
                     label: l10n.t('last_seven_days_upper'),
                     value: _km(sevenDayDistance),
-                    unit: 'km',
+                    suffix: 'km',
                     footer: l10n
                         .t('ride_count_footer')
                         .replaceAll('{count}', '$sevenDayRideCount'),
@@ -558,62 +557,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 state.active ? l10n.t('stop_ride') : l10n.t('start_ride'),
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _metricCard(
-    BuildContext context, {
-    required String label,
-    required String value,
-    required String unit,
-    required String footer,
-    required IconData icon,
-  }) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Text(
-                  label,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: colors.secondary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const Spacer(),
-                Icon(icon, size: 17, color: colors.secondary),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text.rich(
-              TextSpan(
-                text: value,
-                // Angka statistik: desain memakai `text-2xl font-bold` (w700),
-                // bukan extrabold — w800 di desain hanya untuk angka utama.
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
-                children: [
-                  TextSpan(
-                    text: ' $unit',
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(height: 18),
-            Text(footer, style: theme.textTheme.bodySmall),
           ],
         ),
       ),
