@@ -12,6 +12,9 @@ class _FakeRepository extends OdomateRepository {
   final Object? error;
   final Duration delay;
   final Vehicle? vehicle;
+  int vehicleLoads = 0;
+  int ridesPageLoads = 0;
+  int serviceLogPageLoads = 0;
 
   _FakeRepository({
     this.rides = const [],
@@ -32,6 +35,7 @@ class _FakeRepository extends OdomateRepository {
     required int limit,
     required int offset,
   }) async {
+    ridesPageLoads++;
     final all = await listRides();
     return all.skip(offset).take(limit).toList();
   }
@@ -44,12 +48,16 @@ class _FakeRepository extends OdomateRepository {
     required int limit,
     required int offset,
   }) async {
+    serviceLogPageLoads++;
     final all = await listServiceLogs();
     return all.skip(offset).take(limit).toList();
   }
 
   @override
-  Future<Vehicle?> loadVehicle() async => vehicle;
+  Future<Vehicle?> loadVehicle() async {
+    vehicleLoads++;
+    return vehicle;
+  }
 }
 
 Widget _app(OdomateRepository repository, {String language = 'id'}) =>
@@ -92,6 +100,23 @@ void main() {
     expect(find.text('Semua'), findsOneWidget);
     expect(find.textContaining('12.5 km'), findsWidgets);
     expect(find.textContaining('1jam 05mnt'), findsOneWidget);
+  });
+
+  testWidgets('History pull to refresh reloads the first page', (tester) async {
+    final repository = _FakeRepository();
+    await tester.pumpWidget(_app(repository));
+    await tester.pumpAndSettle();
+
+    expect(repository.vehicleLoads, 1);
+    expect(repository.ridesPageLoads, 1);
+    expect(repository.serviceLogPageLoads, 1);
+
+    await tester.drag(find.byType(ListView).first, const Offset(0, 400));
+    await tester.pumpAndSettle();
+
+    expect(repository.vehicleLoads, 2);
+    expect(repository.ridesPageLoads, 2);
+    expect(repository.serviceLogPageLoads, 2);
   });
 
   testWidgets('renders a period summary with active filter metrics', (
