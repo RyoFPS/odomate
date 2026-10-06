@@ -17,12 +17,17 @@ class _FakeRepository extends OdomateRepository {
   final bool rejectRideList;
   Ride? activeRide;
   final List<GeoPoint> points = [];
+  int vehicleLoads = 0;
+  int serviceLoads = 0;
+  int statisticsLoads = 0;
 
   _FakeRepository({this.rides = const [], this.rejectRideList = false});
 
   @override
-  Future<Vehicle?> loadVehicle() async =>
-      const Vehicle(name: 'Test', odometerKm: 0);
+  Future<Vehicle?> loadVehicle() async {
+    vehicleLoads++;
+    return const Vehicle(name: 'Test', odometerKm: 0);
+  }
 
   @override
   Future<List<Ride>> listRides() async {
@@ -34,7 +39,10 @@ class _FakeRepository extends OdomateRepository {
   Future<List<DailyRideStatistics>> aggregateRideStatistics(
     DateTime from,
     DateTime until,
-  ) async => const [];
+  ) async {
+    statisticsLoads++;
+    return const [];
+  }
 
   @override
   Future<List<Ride>> listRidesPage({
@@ -43,7 +51,10 @@ class _FakeRepository extends OdomateRepository {
   }) async => rides.skip(offset).take(limit).toList();
 
   @override
-  Future<List<ServiceItem>> listServices() async => const [];
+  Future<List<ServiceItem>> listServices() async {
+    serviceLoads++;
+    return const [];
+  }
 
   @override
   Future<List<ServiceLog>> listServiceLogs() async => const [];
@@ -211,6 +222,28 @@ void main() {
     final avatar = tester.widget<Image>(find.byType(Image).first);
     expect((avatar.image as ResizeImage).width, 76);
     expect((avatar.image as ResizeImage).height, 76);
+  });
+
+  testWidgets('Home pull to refresh reloads dashboard data', (tester) async {
+    final repository = _FakeRepository();
+    final tracker = RideTracker(repository);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: HomeScreen(repository: repository, tracker: tracker),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(repository.vehicleLoads, 1);
+    expect(repository.serviceLoads, 1);
+    expect(repository.statisticsLoads, 1);
+
+    await tester.drag(find.byType(ListView), const Offset(0, 400));
+    await tester.pumpAndSettle();
+
+    expect(repository.vehicleLoads, 2);
+    expect(repository.serviceLoads, 2);
+    expect(repository.statisticsLoads, 2);
   });
 
   testWidgets('Home only shows the live map during an active ride', (
