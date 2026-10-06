@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,8 +14,9 @@ class DiagnosticLog {
   static const _entriesKey = 'diagnosticLogs';
   static const _maxEntries = 20;
   static const _maxStackLength = 8000;
+  static const exportFileName = 'odomate-diagnostics.txt';
 
-  final _preferences = SharedPreferencesAsync();
+  late final _preferences = SharedPreferencesAsync();
   var _enabled = false;
   var _entries = <String>[];
   Future<void> _writes = Future.value();
@@ -30,7 +32,8 @@ class DiagnosticLog {
                 .toList()
           : [];
       if (!_enabled) await _preferences.remove(_entriesKey);
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('Failed to initialize diagnostic logs: $error\n$stackTrace');
       _enabled = false;
       _entries = [];
     }
@@ -53,7 +56,8 @@ class DiagnosticLog {
         }
       });
       return true;
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('Failed to save diagnostic setting: $error\n$stackTrace');
       return false;
     }
   }
@@ -74,7 +78,9 @@ class DiagnosticLog {
         if (_entries.length > _maxEntries) _entries.removeAt(0);
         await _preferences.setStringList(_entriesKey, _entries);
       });
-    } catch (_) {}
+    } catch (error, stackTrace) {
+      debugPrint('Failed to record diagnostic error: $error\n$stackTrace');
+    }
   }
 
   Future<XFile?> exportFile() async {
@@ -99,7 +105,7 @@ class DiagnosticLog {
     return XFile.fromData(
       utf8.encode(report),
       mimeType: 'text/plain',
-      name: 'odomate-diagnostics.txt',
+      name: exportFileName,
     );
   }
 

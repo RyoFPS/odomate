@@ -563,11 +563,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await SharePlus.instance.share(
         ShareParams(
           files: [file],
-          fileNameOverrides: [file.name],
+          fileNameOverrides: [DiagnosticLog.exportFileName],
           subject: _t('settings_diagnostics_export'),
         ),
       );
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('Failed to export diagnostic log: $error\n$stackTrace');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(_t('settings_diagnostics_export_failed'))),
