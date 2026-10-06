@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:odomate/src/app.dart';
@@ -10,11 +11,14 @@ import 'package:odomate/src/screens/history_screen.dart';
 import 'package:odomate/src/screens/profile_screen.dart';
 import 'package:odomate/src/screens/ride_detail_screen.dart';
 import 'package:odomate/src/screens/statistics_screen.dart';
+import 'package:odomate/src/tracking/ride_haptics.dart';
 import 'package:odomate/src/tracking/ride_tracker.dart';
 
 class _FakeRepository extends OdomateRepository {
   final List<Ride> rides;
   final bool rejectRideList;
+  bool failCreateRide = false;
+  int createdRideCount = 0;
   Ride? activeRide;
   final List<GeoPoint> points = [];
 
@@ -56,6 +60,8 @@ class _FakeRepository extends OdomateRepository {
 
   @override
   Future<int> createRide(Ride ride) async {
+    if (failCreateRide) throw StateError('Ride creation failed');
+    createdRideCount++;
     activeRide = ride.copyWith(id: 1);
     return 1;
   }
@@ -87,6 +93,20 @@ class _ProfilePage extends StatelessWidget {
 }
 
 void main() {
+  List<MethodCall> captureHaptics() {
+    final calls = <MethodCall>[];
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
+      if (call.method == 'HapticFeedback.vibrate') calls.add(call);
+      return null;
+    });
+    addTearDown(
+      () => messenger.setMockMethodCallHandler(SystemChannels.platform, null),
+    );
+    return calls;
+  }
+
   testWidgets('bottom navigation preserves four tabs and ride action', (
     tester,
   ) async {
@@ -242,6 +262,70 @@ void main() {
     await tester.pump();
 
     expect(find.byKey(const ValueKey('home-live-ride-map')), findsOneWidget);
+  });
+
+  testWidgets('ride haptics follow successful start and stop actions', (
+    tester,
+  ) async {
+    final haptics = captureHaptics();
+    await RideHaptics.afterRideStarted(() async => true);
+    await RideHaptics.afterRideStopped(
+      () async => Ride(startedAt: DateTime.now()),
+    );
+    expect(haptics.map((call) => call.arguments), [
+      'HapticFeedbackType.mediumImpact',
+      'HapticFeedbackType.selectionClick',
+      'HapticFeedbackType.selectionClick',
+    ]);
+
+    await RideHaptics.afterRideStarted(() async => false);
+    await RideHaptics.afterRideStopped(() async => null);
+    expect(haptics, hasLength(3));
+    await expectLater(
+      RideHaptics.afterRideStopped(() async => throw StateError('stop failed')),
+      throwsA(isA<StateError>()),
+    );
+    expect(haptics, hasLength(3));
+  });
+
+  testWidgets('failed and duplicate ride starts do not repeat haptics', (
+    tester,
+  ) async {
+    final haptics = captureHaptics();
+    final repository = _FakeRepository()..failCreateRide = true;
+    final tracker = RideTracker(
+      repository,
+      positionStream: const Stream.empty(),
+      locationServiceEnabled: () async => true,
+      checkPermission: () async => LocationPermission.always,
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MainNavigation(
+          pages: [
+            HomeScreen(repository: repository, tracker: tracker),
+            const Text('History page'),
+            const Text('Service page'),
+            const Text('Profile page'),
+          ],
+          tracker: tracker,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Start Ride'));
+    await tester.pumpAndSettle();
+    expect(haptics, isEmpty);
+
+    repository.failCreateRide = false;
+    await tester.tap(find.text('Start Ride'));
+    await tester.tap(find.text('Start Ride'));
+    await tester.pumpAndSettle();
+    expect(haptics.map((call) => call.arguments), [
+      'HapticFeedbackType.mediumImpact',
+    ]);
+    expect(repository.createdRideCount, 1);
   });
 
   testWidgets('Home history card opens the upgraded History screen', (

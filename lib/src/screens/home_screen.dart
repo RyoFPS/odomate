@@ -7,6 +7,7 @@ import '../domain/models.dart';
 import '../domain/ride_statistics.dart';
 import '../domain/service_schedule.dart';
 import '../i18n/app_localizations.dart';
+import '../tracking/ride_haptics.dart';
 import '../tracking/ride_tracker.dart';
 import '../widgets/metric_tile.dart';
 import '../widgets/odometer_correction_sheet.dart';
@@ -132,9 +133,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _toggleRide() async {
     if (widget.tracker.state.value.active) {
-      await widget.tracker.stop();
+      await RideHaptics.afterRideStopped(widget.tracker.stop);
     } else {
-      await widget.tracker.start();
+      await RideHaptics.afterRideStarted(widget.tracker.start);
     }
     if (mounted) setState(() {});
   }
