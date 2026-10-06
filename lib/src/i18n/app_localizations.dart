@@ -16,6 +16,7 @@ class AppLocalizations {
 
   static const _strings = <String, Map<String, String>>{
     'id': {
+      'confirm_stop_ride': 'Akhiri ride?',
       'home': 'Home',
       'history': 'Riwayat',
       'all_period': 'Semua',
@@ -375,6 +376,7 @@ class AppLocalizations {
       'service_items_count': '{count} item',
     },
     'en': {
+      'confirm_stop_ride': 'End ride?',
       'home': 'Home',
       'history': 'History',
       'all_period': 'All',
@@ -733,6 +735,8 @@ class AppLocalizations {
       'service_items_count': '{count} items',
     },
     'ja': {
+      'confirm_stop_ride':
+          '\u8d70\u884c\u3092\u7d42\u4e86\u3057\u307e\u3059\u304b\uff1f',
       'home': 'ホーム',
       'history': '履歴',
       'all_period': 'すべて',

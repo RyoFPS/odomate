@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../i18n/app_localizations.dart';
+import '../tracking/ride_tracker.dart';
+
 /// Bingkai bottom sheet standar OdoMate: drag handle, judul, subjudul opsional.
 ///
 /// Dipakai semua bottom sheet agar tampilan konsisten di seluruh app.
@@ -117,4 +120,32 @@ Future<bool> showConfirmSheet({
     ),
   );
   return confirmed == true;
+}
+
+Future<void> stopRideWithConfirmation({
+  required BuildContext context,
+  required RideTracker tracker,
+  required AppLocalizations l10n,
+}) async {
+  final state = tracker.state.value;
+  final ride = state.ride;
+  if (!state.active || ride == null) return;
+
+  final elapsed = DateTime.now().difference(ride.startedAt);
+  final hours = elapsed.inHours;
+  final duration = hours > 0
+      ? '$hours ${l10n.t('hours_unit')} ${elapsed.inMinutes.remainder(60)} ${l10n.t('minutes_unit')}'
+      : '${elapsed.inMinutes} ${l10n.t('minutes_unit')}';
+  final confirmed = await showConfirmSheet(
+    context: context,
+    title: l10n.t('confirm_stop_ride'),
+    subtitle:
+        '${l10n.t('distance')}: ${ride.distanceKm.toStringAsFixed(1)} km\n'
+        '${l10n.t('duration')}: $duration',
+    confirmLabel: l10n.t('stop_ride'),
+    cancelLabel: l10n.t('cancel'),
+    confirmIcon: Icons.stop,
+  );
+  if (!confirmed || !context.mounted || !tracker.state.value.active) return;
+  await tracker.stop();
 }
