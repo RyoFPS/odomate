@@ -11,6 +11,7 @@ import '../tracking/ride_tracker.dart';
 import '../widgets/metric_tile.dart';
 import '../widgets/odometer_correction_sheet.dart';
 import '../widgets/ride_map.dart';
+import '../widgets/sheet_frame.dart';
 import 'notifications_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -132,7 +133,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _toggleRide() async {
     if (widget.tracker.state.value.active) {
-      await widget.tracker.stop();
+      await stopRideWithConfirmation(
+        context: context,
+        tracker: widget.tracker,
+        l10n: AppLocalizations.of(context),
+      );
     } else {
       await widget.tracker.start();
     }

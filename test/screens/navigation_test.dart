@@ -17,6 +17,7 @@ class _FakeRepository extends OdomateRepository {
   final bool rejectRideList;
   Ride? activeRide;
   final List<GeoPoint> points = [];
+  int finishRideCalls = 0;
   int vehicleLoads = 0;
   int serviceLoads = 0;
   int statisticsLoads = 0;
@@ -82,6 +83,12 @@ class _FakeRepository extends OdomateRepository {
   @override
   Future<void> appendRidePoint(int rideId, GeoPoint point) async {
     points.add(point);
+  }
+
+  @override
+  Future<void> finishRide(int id, DateTime endedAt, double distanceKm) async {
+    finishRideCalls++;
+    activeRide = activeRide?.copyWith(endedAt: endedAt, distanceKm: distanceKm);
   }
 
   @override
@@ -154,6 +161,64 @@ void main() {
 
     expect(tester.getCenter(find.byTooltip('Start Ride')), buttonBefore);
     expect(tester.getCenter(find.text('Riwayat')), tabBefore);
+  });
+
+  testWidgets('Home and global stop buttons require confirmation', (
+    tester,
+  ) async {
+    final repository = _FakeRepository();
+    final tracker = RideTracker(
+      repository,
+      positionStream: const Stream.empty(),
+      locationServiceEnabled: () async => true,
+      checkPermission: () async => LocationPermission.always,
+      requestPermission: () async => LocationPermission.always,
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MainNavigation(
+          pages: [
+            HomeScreen(repository: repository, tracker: tracker),
+            const Text('History page'),
+            const Text('Service page'),
+            const Text('Profile page'),
+          ],
+          tracker: tracker,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Start Ride'));
+    await tester.pumpAndSettle();
+    expect(tracker.state.value.active, isTrue);
+
+    await tester.tap(find.text('Stop Ride').first);
+    await tester.pumpAndSettle();
+    expect(find.text('Akhiri ride?'), findsOneWidget);
+    expect(find.textContaining('Jarak: 0.0 km'), findsOneWidget);
+    expect(find.textContaining('Durasi:'), findsOneWidget);
+    await tester.tap(find.text('Batal'));
+    await tester.pumpAndSettle();
+    expect(tracker.state.value.active, isTrue);
+    expect(repository.finishRideCalls, 0);
+    expect(repository.activeRide?.endedAt, isNull);
+
+    await tester.tap(find.byTooltip('Stop Ride'));
+    await tester.pumpAndSettle();
+    expect(find.text('Akhiri ride?'), findsOneWidget);
+    await tester.tap(
+      find.descendant(
+        of: find.byType(BottomSheet),
+        matching: find.text('Stop Ride'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await tester.pumpAndSettle();
+    expect(tracker.state.value.active, isFalse);
+    expect(repository.finishRideCalls, 1);
+    expect(repository.activeRide?.endedAt, isNotNull);
   });
 
   testWidgets('Home statistics card opens Statistics and keeps ride action', (
