@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../i18n/app_localizations.dart';
+import '../tracking/ride_haptics.dart';
 import '../tracking/ride_tracker.dart';
 
 /// Bingkai bottom sheet standar OdoMate: drag handle, judul, subjudul opsional.
@@ -147,5 +148,5 @@ Future<void> stopRideWithConfirmation({
     confirmIcon: Icons.stop,
   );
   if (!confirmed || !context.mounted || !tracker.state.value.active) return;
-  await tracker.stop();
+  await RideHaptics.afterRideStopped(tracker.stop);
 }

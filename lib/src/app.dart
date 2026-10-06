@@ -15,6 +15,7 @@ import 'screens/profile_screen.dart';
 import 'screens/services_screen.dart';
 import 'screens/setup_screen.dart';
 import 'screens/statistics_screen.dart';
+import 'tracking/ride_haptics.dart';
 import 'tracking/ride_tracker.dart';
 import 'widgets/profile_photo_cropper.dart';
 import 'widgets/sheet_frame.dart';
@@ -588,7 +589,7 @@ class _MainNavigationState extends State<MainNavigation> {
               l10n: l10n,
             );
           } else {
-            await tracker.start();
+            await RideHaptics.afterRideStarted(tracker.start);
           }
         },
         tooltip: state.active ? l10n.t('stop_ride') : l10n.t('start_ride'),
