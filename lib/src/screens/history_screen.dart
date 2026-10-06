@@ -405,7 +405,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
       await SharePlus.instance.share(
         ShareParams(text: rows.join('\n'), subject: l10n.t('export_log')),
       );
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('Failed to export ride history: $error\n$stackTrace');
       if (context.mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(l10n.t('share_failed'))));
