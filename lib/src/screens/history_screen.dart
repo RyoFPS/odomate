@@ -75,6 +75,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return _historyData(vehicle: vehicle);
   }
 
+  Future<void> _refresh() async {
+    if (!mounted) return;
+    final reload = _load();
+    setState(() {
+      future = reload;
+    });
+    await reload;
+  }
+
   _HistoryData _historyData({Vehicle? vehicle}) => _HistoryData(
     rides: _loadedRides,
     logs: _loadedLogs,
@@ -224,116 +233,120 @@ class _HistoryScreenState extends State<HistoryScreen> {
             0,
             (total, ride) => total + ride.distanceKm,
           );
-          return ListView(
-            controller: _scrollController,
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
-            children: [
-              _periodSelector(context, l10n),
-              const SizedBox(height: 12),
-              if (historyType != _HistoryType.services) ...[
-                _summary(context, data, rides.length, distance),
-                const SizedBox(height: 18),
-                Row(
-                  children: [
-                    Text(
-                      l10n.t('recent_rides'),
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const Spacer(),
-                    if (rides.isNotEmpty) ...[
-                      const SizedBox(width: 8),
-                      DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surfaceContainerHighest,
-                          borderRadius: BorderRadius.circular(999),
+          return RefreshIndicator(
+            onRefresh: _refresh,
+            child: ListView(
+              controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
+              children: [
+                _periodSelector(context, l10n),
+                const SizedBox(height: 12),
+                if (historyType != _HistoryType.services) ...[
+                  _summary(context, data, rides.length, distance),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      Text(
+                        l10n.t('recent_rides'),
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w800,
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
+                      ),
+                      const Spacer(),
+                      if (rides.isNotEmpty) ...[
+                        const SizedBox(width: 8),
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(999),
                           ),
-                          child: Text(
-                            '${rides.length} ${_t(context, 'history_entries')}',
-                            style: TextStyle(
-                              color: theme.colorScheme.onSurfaceVariant,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            child: Text(
+                              '${rides.length} ${_t(context, 'history_entries')}',
+                              style: TextStyle(
+                                color: theme.colorScheme.onSurfaceVariant,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ),
+                      ],
+                      TextButton(
+                        onPressed: rides.isEmpty
+                            ? null
+                            : () => _exportLog(context, rides, l10n),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          minimumSize: const Size(0, 32),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: Text(l10n.t('export_log')),
                       ),
                     ],
-                    TextButton(
-                      onPressed: rides.isEmpty
-                          ? null
-                          : () => _exportLog(context, rides, l10n),
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        minimumSize: const Size(0, 32),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                ],
+                if (rides.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  ...rides.map((ride) => _rideCard(context, ride, l10n)),
+                ],
+                if (logs.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    l10n.t('history_services'),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ...logs.map((log) => _serviceCard(context, log)),
+                ],
+                if (rides.isEmpty && logs.isEmpty)
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Center(
+                        child: Text(
+                          historyType == _HistoryType.services
+                              ? _t(context, 'history_service_empty')
+                              : l10n.t('history_empty'),
+                        ),
                       ),
-                      child: Text(l10n.t('export_log')),
+                    ),
+                  ),
+                const SizedBox(height: 20),
+                if (_loadingMore)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    child: SkeletonLoader.inline(),
+                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.offline_pin_outlined,
+                      size: 16,
+                      color: theme.colorScheme.tertiary,
+                    ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        _t(context, 'history_offline'),
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.secondary,
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ],
-              if (rides.isNotEmpty) ...[
-                const SizedBox(height: 4),
-                ...rides.map((ride) => _rideCard(context, ride, l10n)),
-              ],
-              if (logs.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                Text(
-                  l10n.t('history_services'),
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ...logs.map((log) => _serviceCard(context, log)),
-              ],
-              if (rides.isEmpty && logs.isEmpty)
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Center(
-                      child: Text(
-                        historyType == _HistoryType.services
-                            ? _t(context, 'history_service_empty')
-                            : l10n.t('history_empty'),
-                      ),
-                    ),
-                  ),
-                ),
-              const SizedBox(height: 20),
-              if (_loadingMore)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  child: SkeletonLoader.inline(),
-                ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.offline_pin_outlined,
-                    size: 16,
-                    color: theme.colorScheme.tertiary,
-                  ),
-                  const SizedBox(width: 6),
-                  Flexible(
-                    child: Text(
-                      _t(context, 'history_offline'),
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.secondary,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+            ),
           );
         },
       ),

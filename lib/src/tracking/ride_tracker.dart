@@ -44,6 +44,7 @@ class RideTracker {
   List<GeoPoint> _routePoints = const [];
   double? _gpsAccuracyMeters;
   Future<void> _locationQueue = Future<void>.value();
+  bool _rideOperationInProgress = false;
   final Stopwatch _reminderClock = Stopwatch();
   Duration? _lastServiceReminderCheck;
   RideTracker(
@@ -67,15 +68,16 @@ class RideTracker {
     await start();
   }
 
-  Future<void> start() async {
-    if (_state.value.active) return;
+  Future<bool> start() async {
+    if (_state.value.active || _rideOperationInProgress) return false;
+    _rideOperationInProgress = true;
     try {
       if (!await (locationServiceEnabled?.call() ??
           Geolocator.isLocationServiceEnabled())) {
         _state.value = RideTrackingState(
           error: _l10n.t('location_enable_error'),
         );
-        return;
+        return false;
       }
       var permission =
           await (checkPermission?.call() ?? Geolocator.checkPermission());
@@ -87,13 +89,13 @@ class RideTracker {
         _state.value = RideTrackingState(
           error: _l10n.t('permission_permanent_error'),
         );
-        return;
+        return false;
       }
       if (permission == LocationPermission.denied) {
         _state.value = RideTrackingState(
           error: _l10n.t('permission_required_error'),
         );
-        return;
+        return false;
       }
       _lastPoint = null;
       _ride =
@@ -127,9 +129,13 @@ class RideTracker {
             ),
           );
       _subscription = stream.listen(onPosition, onError: _onStreamError);
+      return true;
     } catch (error, stackTrace) {
       debugPrint('Failed to start ride tracking: $error\n$stackTrace');
       _state.value = RideTrackingState(error: _l10n.t('gps_start_error'));
+      return false;
+    } finally {
+      _rideOperationInProgress = false;
     }
   }
 
@@ -210,21 +216,27 @@ class RideTracker {
     }
   }
 
-  Future<Ride> stop() async {
-    await _subscription?.cancel();
-    _subscription = null;
-    await _locationQueue;
-    final ride = _ride ?? await repository.loadActiveRide();
-    if (ride == null) throw StateError('Tidak ada ride aktif');
-    final done = ride.copyWith(endedAt: DateTime.now());
-    await repository.finishRide(done.id!, done.endedAt!, done.distanceKm);
-    _ride = null;
-    _lastPoint = null;
-    _routePoints = const [];
-    _gpsAccuracyMeters = null;
-    _state.value = const RideTrackingState();
-    await notifications?.clearTrackingActive();
-    return done;
+  Future<Ride?> stop() async {
+    if (_rideOperationInProgress) return null;
+    _rideOperationInProgress = true;
+    try {
+      await _subscription?.cancel();
+      _subscription = null;
+      await _locationQueue;
+      final ride = _ride ?? await repository.loadActiveRide();
+      if (ride == null) throw StateError('Tidak ada ride aktif');
+      final done = ride.copyWith(endedAt: DateTime.now());
+      await repository.finishRide(done.id!, done.endedAt!, done.distanceKm);
+      _ride = null;
+      _lastPoint = null;
+      _routePoints = const [];
+      _gpsAccuracyMeters = null;
+      _state.value = const RideTrackingState();
+      await notifications?.clearTrackingActive();
+      return done;
+    } finally {
+      _rideOperationInProgress = false;
+    }
   }
 
   Future<void> _appendRoutePoint(GeoPoint point) async {

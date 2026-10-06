@@ -1,7 +1,9 @@
 import 'dart:ui' show Tristate;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:odomate/src/app.dart';
@@ -14,19 +16,28 @@ import 'package:odomate/src/screens/history_screen.dart';
 import 'package:odomate/src/screens/profile_screen.dart';
 import 'package:odomate/src/screens/ride_detail_screen.dart';
 import 'package:odomate/src/screens/statistics_screen.dart';
+import 'package:odomate/src/tracking/ride_haptics.dart';
 import 'package:odomate/src/tracking/ride_tracker.dart';
 
 class _FakeRepository extends OdomateRepository {
   final List<Ride> rides;
   final bool rejectRideList;
+  bool failCreateRide = false;
+  int createdRideCount = 0;
   Ride? activeRide;
   final List<GeoPoint> points = [];
+  int finishRideCalls = 0;
+  int vehicleLoads = 0;
+  int serviceLoads = 0;
+  int statisticsLoads = 0;
 
   _FakeRepository({this.rides = const [], this.rejectRideList = false});
 
   @override
-  Future<Vehicle?> loadVehicle() async =>
-      const Vehicle(name: 'Test', odometerKm: 0);
+  Future<Vehicle?> loadVehicle() async {
+    vehicleLoads++;
+    return const Vehicle(name: 'Test', odometerKm: 0);
+  }
 
   @override
   Future<List<Ride>> listRides() async {
@@ -38,7 +49,10 @@ class _FakeRepository extends OdomateRepository {
   Future<List<DailyRideStatistics>> aggregateRideStatistics(
     DateTime from,
     DateTime until,
-  ) async => const [];
+  ) async {
+    statisticsLoads++;
+    return const [];
+  }
 
   @override
   Future<List<Ride>> listRidesPage({
@@ -47,7 +61,10 @@ class _FakeRepository extends OdomateRepository {
   }) async => rides.skip(offset).take(limit).toList();
 
   @override
-  Future<List<ServiceItem>> listServices() async => const [];
+  Future<List<ServiceItem>> listServices() async {
+    serviceLoads++;
+    return const [];
+  }
 
   @override
   Future<List<ServiceLog>> listServiceLogs() async => const [];
@@ -60,6 +77,8 @@ class _FakeRepository extends OdomateRepository {
 
   @override
   Future<int> createRide(Ride ride) async {
+    if (failCreateRide) throw StateError('Ride creation failed');
+    createdRideCount++;
     activeRide = ride.copyWith(id: 1);
     return 1;
   }
@@ -78,6 +97,12 @@ class _FakeRepository extends OdomateRepository {
   }
 
   @override
+  Future<void> finishRide(int id, DateTime endedAt, double distanceKm) async {
+    finishRideCalls++;
+    activeRide = activeRide?.copyWith(endedAt: endedAt, distanceKm: distanceKm);
+  }
+
+  @override
   Future<List<GeoPoint>> listRidePoints(int rideId) async => points;
 }
 
@@ -90,7 +115,49 @@ class _ProfilePage extends StatelessWidget {
       const Scaffold(body: Center(child: TextField()));
 }
 
+class _FakeTracker extends RideTracker {
+  final _state = ValueNotifier(const RideTrackingState());
+  int startCount = 0;
+  int stopCount = 0;
+
+  _FakeTracker(super.repository);
+
+  @override
+  ValueListenable<RideTrackingState> get state => _state;
+
+  @override
+  Future<bool> start() async {
+    startCount++;
+    _state.value = RideTrackingState(
+      active: true,
+      ride: Ride(id: 1, startedAt: DateTime.now()),
+    );
+    return true;
+  }
+
+  @override
+  Future<Ride?> stop() async {
+    stopCount++;
+    _state.value = const RideTrackingState();
+    return Ride(startedAt: DateTime.now(), endedAt: DateTime.now());
+  }
+}
+
 void main() {
+  List<MethodCall> captureHaptics() {
+    final calls = <MethodCall>[];
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
+      if (call.method == 'HapticFeedback.vibrate') calls.add(call);
+      return null;
+    });
+    addTearDown(
+      () => messenger.setMockMethodCallHandler(SystemChannels.platform, null),
+    );
+    return calls;
+  }
+
   testWidgets('primary ride and history controls expose clear semantics', (
     tester,
   ) async {
@@ -151,7 +218,8 @@ void main() {
     expect(todayIndex, lessThan(homeTraversalLabels.indexOf(sevenDayLabel)));
 
     await tracker.start();
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
     final stopLabel = '${l10n.t('stop_ride')}, ${l10n.t('ride_active')}';
     final stopFinder = find.bySemanticsLabel(stopLabel);
     expect(stopFinder, findsNWidgets(2));
@@ -161,7 +229,8 @@ void main() {
     expect(stopData.flagsCollection.isEnabled, Tristate.isTrue);
 
     await tester.tap(find.byTooltip(l10n.t('history')));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
     final historyContext = tester.element(find.byType(HistoryScreen));
     final materialLocalizations = MaterialLocalizations.of(historyContext);
     final date = materialLocalizations.formatShortDate(ride.startedAt);
@@ -226,6 +295,137 @@ void main() {
     expect(find.text('Profile'), findsOneWidget);
   });
 
+  testWidgets('Home and global ride controls stay reachable and signal STOP', (
+    tester,
+  ) async {
+    final repository = _FakeRepository();
+    final tracker = _FakeTracker(repository);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: odomateTheme(Brightness.light),
+        home: MainNavigation(
+          pages: [
+            HomeScreen(repository: repository, tracker: tracker),
+            const Text('History page'),
+            const Text('Service page'),
+            const Text('Profile page'),
+          ],
+          tracker: tracker,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final homeControl = find.byKey(const ValueKey('home-ride-control'));
+    final globalControl = find.byKey(const ValueKey('global-ride-control'));
+    final card = find.byType(Card).first;
+    final theme = odomateTheme(Brightness.light);
+    expect(tester.getSize(homeControl).height, 64);
+    expect(tester.getSize(homeControl).width, tester.getSize(card).width - 32);
+    expect(tester.getSize(globalControl).height, 64);
+    final fabBounds = tester.getRect(globalControl);
+    final viewportHeight =
+        tester.view.physicalSize.height / tester.view.devicePixelRatio;
+    expect(fabBounds.top, greaterThanOrEqualTo(0));
+    expect(fabBounds.bottom, lessThanOrEqualTo(viewportHeight));
+    expect(
+      tester.getCenter(globalControl).dx,
+      tester.view.physicalSize.width / tester.view.devicePixelRatio / 2,
+    );
+    expect(find.byTooltip('Start Ride'), findsOneWidget);
+    final startButton = tester.widget<FilledButton>(
+      find.descendant(of: homeControl, matching: find.byType(FilledButton)),
+    );
+    final startFab = tester.widget<FloatingActionButton>(
+      find.descendant(
+        of: globalControl,
+        matching: find.byType(FloatingActionButton),
+      ),
+    );
+    expect(
+      startButton.style!.backgroundColor!.resolve({}),
+      theme.colorScheme.primary,
+    );
+    expect(startFab.backgroundColor, theme.colorScheme.primary);
+
+    await tester.tap(homeControl);
+    await tester.pump();
+    expect(tracker.startCount, 1);
+    expect(tracker.state.value.active, isTrue);
+    await tester.pump(const Duration(milliseconds: 220));
+
+    final stopButton = tester.widget<FilledButton>(
+      find.descendant(of: homeControl, matching: find.byType(FilledButton)),
+    );
+    final floatingButton = tester.widget<FloatingActionButton>(
+      find.descendant(
+        of: globalControl,
+        matching: find.byType(FloatingActionButton),
+      ),
+    );
+    expect(find.text('Stop Ride'), findsOneWidget);
+    expect(find.byTooltip('Stop Ride'), findsOneWidget);
+    expect(
+      stopButton.style!.backgroundColor!.resolve({}),
+      theme.colorScheme.error,
+    );
+    expect(
+      stopButton.style!.foregroundColor!.resolve({}),
+      theme.colorScheme.onError,
+    );
+    expect(floatingButton.backgroundColor, theme.colorScheme.error);
+    expect(floatingButton.foregroundColor, theme.colorScheme.onError);
+    expect(find.byIcon(Icons.stop), findsNWidgets(2));
+    expect(
+      tester
+          .widget<ScaleTransition>(
+            find.descendant(
+              of: homeControl,
+              matching: find.byType(ScaleTransition),
+            ),
+          )
+          .scale
+          .value,
+      greaterThan(1),
+    );
+    expect(
+      tester
+          .widget<ScaleTransition>(
+            find.descendant(
+              of: globalControl,
+              matching: find.byType(ScaleTransition),
+            ),
+          )
+          .scale
+          .value,
+      greaterThan(1),
+    );
+
+    await tester.tap(
+      find.descendant(of: globalControl, matching: find.byIcon(Icons.stop)),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('Akhiri ride?'), findsOneWidget);
+    await tester.tap(
+      find.descendant(
+        of: find.byType(BottomSheet),
+        matching: find.text('Stop Ride'),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await tester.pumpAndSettle();
+    expect(tracker.stopCount, 1);
+    expect(tracker.state.value.active, isFalse);
+    expect(find.text('Start Ride'), findsOneWidget);
+    expect(
+      tester.getCenter(globalControl).dx,
+      tester.view.physicalSize.width / tester.view.devicePixelRatio / 2,
+    );
+  });
+
   testWidgets('keyboard does not lift the bottom bar or the Start button', (
     tester,
   ) async {
@@ -258,6 +458,69 @@ void main() {
 
     expect(tester.getCenter(find.byTooltip('Start Ride')), buttonBefore);
     expect(tester.getCenter(find.text('Riwayat')), tabBefore);
+  });
+
+  testWidgets('Home and global stop buttons require confirmation', (
+    tester,
+  ) async {
+    final repository = _FakeRepository();
+    final tracker = RideTracker(
+      repository,
+      positionStream: const Stream.empty(),
+      locationServiceEnabled: () async => true,
+      checkPermission: () async => LocationPermission.always,
+      requestPermission: () async => LocationPermission.always,
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MainNavigation(
+          pages: [
+            HomeScreen(repository: repository, tracker: tracker),
+            const Text('History page'),
+            const Text('Service page'),
+            const Text('Profile page'),
+          ],
+          tracker: tracker,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Start Ride'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tracker.state.value.active, isTrue);
+
+    await tester.tap(find.text('Stop Ride').first);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('Akhiri ride?'), findsOneWidget);
+    expect(find.textContaining('Jarak: 0.0 km'), findsOneWidget);
+    expect(find.textContaining('Durasi:'), findsOneWidget);
+    await tester.tap(find.text('Batal'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(tracker.state.value.active, isTrue);
+    expect(repository.finishRideCalls, 0);
+    expect(repository.activeRide?.endedAt, isNull);
+
+    await tester.tap(find.byTooltip('Stop Ride'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('Akhiri ride?'), findsOneWidget);
+    await tester.tap(
+      find.descendant(
+        of: find.byType(BottomSheet),
+        matching: find.text('Stop Ride'),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await tester.pumpAndSettle();
+    expect(tracker.state.value.active, isFalse);
+    expect(repository.finishRideCalls, 1);
+    expect(repository.activeRide?.endedAt, isNotNull);
   });
 
   testWidgets('Home statistics card opens Statistics and keeps ride action', (
@@ -328,6 +591,28 @@ void main() {
     expect((avatar.image as ResizeImage).height, 76);
   });
 
+  testWidgets('Home pull to refresh reloads dashboard data', (tester) async {
+    final repository = _FakeRepository();
+    final tracker = RideTracker(repository);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: HomeScreen(repository: repository, tracker: tracker),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(repository.vehicleLoads, 1);
+    expect(repository.serviceLoads, 1);
+    expect(repository.statisticsLoads, 1);
+
+    await tester.drag(find.byType(ListView), const Offset(0, 400));
+    await tester.pumpAndSettle();
+
+    expect(repository.vehicleLoads, 2);
+    expect(repository.serviceLoads, 2);
+    expect(repository.statisticsLoads, 2);
+  });
+
   testWidgets('Home only shows the live map during an active ride', (
     tester,
   ) async {
@@ -357,6 +642,71 @@ void main() {
     await tester.pump();
 
     expect(find.byKey(const ValueKey('home-live-ride-map')), findsOneWidget);
+  });
+
+  testWidgets('ride haptics follow successful start and stop actions', (
+    tester,
+  ) async {
+    final haptics = captureHaptics();
+    await RideHaptics.afterRideStarted(() async => true);
+    await RideHaptics.afterRideStopped(
+      () async => Ride(startedAt: DateTime.now()),
+    );
+    expect(haptics.map((call) => call.arguments), [
+      'HapticFeedbackType.mediumImpact',
+      'HapticFeedbackType.selectionClick',
+      'HapticFeedbackType.selectionClick',
+    ]);
+
+    await RideHaptics.afterRideStarted(() async => false);
+    await RideHaptics.afterRideStopped(() async => null);
+    expect(haptics, hasLength(3));
+    await expectLater(
+      RideHaptics.afterRideStopped(() async => throw StateError('stop failed')),
+      throwsA(isA<StateError>()),
+    );
+    expect(haptics, hasLength(3));
+  });
+
+  testWidgets('failed and duplicate ride starts do not repeat haptics', (
+    tester,
+  ) async {
+    final haptics = captureHaptics();
+    final repository = _FakeRepository()..failCreateRide = true;
+    final tracker = RideTracker(
+      repository,
+      positionStream: const Stream.empty(),
+      locationServiceEnabled: () async => true,
+      checkPermission: () async => LocationPermission.always,
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: MainNavigation(
+          pages: [
+            HomeScreen(repository: repository, tracker: tracker),
+            const Text('History page'),
+            const Text('Service page'),
+            const Text('Profile page'),
+          ],
+          tracker: tracker,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Start Ride'));
+    await tester.pumpAndSettle();
+    expect(haptics, isEmpty);
+
+    repository.failCreateRide = false;
+    await tester.tap(find.text('Start Ride'));
+    await tester.tap(find.text('Start Ride'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(haptics.map((call) => call.arguments), [
+      'HapticFeedbackType.mediumImpact',
+    ]);
+    expect(repository.createdRideCount, 1);
   });
 
   testWidgets('Home history card opens the upgraded History screen', (
