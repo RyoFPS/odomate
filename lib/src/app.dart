@@ -10,6 +10,7 @@ import 'i18n/app_localizations.dart';
 import 'notifications/notification_service.dart';
 import 'screens/history_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/onboarding_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/services_screen.dart';
 import 'screens/setup_screen.dart';
@@ -17,6 +18,7 @@ import 'screens/statistics_screen.dart';
 import 'tracking/ride_haptics.dart';
 import 'tracking/ride_tracker.dart';
 import 'widgets/profile_photo_cropper.dart';
+import 'widgets/sheet_frame.dart';
 
 /// Tema OdoMate.
 ///
@@ -46,6 +48,7 @@ class _OdoMateAppState extends State<OdoMateApp> {
   final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   String? _lastTrackerError;
   bool loading = true, hasVehicle = false;
+  bool hasSeenOnboarding = false;
   ThemeMode themeMode = ThemeMode.light;
   String language = 'id';
   bool usesKilometers = true;
@@ -134,6 +137,7 @@ class _OdoMateAppState extends State<OdoMateApp> {
       _preferences.getBool('usesKilometers'),
       _preferences.getBool('serviceReminders'),
       _preferences.getInt('serviceInterval'),
+      _preferences.getBool('hasSeenOnboarding'),
     ]);
     themeMode = ThemeMode.values.firstWhere(
       (mode) => mode.name == saved[0],
@@ -147,6 +151,12 @@ class _OdoMateAppState extends State<OdoMateApp> {
     serviceInterval = const [1000, 2000, 5000].contains(saved[4])
         ? saved[4]! as int
         : 2000;
+    hasSeenOnboarding = saved[5] as bool? ?? false;
+  }
+
+  Future<void> _completeOnboarding() async {
+    await _preferences.setBool('hasSeenOnboarding', true);
+    if (mounted) setState(() => hasSeenOnboarding = true);
   }
 
   void _setThemeMode(ThemeMode value) {
@@ -222,6 +232,8 @@ class _OdoMateAppState extends State<OdoMateApp> {
               StatisticsScreen(repository: widget.repository),
             ],
           )
+        : !hasSeenOnboarding
+        ? OnboardingScreen(onComplete: _completeOnboarding)
         : SetupScreen(
             repository: widget.repository,
             onSaved: () => setState(() => hasVehicle = true),
@@ -571,7 +583,11 @@ class _MainNavigationState extends State<MainNavigation> {
         elevation: 6,
         onPressed: () async {
           if (state.active) {
-            await RideHaptics.afterRideStopped(tracker.stop);
+            await stopRideWithConfirmation(
+              context: context,
+              tracker: tracker,
+              l10n: l10n,
+            );
           } else {
             await RideHaptics.afterRideStarted(tracker.start);
           }
