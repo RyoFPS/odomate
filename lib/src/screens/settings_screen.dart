@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../diagnostics/diagnostic_log.dart';
+import '../data/map_tile_cache.dart';
 import '../i18n/app_localizations.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -44,6 +46,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late int _serviceInterval = widget.serviceInterval;
   bool _diagnosticLogsEnabled = DiagnosticLog.instance.enabled;
   bool _sharingDiagnostics = false;
+  bool _clearingMapCache = false;
 
   @override
   void didUpdateWidget(covariant SettingsScreen oldWidget) {
@@ -56,6 +59,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   String _t(String key) => AppLocalizations.of(context).t(key);
+
+  Future<void> _clearMapCache() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(_t('settings_clear_map_cache')),
+        content: Text(_t('settings_clear_map_cache_confirmation')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(_t('cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(_t('settings_clear_action')),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _clearingMapCache = true);
+    try {
+      await clearMapTileCache();
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(_t('settings_map_cache_cleared'))));
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_t('settings_map_cache_clear_failed'))),
+      );
+    } finally {
+      if (mounted) setState(() => _clearingMapCache = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -249,7 +289,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: Icons.save_outlined,
             title: _t('settings_storage_title'),
             description: _t('settings_storage_description'),
-            child: _storageStatus(colors),
+            child: Column(
+              children: [
+                _storageStatus(colors),
+                if (!kIsWeb) ...[
+                  const SizedBox(height: 4),
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: TextButton.icon(
+                      key: const ValueKey('clear-map-cache'),
+                      onPressed: _clearingMapCache ? null : _clearMapCache,
+                      icon: _clearingMapCache
+                          ? const SizedBox.square(
+                              dimension: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.delete_outline),
+                      label: Text(_t('settings_clear_map_cache')),
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
           const SizedBox(height: 16),
           _section(

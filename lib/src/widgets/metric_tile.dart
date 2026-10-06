@@ -5,6 +5,7 @@ class MetricTile extends StatelessWidget {
   final String label;
   final String value;
   final String? suffix;
+  final String? footer;
   final IconData icon;
 
   const MetricTile({
@@ -12,6 +13,7 @@ class MetricTile extends StatelessWidget {
     required this.label,
     required this.value,
     this.suffix,
+    this.footer,
     required this.icon,
   });
 
@@ -56,6 +58,10 @@ class MetricTile extends StatelessWidget {
               fontWeight: FontWeight.w800,
             ),
           ),
+          if (footer != null) ...[
+            const Divider(height: 18),
+            Text(footer!, style: theme.textTheme.bodySmall),
+          ],
         ],
       ),
     );

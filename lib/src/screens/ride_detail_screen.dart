@@ -11,6 +11,7 @@ import '../i18n/app_localizations.dart';
 import '../widgets/app_header.dart';
 import '../widgets/metric_tile.dart';
 import '../widgets/ride_map.dart';
+import '../widgets/sheet_frame.dart';
 import '../widgets/status_badge.dart';
 
 class RideDetailScreen extends StatefulWidget {
@@ -207,7 +208,8 @@ class _RideDetailScreenState extends State<RideDetailScreen> {
         '${l10n.t('duration')}: $duration';
     try {
       await SharePlus.instance.share(ShareParams(text: text));
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('Failed to share ride details: $error\n$stackTrace');
       if (context.mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(l10n.t('share_failed'))));
@@ -224,14 +226,13 @@ class _RideDetailScreenState extends State<RideDetailScreen> {
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (sheetContext) => _RideSheetFrame(
+    builder: (sheetContext) => SheetFrame(
       title: l10n.t('trip_options'),
       subtitle: l10n.t('manage_trip_log'),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
             const SizedBox(height: 4),
             _optionTile(
               sheetContext,
@@ -277,7 +278,6 @@ class _RideDetailScreenState extends State<RideDetailScreen> {
             ),
           ],
         ),
-      ),
     ),
   );
 
@@ -339,7 +339,8 @@ class _RideDetailScreenState extends State<RideDetailScreen> {
         () => ride = ride.copyWith(notes: result.$1, weather: result.$2),
       );
       _feedback(l10n.t('edit_notes_weather'), success: true);
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('Failed to save ride details: $error\n$stackTrace');
       _feedback(l10n.t('edit_notes_weather'), success: false);
     }
   }
@@ -352,7 +353,8 @@ class _RideDetailScreenState extends State<RideDetailScreen> {
     try {
       await widget.repository!.duplicateRide(ride);
       _feedback(l10n.t('duplicate_trip'), success: true);
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('Failed to duplicate ride: $error\n$stackTrace');
       _feedback(l10n.t('duplicate_trip'), success: false);
     }
   }
@@ -384,7 +386,8 @@ class _RideDetailScreenState extends State<RideDetailScreen> {
       if (!mounted) return;
       setState(() => ride = ride.copyWith(distanceKm: value));
       _feedback(l10n.t('manual_distance'), success: true);
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('Failed to correct ride distance: $error\n$stackTrace');
       _feedback(l10n.t('manual_distance'), success: false);
     }
   }
@@ -411,7 +414,8 @@ class _RideDetailScreenState extends State<RideDetailScreen> {
         ),
       );
       if (mounted) _feedback(l10n.t('download_gpx'), success: true);
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('Failed to export ride GPX: $error\n$stackTrace');
       _feedback(l10n.t('download_gpx'), success: false);
     }
   }
@@ -421,38 +425,19 @@ class _RideDetailScreenState extends State<RideDetailScreen> {
     if (widget.repository == null || ride.id == null) {
       return _feedback(l10n.t('delete_trip'), success: false);
     }
-    final confirmed = await showModalBottomSheet<bool>(
+    final confirmed = await showConfirmSheet(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (sheetContext) => _RideSheetFrame(
-        title: l10n.t('delete_trip'),
-        subtitle: l10n.t('delete_trip_subtitle'),
-        child: Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () => Navigator.pop(sheetContext, false),
-                child: Text(l10n.t('cancel')),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: FilledButton.icon(
-                onPressed: () => Navigator.pop(sheetContext, true),
-                icon: const Icon(Icons.delete_outline),
-                label: Text(l10n.t('delete_trip')),
-              ),
-            ),
-          ],
-        ),
-      ),
+      title: l10n.t('delete_trip'),
+      subtitle: l10n.t('delete_trip_subtitle'),
+      confirmLabel: l10n.t('delete_trip'),
+      cancelLabel: l10n.t('cancel'),
     );
-    if (confirmed != true) return;
+    if (!confirmed) return;
     try {
       await widget.repository!.deleteRide(ride.id!);
       if (context.mounted) Navigator.pop(context, true);
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('Failed to delete ride: $error\n$stackTrace');
       _feedback(l10n.t('delete_trip'), success: false);
     }
   }
@@ -747,76 +732,6 @@ class _RideDetailScreenState extends State<RideDetailScreen> {
   }
 }
 
-class _RideSheetFrame extends StatelessWidget {
-  final String title;
-  final String? subtitle;
-  final Widget child;
-
-  const _RideSheetFrame({
-    required this.title,
-    this.subtitle,
-    required this.child,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      padding: EdgeInsets.fromLTRB(
-        20,
-        10,
-        20,
-        MediaQuery.viewInsetsOf(context).bottom + 24,
-      ),
-      child: SafeArea(
-        top: false,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(
-                child: Container(
-                  width: 48,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: colors.outlineVariant,
-                    borderRadius: BorderRadius.circular(99),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                title,
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              if (subtitle != null) ...[
-                const SizedBox(height: 2),
-                Text(
-                  subtitle!,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colors.secondary,
-                  ),
-                ),
-              ],
-              const SizedBox(height: 16),
-              child,
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _RideEditSheet extends StatefulWidget {
   final String title, notesLabel, weatherLabel, saveLabel;
   final String initialNotes, initialWeather;
@@ -853,7 +768,7 @@ class _RideEditSheetState extends State<_RideEditSheet> {
   }
 
   @override
-  Widget build(BuildContext context) => _RideSheetFrame(
+  Widget build(BuildContext context) => SheetFrame(
     title: widget.title,
     child: Column(
       mainAxisSize: MainAxisSize.min,
@@ -917,7 +832,7 @@ class _RideDistanceSheetState extends State<_RideDistanceSheet> {
   }
 
   @override
-  Widget build(BuildContext context) => _RideSheetFrame(
+  Widget build(BuildContext context) => SheetFrame(
     title: widget.title,
     child: Column(
       mainAxisSize: MainAxisSize.min,

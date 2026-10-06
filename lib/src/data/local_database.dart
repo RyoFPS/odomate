@@ -1,8 +1,9 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:path/path.dart' as p;
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:path/path.dart' as p;
 import 'package:sqflite_sqlcipher/sqflite.dart';
 
 class LocalDatabase {
@@ -24,7 +25,8 @@ class LocalDatabase {
     try {
       if (await databaseExists(legacyPath)) await deleteDatabase(legacyPath);
       return database;
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('Failed to remove legacy database: $error\n$stackTrace');
       await database.close();
       rethrow;
     }
@@ -179,6 +181,9 @@ class LocalDatabase {
     await db.execute(
       'CREATE INDEX IF NOT EXISTS idx_ride_points_ride_id_id '
       'ON ride_points(ride_id, id)',
+    );
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_rides_started_at ON rides(started_at)',
     );
   }
 

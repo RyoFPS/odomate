@@ -42,6 +42,8 @@ class OdoMateApp extends StatefulWidget {
 
 class _OdoMateAppState extends State<OdoMateApp> {
   final _preferences = SharedPreferencesAsync();
+  final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+  String? _lastTrackerError;
   bool loading = true, hasVehicle = false;
   ThemeMode themeMode = ThemeMode.light;
   String language = 'id';
@@ -52,7 +54,38 @@ class _OdoMateAppState extends State<OdoMateApp> {
   @override
   void initState() {
     super.initState();
+    widget.tracker.state.addListener(_showTrackerError);
     _load();
+  }
+
+  @override
+  void didUpdateWidget(covariant OdoMateApp oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.tracker != widget.tracker) {
+      oldWidget.tracker.state.removeListener(_showTrackerError);
+      widget.tracker.state.addListener(_showTrackerError);
+      _lastTrackerError = null;
+      _showTrackerError();
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.tracker.state.removeListener(_showTrackerError);
+    super.dispose();
+  }
+
+  void _showTrackerError() {
+    final error = widget.tracker.state.value.error;
+    if (error == _lastTrackerError) return;
+    _lastTrackerError = error;
+    if (error == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _scaffoldMessengerKey.currentState?.showSnackBar(
+        SnackBar(content: Text(error)),
+      );
+    });
   }
 
   Future<void> _load() async {
@@ -146,6 +179,7 @@ class _OdoMateAppState extends State<OdoMateApp> {
   @override
   Widget build(BuildContext context) => MaterialApp(
     title: 'OdoMate',
+    scaffoldMessengerKey: _scaffoldMessengerKey,
     themeMode: themeMode,
     locale: Locale(language),
     supportedLocales: AppLocalizations.supportedLocales,
@@ -540,10 +574,6 @@ class _MainNavigationState extends State<MainNavigation> {
           } else {
             await tracker.start();
           }
-          if (!context.mounted || tracker.state.value.error == null) return;
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(tracker.state.value.error!)));
         },
         tooltip: state.active ? l10n.t('stop_ride') : l10n.t('start_ride'),
         child: Icon(

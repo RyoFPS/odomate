@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:odomate/src/app.dart';
 import 'package:odomate/src/data/odomate_repository.dart';
 import 'package:odomate/src/domain/models.dart';
+import 'package:odomate/src/domain/ride_statistics.dart';
 import 'package:odomate/src/screens/home_screen.dart';
 import 'package:odomate/src/screens/history_screen.dart';
 import 'package:odomate/src/screens/profile_screen.dart';
@@ -13,17 +14,27 @@ import 'package:odomate/src/tracking/ride_tracker.dart';
 
 class _FakeRepository extends OdomateRepository {
   final List<Ride> rides;
+  final bool rejectRideList;
   Ride? activeRide;
   final List<GeoPoint> points = [];
 
-  _FakeRepository({this.rides = const []});
+  _FakeRepository({this.rides = const [], this.rejectRideList = false});
 
   @override
   Future<Vehicle?> loadVehicle() async =>
       const Vehicle(name: 'Test', odometerKm: 0);
 
   @override
-  Future<List<Ride>> listRides() async => rides;
+  Future<List<Ride>> listRides() async {
+    if (rejectRideList) throw StateError('Home must use SQL aggregates');
+    return rides;
+  }
+
+  @override
+  Future<List<DailyRideStatistics>> aggregateRideStatistics(
+    DateTime from,
+    DateTime until,
+  ) async => const [];
 
   @override
   Future<List<Ride>> listRidesPage({
@@ -137,7 +148,7 @@ void main() {
   testWidgets('Home statistics card opens Statistics and keeps ride action', (
     tester,
   ) async {
-    final repository = _FakeRepository();
+    final repository = _FakeRepository(rejectRideList: true);
     final tracker = RideTracker(repository);
     await tester.pumpWidget(
       MaterialApp(

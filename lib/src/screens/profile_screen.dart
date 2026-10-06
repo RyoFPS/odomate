@@ -139,9 +139,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           setState(() => photoPath = croppedPath);
         }
       }
-    } on MissingPluginException {
+    } on MissingPluginException catch (error, stackTrace) {
+      debugPrint('Profile photo picker is unavailable: $error\n$stackTrace');
       if (mounted) _showMessage(l10n.t('restart_picker'));
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('Failed to pick profile photo: $error\n$stackTrace');
       if (mounted) _showMessage(l10n.t('restart_picker'));
     }
   }
@@ -318,6 +320,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (!mounted) return;
       setState(() => vehicle = updated);
       _showMessage(AppLocalizations.of(context).t('profile_saved'));
+    } catch (error, stackTrace) {
+      debugPrint('Failed to save profile: $error\n$stackTrace');
+      if (mounted) {
+        _showMessage(AppLocalizations.of(context).t('profile_save_failed'));
+      }
     } finally {
       if (mounted) setState(() => saving = false);
     }

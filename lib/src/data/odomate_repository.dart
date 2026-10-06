@@ -1,6 +1,7 @@
 import 'package:sqflite_sqlcipher/sqflite.dart';
 
 import '../domain/models.dart';
+import '../domain/ride_statistics.dart';
 import 'local_database.dart';
 
 class OdomateRepository {
@@ -191,6 +192,87 @@ class OdomateRepository {
     limit: limit,
     offset: offset,
   )).map(_ride).toList();
+
+  /// Returns one SQL aggregate per local day, without loading ride rows.
+  Future<List<DailyRideStatistics>> aggregateRideStatistics(
+    DateTime from,
+    DateTime until,
+  ) async {
+    final localFrom = from.toLocal();
+    final localUntil = until.toLocal();
+    if (!localFrom.isBefore(localUntil)) return const [];
+
+    final rows = await (await db).rawQuery(
+      '''
+      WITH rides_in_range AS (
+        SELECT
+          CASE WHEN substr(started_at, -1) = 'Z'
+            THEN date(started_at, 'localtime')
+            ELSE substr(started_at, 1, 10)
+          END AS local_day,
+          CASE WHEN substr(started_at, -1) = 'Z'
+            THEN started_at < ?
+            ELSE started_at < ?
+          END AS before_until,
+          distance_km,
+          CASE WHEN substr(started_at, -1) = 'Z'
+            THEN julianday(started_at)
+            ELSE julianday(started_at, 'utc')
+          END AS start_day,
+          CASE
+            WHEN ended_at IS NULL THEN NULL
+            WHEN substr(ended_at, -1) = 'Z' THEN julianday(ended_at)
+            ELSE julianday(ended_at, 'utc')
+          END AS end_day
+        FROM rides
+        WHERE (
+          substr(started_at, -1) != 'Z'
+          AND started_at >= ? AND started_at <= ?
+        ) OR (
+          substr(started_at, -1) = 'Z'
+          AND started_at >= ? AND started_at <= ?
+        )
+      )
+      SELECT
+        local_day,
+        COUNT(CASE WHEN before_until THEN 1 END) AS ride_count,
+        COALESCE(SUM(CASE WHEN before_until THEN distance_km ELSE 0 END), 0)
+          AS total_distance_km,
+        SUM(distance_km) AS chart_distance_km,
+        COALESCE(SUM(
+          CASE WHEN before_until AND end_day >= start_day
+            THEN ROUND((end_day - start_day) * 86400000000.0)
+            ELSE 0
+          END
+        ), 0) AS total_duration_micros
+      FROM rides_in_range
+      GROUP BY local_day
+      ORDER BY local_day
+      ''',
+      [
+        localUntil.toUtc().toIso8601String(),
+        localUntil.toIso8601String(),
+        localFrom.toIso8601String(),
+        localUntil.toIso8601String(),
+        localFrom.toUtc().toIso8601String(),
+        localUntil.toUtc().toIso8601String(),
+      ],
+    );
+    return rows
+        .map(
+          (row) => DailyRideStatistics(
+            day: DateTime.parse(row['local_day'] as String),
+            totalDistanceKm: (row['total_distance_km'] as num).toDouble(),
+            chartDistanceKm: (row['chart_distance_km'] as num).toDouble(),
+            rideCount: (row['ride_count'] as num).toInt(),
+            totalDuration: Duration(
+              microseconds: (row['total_duration_micros'] as num).round(),
+            ),
+          ),
+        )
+        .toList();
+  }
+
   Future<List<ServiceItem>> listServices() async => (await (await db).query(
     'service_items',
     orderBy: 'id',

@@ -32,12 +32,18 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     future = _load();
   }
 
-  Future<_StatisticsData> _load() async => _StatisticsData(
-    vehicle: await widget.repository.loadVehicle(),
-    rides: await widget.repository.listRides(),
-    services: await widget.repository.listServices(),
-    now: widget.now(),
-  );
+  Future<_StatisticsData> _load() async {
+    final now = widget.now();
+    return _StatisticsData(
+      vehicle: await widget.repository.loadVehicle(),
+      rideDays: await widget.repository.aggregateRideStatistics(
+        DateTime(now.year, now.month - 5),
+        now,
+      ),
+      services: await widget.repository.listServices(),
+      now: now,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +68,11 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             return const SkeletonLoader(rows: 2);
           }
           final data = snapshot.data!;
-          final stats = calculateRideStatistics(data.rides, data.now, period);
+          final stats = calculateRideStatisticsFromDaily(
+            data.rideDays,
+            data.now,
+            period,
+          );
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
             children: [
@@ -187,7 +197,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     _StatisticsData data,
   ) {
     final theme = Theme.of(context);
-    final values = calculateMonthlyDistances(data.rides, data.now);
+    final values = calculateMonthlyDistancesFromDaily(data.rideDays, data.now);
     final maxValue = values.fold<double>(
       0,
       (max, value) => value.distanceKm > max ? value.distanceKm : max,
@@ -294,7 +304,11 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     StatisticsPeriod selectedPeriod,
   ) {
     final theme = Theme.of(context);
-    final bars = _trendValues(data.rides, data.now, selectedPeriod);
+    final bars = calculateDailyDistancesFromDaily(
+      data.rideDays,
+      data.now,
+      selectedPeriod,
+    );
     final maxValue = bars.fold<double>(
       0,
       (max, value) => value > max ? value : max,
@@ -365,14 +379,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     );
   }
 
-  List<double> _trendValues(
-    List<Ride> rides,
-    DateTime now,
-    StatisticsPeriod selectedPeriod,
-  ) {
-    return calculateDailyDistances(rides, now, selectedPeriod);
-  }
-
   String _trendLabel(DateTime now, StatisticsPeriod selectedPeriod, int index) {
     if (selectedPeriod == StatisticsPeriod.today) return 'Hari';
     if (selectedPeriod == StatisticsPeriod.currentMonth) {
@@ -440,12 +446,12 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
 class _StatisticsData {
   final Vehicle? vehicle;
-  final List<Ride> rides;
+  final List<DailyRideStatistics> rideDays;
   final List<ServiceItem> services;
   final DateTime now;
   const _StatisticsData({
     required this.vehicle,
-    required this.rides,
+    required this.rideDays,
     required this.services,
     required this.now,
   });

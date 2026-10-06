@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'src/app.dart';
+import 'src/data/map_tile_cache.dart';
 import 'src/data/odomate_repository.dart';
 import 'src/diagnostics/diagnostic_log.dart';
 import 'src/notifications/notification_service.dart';
@@ -11,6 +12,7 @@ import 'src/tracking/ride_tracker.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  initializeMapTileCache();
   final diagnostics = DiagnosticLog.instance;
   await diagnostics.initialize();
   FlutterError.onError = (details) {
@@ -21,7 +23,6 @@ Future<void> main() async {
     unawaited(diagnostics.recordError(error, stack));
     return false;
   };
-
   final repository = OdomateRepository();
   final notifications = NotificationService(repository: repository);
   runApp(
