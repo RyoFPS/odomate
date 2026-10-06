@@ -573,6 +573,7 @@ class _MainNavigationState extends State<MainNavigation> {
         key: const ValueKey('global-ride-control'),
         active: widget.rideActive,
         label: widget.rideActive ? l10n.t('stop_ride') : l10n.t('start_ride'),
+        semanticLabel: _rideActionLabel(l10n, widget.rideActive),
         onPressed: widget.onRide,
         floating: true,
       );
@@ -583,6 +584,7 @@ class _MainNavigationState extends State<MainNavigation> {
         key: const ValueKey('global-ride-control'),
         active: state.active,
         label: state.active ? l10n.t('stop_ride') : l10n.t('start_ride'),
+        semanticLabel: _rideActionLabel(l10n, state.active),
         onPressed: () async {
           if (state.active) {
             await stopRideWithConfirmation(
@@ -598,6 +600,10 @@ class _MainNavigationState extends State<MainNavigation> {
       ),
     );
   }
+
+  String _rideActionLabel(AppLocalizations l10n, bool active) => active
+      ? '${l10n.t('stop_ride')}, ${l10n.t('ride_active')}'
+      : l10n.t('start_ride');
 
   Widget _page() {
     final page = widget.pages[index];

@@ -573,6 +573,9 @@ class _HomeScreenState extends State<HomeScreen> {
               key: const ValueKey('home-ride-control'),
               active: state.active,
               label: state.active ? l10n.t('stop_ride') : l10n.t('start_ride'),
+              semanticLabel: state.active
+                  ? '${l10n.t('stop_ride')}, ${l10n.t('ride_active')}'
+                  : l10n.t('start_ride'),
               onPressed: _toggleRide,
             ),
           ],

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class RideControlButton extends StatefulWidget {
   final bool active;
   final String label;
+  final String? semanticLabel;
   final VoidCallback? onPressed;
   final bool floating;
 
@@ -10,6 +11,7 @@ class RideControlButton extends StatefulWidget {
     super.key,
     required this.active,
     required this.label,
+    this.semanticLabel,
     required this.onPressed,
     this.floating = false,
   });
@@ -89,9 +91,19 @@ class _RideControlButtonState extends State<RideControlButton>
             ),
           );
 
+    final semantic = Semantics(
+      container: true,
+      label: widget.semanticLabel ?? widget.label,
+      button: true,
+      enabled: widget.onPressed != null,
+      onTap: widget.onPressed,
+      excludeSemantics: true,
+      child: control,
+    );
+
     if (widget.active && !MediaQuery.of(context).disableAnimations) {
-      return ScaleTransition(scale: _scale, child: control);
+      return ScaleTransition(scale: _scale, child: semantic);
     }
-    return control;
+    return semantic;
   }
 }
