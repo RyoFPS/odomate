@@ -127,12 +127,14 @@ class RideTracker {
             ),
           );
       _subscription = stream.listen(onPosition, onError: _onStreamError);
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('Failed to start ride tracking: $error\n$stackTrace');
       _state.value = RideTrackingState(error: _l10n.t('gps_start_error'));
     }
   }
 
-  Future<void> _onStreamError(Object _, StackTrace stackTrace) async {
+  Future<void> _onStreamError(Object error, StackTrace stackTrace) async {
+    debugPrint('Ride tracking GPS stream failed: $error\n$stackTrace');
     await _subscription?.cancel();
     _subscription = null;
     await _locationQueue;
@@ -151,7 +153,13 @@ class RideTracker {
   );
   Future<void> onLocation(GeoPoint point) {
     final processing = _locationQueue.then((_) => _processLocation(point));
-    _locationQueue = processing.catchError((Object _) {});
+    _locationQueue = processing.catchError((
+      Object error,
+      StackTrace stackTrace,
+    ) {
+      debugPrint('Failed to process ride location: $error\n$stackTrace');
+      _state.value = _trackingState(error: _l10n.t('gps_read_error'));
+    });
     return processing;
   }
 
@@ -226,12 +234,15 @@ class RideTracker {
     _routePoints = [..._routePoints, point];
   }
 
-  RideTrackingState _trackingState({bool waitingForFix = false}) =>
-      RideTrackingState(
-        active: true,
-        waitingForFix: waitingForFix,
-        ride: _ride,
-        routePoints: List.unmodifiable(_routePoints),
-        gpsAccuracyMeters: _gpsAccuracyMeters,
-      );
+  RideTrackingState _trackingState({
+    bool waitingForFix = false,
+    String? error,
+  }) => RideTrackingState(
+    active: true,
+    waitingForFix: waitingForFix,
+    error: error,
+    ride: _ride,
+    routePoints: List.unmodifiable(_routePoints),
+    gpsAccuracyMeters: _gpsAccuracyMeters,
+  );
 }

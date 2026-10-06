@@ -207,7 +207,8 @@ class _RideDetailScreenState extends State<RideDetailScreen> {
         '${l10n.t('duration')}: $duration';
     try {
       await SharePlus.instance.share(ShareParams(text: text));
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('Failed to share ride details: $error\n$stackTrace');
       if (context.mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(l10n.t('share_failed'))));
@@ -339,7 +340,8 @@ class _RideDetailScreenState extends State<RideDetailScreen> {
         () => ride = ride.copyWith(notes: result.$1, weather: result.$2),
       );
       _feedback(l10n.t('edit_notes_weather'), success: true);
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('Failed to save ride details: $error\n$stackTrace');
       _feedback(l10n.t('edit_notes_weather'), success: false);
     }
   }
@@ -352,7 +354,8 @@ class _RideDetailScreenState extends State<RideDetailScreen> {
     try {
       await widget.repository!.duplicateRide(ride);
       _feedback(l10n.t('duplicate_trip'), success: true);
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('Failed to duplicate ride: $error\n$stackTrace');
       _feedback(l10n.t('duplicate_trip'), success: false);
     }
   }
@@ -384,7 +387,8 @@ class _RideDetailScreenState extends State<RideDetailScreen> {
       if (!mounted) return;
       setState(() => ride = ride.copyWith(distanceKm: value));
       _feedback(l10n.t('manual_distance'), success: true);
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('Failed to correct ride distance: $error\n$stackTrace');
       _feedback(l10n.t('manual_distance'), success: false);
     }
   }
@@ -411,7 +415,8 @@ class _RideDetailScreenState extends State<RideDetailScreen> {
         ),
       );
       if (mounted) _feedback(l10n.t('download_gpx'), success: true);
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('Failed to export ride GPX: $error\n$stackTrace');
       _feedback(l10n.t('download_gpx'), success: false);
     }
   }
@@ -452,7 +457,8 @@ class _RideDetailScreenState extends State<RideDetailScreen> {
     try {
       await widget.repository!.deleteRide(ride.id!);
       if (context.mounted) Navigator.pop(context, true);
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('Failed to delete ride: $error\n$stackTrace');
       _feedback(l10n.t('delete_trip'), success: false);
     }
   }
